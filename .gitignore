@@ -1,0 +1,9 @@
+#front
+/oa-front/.vscode
+/oa-front/node_modules
+/oa-front/dist
+
+#backend
+/oa-backend/config/config_bak.yaml
+/oa-backend/main
+/oa-backend/log

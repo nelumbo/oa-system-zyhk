@@ -1,0 +1,12 @@
+server:
+  #debug开发模式 release生产模式
+  mode : 'debug'
+  port : ':8088'
+
+db:
+  type : 'mysql'
+  username : 'king'
+  password : 'king'
+  host : '192.168.110.201'
+  port : '3306'
+  name : 'zyhk'
