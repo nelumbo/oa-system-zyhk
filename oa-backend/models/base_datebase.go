@@ -49,6 +49,9 @@ func initDB() {
 		&Customer{},
 		&Contract{},
 		&Task{},
+
+		&Expense{},
+		&Bidbond{},
 	)
 
 	sqlDB, _ := db.DB()

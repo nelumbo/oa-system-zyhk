@@ -171,11 +171,19 @@ export const preResearchTaskStatusItems = [
 
 export const bidBondStatusItems = [
     {
+        value: -1,
+        label: '驳回',
+    },
+    {
         value: 1,
-        label: '待退还',
+        label: '待审核',
     },
     {
         value: 2,
+        label: '待回款',
+    },
+    {
+        value: 3,
         label: '完成',
     },
 ]

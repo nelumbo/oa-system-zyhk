@@ -1,147 +1,269 @@
 <template>
     <div>
         <el-row :gutter="20">
-            <el-col :span="22">
-                <el-row :gutter="20">
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.type" placeholder="报销类型" clearable style="width: 100%;">
-                            <el-option v-for="item in expenseTypeItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.status" placeholder="状态" clearable style="width: 100%;">
-                            <el-option v-for="item in expenseStatusItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-date-picker v-model="queryObj.startDate" type="date" placeholder="开始时间"
-                            style="width: 100%;" />
-                    </el-col>
-                    <el-col :span="6">
-                        <el-date-picker v-model="queryObj.endDate" type="date" placeholder="结束时间"
-                            style="width: 100%;" />
-                    </el-col>
-                </el-row>
+            <el-col :span="5" :offset="1">
+                <el-select v-model="base.model.type" placeholder="报销类型" clearable style="width: 100%;">
+                    <el-option v-for="item in expenseTypeItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
+            <el-col :span="5">
+                <el-select v-model="base.model.status" placeholder="状态" clearable style="width: 100%;">
+                    <el-option v-for="item in expenseStatusItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
+            <el-col :span="5">
+                <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
+            </el-col>
+            <el-col :span="5">
+                <el-date-picker v-model="base.model.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
             </el-col>
             <el-col :span="1">
-                <el-button type="primary" @click="query">查询</el-button>
+                <el-button type="primary" @click="base.query">查询</el-button>
             </el-col>
             <el-col :span="1">
-                <el-button type="success" @click="addDialogVisible = true">发起</el-button>
+                <el-button type="success" @click="base.openAddDialog">发起</el-button>
             </el-col>
         </el-row>
-        <divTable :columnObj="columnObj" :tableData="tableData" :pageObj="pageObj" />
+        <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
+            :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="addDialogVisible" title="发起报销" width="50%" :show-close="false">
-            <el-form :model="form" label-width="100px">
-                <el-form-item label="报销类型">
-                    <el-select v-model="addObj.type" placeholder="请选择你的报销类型">
+        <el-dialog v-model="add.dialogVisible" title="发起报销" width="50%" :show-close="false">
+            <el-form :model="add.model" label-width="80px" :rules="rules" ref="addForm">
+                <el-form-item label="报销类型" prop="type">
+                    <el-select v-model="add.model.type" placeholder="请选择你的报销类型">
                         <el-option v-for="expenseType in expenseTypeItems" :label="expenseType.label"
                             :value="expenseType.value" />
                     </el-select>
                 </el-form-item>
-                <el-form-item label="金额">
-                    <el-input v-model.number="addObj.amount" />
+                <el-form-item label="金额" prop="amount">
+                    <el-input-number v-model="add.model.amount" :controls="false" :min="0" style="width:30%" />
                 </el-form-item>
                 <el-form-item label="报销原因">
-                    <el-input v-model="addObj.text" type="textarea" :autosize="{ minRows: 6, maxRows: 20 }" />
+                    <el-input v-model="add.model.text" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                        maxlength="300" />
                 </el-form-item>
             </el-form>
-            <div style="text-align: center;">
-                <el-button type="primary" @click="onSubmit">提交</el-button>
-            </div>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="primary" @click="add.submit" :disabled="add.submitDisabled">提交</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
+
+        <el-dialog v-model="del.dialogVisible" title="报销删除" width="50%" :show-close="false">
+            <h1>是否确定删除该条申请记录？</h1>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="danger" @click="del.submit" :disabled="del.submitDisabled">确定</el-button>
+                    </div>
+                </span>
+            </template>
         </el-dialog>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onBeforeMount } from 'vue'
 import { expenseTypeItems, expenseStatusItems } from '@/utils/magic'
+import { queryMyExpenses } from "@/api/my"
+import { addExpense, delExpense } from "@/api/expense"
+import { message } from '@/components/divMessage/index'
+import { reg_money } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
 
-const addDialogVisible = ref(false)
-
-const queryObj = reactive({
-    employeeUID: "",
-    type: null,
-    status: null,
-    startDate: "",
-    endDate: "",
-})
-
-const addObj = reactive({
-    type: "",
-    amount: 0,
-    text: "",
-})
-
-const columnObj = {
-    headers: [
-        {
-            prop: "expenseType.text",
-            label: "类型",
-        },
-        {
-            prop: "amount",
-            label: "金额(元)",
-        },
-        {
-            prop: "text",
-            label: "发起原因",
-        },
-        {
-            prop: "CreatedAt",
-            label: "发起时间",
-        },
-        {
-            prop: "approver1.name",
-            label: "审批",
-        },
-        {
-            prop: "approver2.name",
-            label: "财务",
-        },
-        {
-            prop: "approver3.name",
-            label: "出纳",
-        },
-        {
-            prop: "UpdatedAt",
-            label: "最后处理时间",
-        },
-        {
-            prop: "status",
-            label: "状态",
-        },
-        {
-            type: "operation",
-            label: "操作",
-            operations: []
-        },
+const addForm = ref(null)
+const rules = reactive({
+    type: [
+        { required: true, message: '请选择报销类型', trigger: 'blur' },
     ],
-}
+    amount: [
+        { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
+    ]
+})
 
-const tableData = []
-
-const pageObj = {
-    total: 0,
+const base = reactive({
+    model: {
+        type: null,
+        status: null,
+        startDate: "",
+        endDate: "",
+    },
+    column: {
+        headers: [
+            {
+                type: "transform",
+                prop: "type",
+                items: expenseTypeItems,
+                label: "类型",
+                width: "10%",
+            },
+            {
+                prop: "createDate",
+                label: "发起时间",
+                width: "10%",
+            },
+            {
+                prop: "amount",
+                label: "金额(元)",
+                width: "10%",
+            },
+            {
+                type: "textarea",
+                prop: "text",
+                label: "发起原因",
+                width: "20%",
+            },
+            {
+                prop: "approver.name",
+                label: "审批",
+                width: "8%",
+            },
+            {
+                prop: "finance.name",
+                label: "财务",
+                width: "8%",
+            },
+            {
+                prop: "cashier.name",
+                label: "出纳",
+                width: "8%",
+            },
+            {
+                prop: "approveDate",
+                label: "审批时间",
+                width: "8%",
+            },
+            {
+                type: "transform",
+                prop: "status",
+                items: expenseStatusItems,
+                label: "状态",
+                width: "8%",
+            },
+            {
+                type: "operation",
+                label: "操作",
+                width: "10%",
+                operations: [
+                    {
+                        isShow: (index, row) => {
+                            if (row.status == -1) {
+                                return true
+                            }
+                            return false
+                        },
+                        label: "删除",
+                        type: "danger",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openDelDialog(index, row)
+                    }
+                ]
+            },
+        ],
+    },
+    tableData: [],
     pageData: {
-        page: 0,
-        size: 10
+        total: 0,
+        pageSize: 10,
+        pageNo: 1
+    },
+    query: () => {
+        queryMyExpenses(base.model, base.pageData).then((res) => {
+            if (res.status == 1) {
+                base.tableData = res.data.data
+                base.pageData.total = res.data.total
+                base.pageData.pageSize = res.data.pageSize
+                base.pageData.pageNo = res.data.pageNo
+            } else {
+                message("查询失败", "error")
+            }
+        })
+    },
+    handleSizeChange: (e) => {
+        base.pageData.pageSize = e
+        base.pageData.pageNo = 1
+        base.query()
+    },
+    handleCurrentChange: (e) => {
+        base.pageData.pageNo = e
+        base.query()
+    },
+    openAddDialog: () => {
+        add.dialogVisible = true
+    },
+    openDelDialog: (index, row) => {
+        del.model.id = row.id
+        del.model.name = row.name
+        del.dialogVisible = true
     }
-}
+})
 
-function query() {
-    alert(JSON.stringify(queryObj))
-}
+const add = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    model: {
+        type: "",
+        amount: 0,
+        text: "",
+    },
+    submit: () => {
+        addForm.value.validate((valid) => {
+            if (valid) {
+                add.submitDisabled = true
+                addExpense(add.model).then((res) => {
+                    if (res.status == 1) {
+                        message("发起成功", "success")
+                        base.query()
+                    } else {
+                        message("发起失败", "error")
+                    }
+                    add.dialogVisible = false
+                    add.model = {
+                        type: "",
+                        amount: 0,
+                        text: "",
+                    }
+                    add.submitDisabled = false
+                })
+            } else {
+                return false;
+            }
+        });
+    },
+})
 
+const del = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    model: {
+        id: 0,
+    },
+    submit: () => {
+        del.submitDisabled = true
+        delExpense(del.model.id).then((res) => {
+            if (res.status == 1) {
+                message("删除成功", "success")
+                base.query()
+            } else {
+                message("删除失败", "error")
+            }
+            del.dialogVisible = false
+            del.model = {
+                id: 0,
+            }
+            del.submitDisabled = false
+        })
+    }
+})
+
+onBeforeMount(() => {
+    base.query()
+})
 </script>
-
-<style>
-.el-row {
-    margin-bottom: 20px;
-}
-</style>

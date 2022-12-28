@@ -10,10 +10,10 @@
 </template>
 
 <script setup>
-import { tokenLogin } from "@/api/login";
+import { queryMe } from "@/api/my";
 import { onMounted, computed } from 'vue'
-import { viewType } from '../pinia/modules/viewType'
-import { user } from '../pinia/modules/user'
+import { viewType } from '@/pinia/modules/viewType'
+import { user } from '@/pinia/modules/user'
 import Sidebar from './Sidebar/index.vue'
 
 let asideWidth = computed(() => {
@@ -25,7 +25,7 @@ let asideWidth = computed(() => {
 })
 
 onMounted(() => {
-    tokenLogin().then((res) => {
+    queryMe().then((res) => {
         if(res.status == 1){
             user().setMy(res.data)
         }else{

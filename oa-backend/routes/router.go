@@ -23,7 +23,9 @@ func Init() {
 	tRouter := r.Group("api")
 	tRouter.Use(middleware.CheckToken())
 	{
-		tRouter.GET("tokenLogin", api.LoginByToken)
+		tRouter.GET("me", api.QueryMe)
+		tRouter.POST("my/expenses", api.QueryMyExpenses)
+		tRouter.POST("my/bidbonds", api.QueryMyBidbonds)
 
 		tRouter.POST("employee", api.AddEmployee)
 		tRouter.DELETE("employee/:id", api.DelEmployee)
@@ -84,6 +86,18 @@ func Init() {
 		tRouter.PUT("product/attribute", api.EditProductAttribute)
 		tRouter.GET("product/:id", api.QueryProduct)
 		tRouter.POST("products", api.QueryProducts)
+
+		tRouter.POST("expense", api.AddExpense)
+		tRouter.DELETE("expense/:id", api.DelExpense)
+		tRouter.PUT("expense", api.ApprovalExpense)
+		tRouter.GET("expense/:id", api.QueryExpense)
+		tRouter.POST("expenses", api.QueryExpenses)
+
+		tRouter.POST("bidbond", api.AddBidbond)
+		tRouter.DELETE("bidbond/:id", api.DelBidbond)
+		tRouter.PUT("bidbond", api.EditBidbond)
+		tRouter.PUT("bidbond/approve", api.ApproveBidbond)
+		tRouter.POST("bidbonds", api.QueryBidbonds)
 	}
 
 	_ = r.Run(config.SystemConfig.Server.Port)

@@ -27,11 +27,3 @@ func Login(c *gin.Context) {
 		"token":    token,
 	})
 }
-
-func LoginByToken(c *gin.Context) {
-	var employee models.Employee
-
-	employee, code = models.SelectEmployee(c.MustGet("employeeID").(int))
-
-	msg.Message(c, code, employee)
-}

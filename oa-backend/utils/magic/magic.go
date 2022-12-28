@@ -64,11 +64,17 @@ const (
 
 	// 财务类型
 	//补助
-	EXPENSE_TYPE_1 = 1
+	EXPENSE_TYPE_BuZhu = 1
 	//提成
-	EXPENSE_TYPE_2 = 2
+	EXPENSE_TYPE_TiChen = 2
 	//业务费
-	EXPENSE_TYPE_3 = 3
+	EXPENSE_TYPE_YeWuFei = 3
 	//差旅费
-	EXPENSE_TYPE_4 = 4
+	EXPENSE_TYPE_CaiLvFei = 4
+
+	//保证金状态
+	BIDBOND_STATUS_FAIL         = -1
+	BIDBOND_STATUS_NOT_APPROVAL = 1
+	BIDBOND_STATUS_NOT_FINAL    = 2
+	BIDBOND_STATUS_FINAL        = 3
 )

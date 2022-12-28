@@ -749,11 +749,11 @@ const del = reactive({
 })
 
 onBeforeMount(() => {
-    base.query()
     queryAllOffice().then((res) => {
         if (res.status == 1) {
             base.offices = res.data
         }
     })
+    base.query()
 })
 </script>

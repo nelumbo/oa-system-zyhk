@@ -7,10 +7,3 @@ export const login = (queryObject) => {
         data: queryObject,
     })
 }
-
-export const tokenLogin = () => {
-    return request({
-        url: '/tokenLogin',
-        method: 'GET',
-    })
-}

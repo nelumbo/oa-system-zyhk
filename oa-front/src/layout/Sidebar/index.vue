@@ -86,8 +86,8 @@
 </template>
 
 <script setup>
-import { viewType } from '../../pinia/modules/viewType'
-import { user } from '../../pinia/modules/user'
+import { viewType } from '@/pinia/modules/viewType'
+import { user } from '@/pinia/modules/user'
 </script>
 
 <style>
