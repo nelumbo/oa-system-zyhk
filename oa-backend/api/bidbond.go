@@ -86,6 +86,8 @@ func ApproveBidbond(c *gin.Context) {
 		} else {
 			code = msg.FAIL
 		}
+	} else {
+		code = msg.FAIL
 	}
 	msg.Message(c, code, nil)
 }

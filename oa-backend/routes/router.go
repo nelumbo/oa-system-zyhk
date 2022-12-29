@@ -98,6 +98,16 @@ func Init() {
 		tRouter.PUT("bidbond", api.EditBidbond)
 		tRouter.PUT("bidbond/approve", api.ApproveBidbond)
 		tRouter.POST("bidbonds", api.QueryBidbonds)
+
+		tRouter.POST("predesign", api.AddPredesign)
+		tRouter.DELETE("predesign/:id", api.DelPredesign)
+		tRouter.PUT("predesign", api.EditPredesign)
+		tRouter.PUT("predesign/approve", api.ApprovePredesign)
+		tRouter.GET("predesign/:id", api.QueryPredegisn)
+		tRouter.POST("predesigns", api.QueryPredegisns)
+
+		tRouter.PUT("predesignTask/submit", api.SubmitPredesignTask)
+		tRouter.PUT("predesignTask/approve", api.ApprovePredesignTask)
 	}
 
 	_ = r.Run(config.SystemConfig.Server.Port)

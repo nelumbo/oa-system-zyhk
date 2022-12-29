@@ -38,7 +38,6 @@ type Expense struct {
 }
 
 func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interface{}) (code int) {
-
 	if expense.Type == magic.EXPENSE_TYPE_CaiLvFei {
 		return GeneralUpdate(&Expense{}, expense.ID, maps)
 	} else {
