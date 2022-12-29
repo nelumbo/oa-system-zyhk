@@ -30,7 +30,7 @@ const router = createRouter({
         },
         {
           path: 'pre-research',
-          component: () => import('../views/preResearch/index.vue'),
+          component: () => import('../views/predesign/index.vue'),
           meta: { login_require: true, title: "中研环科-管理系统-预设计管理" },
         },
         {

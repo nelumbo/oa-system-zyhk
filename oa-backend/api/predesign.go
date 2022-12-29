@@ -82,7 +82,7 @@ func ApprovePredesign(c *gin.Context) {
 	msg.Message(c, code, nil)
 }
 
-func QueryPredegisn(c *gin.Context) {
+func QueryPredesign(c *gin.Context) {
 	var predesign models.Predesign
 	id, err := strconv.Atoi(c.Param("id"))
 
@@ -94,7 +94,7 @@ func QueryPredegisn(c *gin.Context) {
 	msg.Message(c, code, predesign)
 }
 
-func QueryPredegisns(c *gin.Context) {
+func QueryPredesigns(c *gin.Context) {
 	var predesignQuery models.Predesign
 	_ = c.ShouldBindJSON(&predesignQuery)
 

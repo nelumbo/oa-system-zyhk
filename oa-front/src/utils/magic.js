@@ -131,14 +131,14 @@ export const invoiceTypeItems = [
     },
 ]
 
-export const preResearchStatusItems = [
+export const predesignStatusItems = [
     {
         value: -1,
         label: '驳回',
     },
     {
         value: 1,
-        label: '未审批',
+        label: '未审核',
     },
     {
         value: 2,
@@ -150,10 +150,10 @@ export const preResearchStatusItems = [
     },
 ]
 
-export const preResearchTaskStatusItems = [
+export const predesignTaskStatusItems = [
     {
         value: 1,
-        label: '未完成',
+        label: '未提交',
     },
     {
         value: 2,
@@ -214,11 +214,11 @@ export const expenseStatusItems = [
     },
     {
         value: 1,
-        label: '待办事处审批',
+        label: '待办事处审核',
     },
     {
         value: 2,
-        label: '待财务审批',
+        label: '待财务审核',
     },
     {
         value: 3,

@@ -52,6 +52,9 @@ func initDB() {
 
 		&Expense{},
 		&Bidbond{},
+
+		&Predesign{},
+		&PredesignTask{},
 	)
 
 	sqlDB, _ := db.DB()

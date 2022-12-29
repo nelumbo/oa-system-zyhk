@@ -99,6 +99,18 @@ func QueryEmployees(c *gin.Context) {
 	msg.Message(c, code, xForms)
 }
 
+func QueryAllEmployee(c *gin.Context) {
+	var employeeQuery models.Employee
+	var employees []models.Employee
+	_ = c.ShouldBindJSON(&employeeQuery)
+	var maps = make(map[string]interface{})
+	if employeeQuery.OfficeID != 0 {
+		maps["office_id"] = employeeQuery.OfficeID
+	}
+	code = models.GeneralSelectAll(&employees, maps)
+	msg.Message(c, code, employees)
+}
+
 func ResetEmployeePwd(c *gin.Context) {
 	var employee models.Employee
 	id, err := strconv.Atoi(c.Param("id"))

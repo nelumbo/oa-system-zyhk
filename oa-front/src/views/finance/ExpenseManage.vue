@@ -60,13 +60,13 @@
                 <el-form-item label="申请理由">
                     <el-input v-model.trim="view.model.text" type="textarea" autosize readonly />
                 </el-form-item>
-                <el-form-item label="审批时间">
+                <el-form-item label="审核时间">
                     <el-input v-model.trim="view.model.approveDate" readonly />
                 </el-form-item>
             </el-form>
         </el-dialog>
 
-        <el-dialog v-model="approve.dialogVisible" title="审批" width="50%" :show-close="false">
+        <el-dialog v-model="approve.dialogVisible" title="审核" width="50%" :show-close="false">
             <el-form :model="approve.model" label-width="140px">
                 <el-form-item label="员工补助金额">
                     <el-input v-model.trim="approve.model.employee.money" readonly />
@@ -99,7 +99,7 @@
                 <el-form-item label="申请理由">
                     <el-input v-model.trim="approve.model.text" type="textarea" autosize readonly />
                 </el-form-item>
-                <el-form-item label="审批时间">
+                <el-form-item label="审核时间">
                     <el-input v-model.trim="approve.model.approveDate" readonly />
                 </el-form-item>
             </el-form>
@@ -174,7 +174,7 @@ const base = reactive({
             },
             {
                 prop: "approver.name",
-                label: "审批",
+                label: "审核",
                 width: "8%",
             },
             {
@@ -189,7 +189,7 @@ const base = reactive({
             },
             {
                 prop: "approveDate",
-                label: "审批时间",
+                label: "审核时间",
                 width: "8%",
             },
             {
@@ -225,7 +225,7 @@ const base = reactive({
                             }
                             return false
                         },
-                        label: "审批",
+                        label: "审核",
                         type: "primary",
                         align: "center",
                         sortable: false,
@@ -372,10 +372,10 @@ const approve = reactive({
         approve.submitDisabled = true
         approveExpense(approve.model).then((res) => {
             if (res.status == 1) {
-                message("审批成功", "success")
+                message("审核成功", "success")
                 base.query()
             } else {
-                message("审批失败", "error")
+                message("审核失败", "error")
             }
             approve.dialogVisible = false
             approve.model = {

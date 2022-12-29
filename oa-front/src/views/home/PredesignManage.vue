@@ -1,23 +1,11 @@
 <template>
     <div>
         <el-row :gutter="20">
-            <el-col :span="5" :offset="1">
-                <el-select v-model="base.model.type" placeholder="报销类型" clearable style="width: 100%;">
-                    <el-option v-for="item in expenseTypeItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
+            <el-col :span="6" :offset="8">
                 <el-select v-model="base.model.status" placeholder="状态" clearable style="width: 100%;">
-                    <el-option v-for="item in expenseStatusItems" :key="item.value" :label="item.label"
+                    <el-option v-for="item in predesignStatusItems" :key="item.value" :label="item.label"
                         :value="item.value" />
                 </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
-            </el-col>
-            <el-col :span="5">
-                <el-date-picker v-model="base.model.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
             </el-col>
             <el-col :span="1">
                 <el-button type="primary" @click="base.query">查询</el-button>
@@ -29,19 +17,10 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="add.dialogVisible" title="发起报销" width="50%" :show-close="false">
+        <el-dialog v-model="add.dialogVisible" title="预设计任务发起" width="50%" :show-close="false">
             <el-form :model="add.model" label-width="80px" :rules="rules" ref="addForm">
-                <el-form-item label="报销类型" prop="type">
-                    <el-select v-model="add.model.type" placeholder="请选择你的报销类型">
-                        <el-option v-for="expenseType in expenseTypeItems" :label="expenseType.label"
-                            :value="expenseType.value" />
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="金额" prop="amount">
-                    <el-input-number v-model="add.model.amount" :controls="false" :min="0" style="width:30%" />
-                </el-form-item>
-                <el-form-item label="报销原因">
-                    <el-input v-model="add.model.text" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                <el-form-item label="设计需求" prop="createRemark">
+                    <el-input v-model="add.model.createRemark" type="textarea" :autosize="{ minRows: 9, maxRows: 19 }"
                         maxlength="300" />
                 </el-form-item>
             </el-form>
@@ -54,8 +33,24 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="del.dialogVisible" title="报销删除" width="50%" :show-close="false">
-            <h1>是否确定删除该条申请记录？</h1>
+        <el-dialog v-model="edit.dialogVisible" title="预设计任务编辑" width="50%" :show-close="false">
+            <el-form :model="edit.model" label-width="60px" :rules="rules" ref="editForm">
+                <el-form-item label="设计需求" prop="createRemark">
+                    <el-input v-model="edit.model.createRemark" type="textarea" :autosize="{ minRows: 9, maxRows: 19 }"
+                        maxlength="300" />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="primary" @click="edit.submit" :disabled="edit.submitDisabled">提交</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
+
+        <el-dialog v-model="del.dialogVisible" title="预设计任务删除" width="50%" :show-close="false">
+            <h1>是否确定删除该条预设计任务？</h1>
             <template #footer>
                 <span class="dialog-footer">
                     <div style="text-align: center;">
@@ -69,88 +64,72 @@
 
 <script setup>
 import { ref, reactive, onBeforeMount } from 'vue'
-import { expenseTypeItems, expenseStatusItems } from '@/utils/magic'
-import { queryMyExpenses } from "@/api/my"
-import { addExpense, delExpense } from "@/api/expense"
+import { predesignStatusItems } from '@/utils/magic'
+import { queryMyPredesigns } from "@/api/my"
+import { addPredesign, delPredesign, editPredesign } from "@/api/predesign"
 import { message } from '@/components/divMessage/index'
-import { reg_money } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
 
 const addForm = ref(null)
+const editForm = ref(null)
 const rules = reactive({
-    type: [
-        { required: true, message: '请选择报销类型', trigger: 'blur' },
+    createRemark: [
+        { required: true, message: '请填写设计需求，不超过300个字！', trigger: 'blur' },
     ],
-    amount: [
-        { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
-    ]
 })
 
 const base = reactive({
     model: {
-        type: null,
         status: null,
-        startDate: "",
-        endDate: "",
     },
     column: {
         headers: [
             {
-                type: "transform",
-                prop: "type",
-                items: expenseTypeItems,
-                label: "类型",
-                width: "10%",
-            },
-            {
                 prop: "createDate",
-                label: "发起时间",
-                width: "10%",
-            },
-            {
-                prop: "amount",
-                label: "金额(元)",
-                width: "10%",
+                label: "发起日期",
             },
             {
                 type: "textarea",
-                prop: "text",
-                label: "发起原因",
-                width: "20%",
+                prop: "createRemark",
+                label: "设计需求",
             },
             {
-                prop: "approver.name",
+                prop: "auditor.name",
                 label: "审核",
-                width: "8%",
             },
             {
-                prop: "finance.name",
-                label: "财务",
-                width: "8%",
+                prop: "auditDate",
+                label: "审核日期",
             },
             {
-                prop: "cashier.name",
-                label: "出纳",
-                width: "8%",
-            },
-            {
-                prop: "approveDate",
-                label: "审核时间",
-                width: "8%",
+                type: "textarea",
+                prop: "approveRemark",
+                label: "审核备注",
             },
             {
                 type: "transform",
                 prop: "status",
-                items: expenseStatusItems,
+                items: predesignStatusItems,
                 label: "状态",
-                width: "8%",
             },
             {
                 type: "operation",
                 label: "操作",
-                width: "10%",
                 operations: [
+                    {
+                        isShow: (index, row) => {
+                            if (row.status == 1) {
+                                return true
+                            }
+                            return false
+                        },
+                        label: "编辑",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openEditDialog(index, row)
+                    },
                     {
                         isShow: (index, row) => {
                             if (row.status == -1) {
@@ -178,7 +157,7 @@ const base = reactive({
         pageNo: 1
     },
     query: () => {
-        queryMyExpenses(base.model, base.pageData).then((res) => {
+        queryMyPredesigns(base.model, base.pageData).then((res) => {
             if (res.status == 1) {
                 base.tableData = res.data.data
                 base.pageData.total = res.data.total
@@ -201,9 +180,13 @@ const base = reactive({
     openAddDialog: () => {
         add.dialogVisible = true
     },
+    openEditDialog: (index, row) => {
+        edit.model.id = row.id
+        edit.model.createRemark = row.createRemark
+        edit.dialogVisible = true
+    },
     openDelDialog: (index, row) => {
         del.model.id = row.id
-        del.model.name = row.name
         del.dialogVisible = true
     }
 })
@@ -212,15 +195,13 @@ const add = reactive({
     dialogVisible: false,
     submitDisabled: false,
     model: {
-        type: "",
-        amount: 0,
-        text: "",
+        createRemark: "",
     },
     submit: () => {
         addForm.value.validate((valid) => {
             if (valid) {
                 add.submitDisabled = true
-                addExpense(add.model).then((res) => {
+                addPredesign(add.model).then((res) => {
                     if (res.status == 1) {
                         message("发起成功", "success")
                         base.query()
@@ -229,9 +210,7 @@ const add = reactive({
                     }
                     add.dialogVisible = false
                     add.model = {
-                        type: "",
-                        amount: 0,
-                        text: "",
+                        createRemark: "",
                     }
                     add.submitDisabled = false
                 })
@@ -242,6 +221,38 @@ const add = reactive({
     },
 })
 
+const edit = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    model: {
+        id: null,
+        createRemark: "",
+    },
+    submit: () => {
+        editForm.value.validate((valid) => {
+            if (valid) {
+                edit.submitDisabled = true
+                editPredesign(edit.model).then((res) => {
+                    if (res.status == 1) {
+                        message("编辑成功", "success")
+                        base.query()
+                    } else {
+                        message("编辑失败", "error")
+                    }
+                    edit.dialogVisible = false
+                    edit.model = {
+                        id: null,
+                        createRemark: "",
+                    }
+                    edit.submitDisabled = false
+                })
+            } else {
+                return false;
+            }
+        })
+    }
+})
+
 const del = reactive({
     dialogVisible: false,
     submitDisabled: false,
@@ -250,7 +261,7 @@ const del = reactive({
     },
     submit: () => {
         del.submitDisabled = true
-        delExpense(del.model.id).then((res) => {
+        delPredesign(del.model.id).then((res) => {
             if (res.status == 1) {
                 message("删除成功", "success")
                 base.query()

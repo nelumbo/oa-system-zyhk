@@ -26,6 +26,8 @@ func Init() {
 		tRouter.GET("me", api.QueryMe)
 		tRouter.POST("my/expenses", api.QueryMyExpenses)
 		tRouter.POST("my/bidbonds", api.QueryMyBidbonds)
+		tRouter.POST("my/predesigns", api.QueryMyPredesigns)
+		tRouter.POST("my/predesignTasks", api.QueryMyPredesignTasks)
 
 		tRouter.POST("employee", api.AddEmployee)
 		tRouter.DELETE("employee/:id", api.DelEmployee)
@@ -34,6 +36,7 @@ func Init() {
 		tRouter.PUT("employee/office", api.EditEmployeeOffice)
 		tRouter.GET("employee/:id", api.QueryEmployee)
 		tRouter.POST("employees", api.QueryEmployees)
+		tRouter.POST("employee/all", api.QueryAllEmployee)
 		tRouter.PUT("employee/reset/:id", api.ResetEmployeePwd)
 
 		tRouter.POST("office", api.AddOffice)
@@ -103,11 +106,12 @@ func Init() {
 		tRouter.DELETE("predesign/:id", api.DelPredesign)
 		tRouter.PUT("predesign", api.EditPredesign)
 		tRouter.PUT("predesign/approve", api.ApprovePredesign)
-		tRouter.GET("predesign/:id", api.QueryPredegisn)
-		tRouter.POST("predesigns", api.QueryPredegisns)
+		tRouter.GET("predesign/:id", api.QueryPredesign)
+		tRouter.POST("predesigns", api.QueryPredesigns)
 
 		tRouter.PUT("predesignTask/submit", api.SubmitPredesignTask)
 		tRouter.PUT("predesignTask/approve", api.ApprovePredesignTask)
+		tRouter.POST("predesignTasks", api.QueryPredesignTasks)
 	}
 
 	_ = r.Run(config.SystemConfig.Server.Port)

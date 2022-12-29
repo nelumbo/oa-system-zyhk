@@ -1,7 +1,6 @@
 <template>
     <elTable :columnObj="columnObj" :data="tableData"></elTable>
-    <div style="margin-top: 5px;"></div>
-    <elPagination :pageData="pageData" :handleSizeChange="handleSizeChange" :handleCurrentChange="handleCurrentChange">
+    <elPagination :pageData="pageData" :handleSizeChange="handleSizeChange" :handleCurrentChange="handleCurrentChange" style="margin-top: 5px;" v-if="!allShow">
     </elPagination>
 </template>
 
@@ -29,6 +28,10 @@ const props = defineProps({
     },
     handleCurrentChange: {
         type: Function
+    },
+    allShow: {
+        type: Boolean,
+        default: false
     }
 })
 

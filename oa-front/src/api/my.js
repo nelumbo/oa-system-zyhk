@@ -30,3 +30,27 @@ export const queryMyBidbonds = (model, pageData) => {
         }
     })
 }
+
+export const queryMyPredesigns = (model, pageData) => {
+    return request({
+        url: '/my/predesigns',
+        method: 'POST',
+        data: model,
+        params: {
+            "pageSize": pageData.pageSize,
+            "pageNo": pageData.pageNo,
+        }
+    })
+}
+
+export const queryMyPredesignTasks = (model, pageData) => {
+    return request({
+        url: '/my/predesignTasks',
+        method: 'POST',
+        data: model,
+        params: {
+            "pageSize": pageData.pageSize,
+            "pageNo": pageData.pageNo,
+        }
+    })
+}

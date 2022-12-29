@@ -27,13 +27,13 @@
         <el-divider content-position="left">
             <h2>我发起的预设计</h2>
         </el-divider>
-        <preResearchManage />
+        <predesignManage />
     </div>
     <div style="margin-top: 30px;">
         <el-divider content-position="left">
             <h2>我的预设计任务</h2>
         </el-divider>
-        <preResearchTaskManage />
+        <predesignTaskManage />
     </div>
     <div style="margin-top: 30px;">
         <el-divider content-position="left">
@@ -48,8 +48,8 @@ import ranking from './Ranking.vue';
 import contractManage from './ContractManage.vue'
 import taskManage from './TaskManage.vue'
 import paymentManage from './PaymentManage.vue'
-import preResearchManage from './PreResearchManage.vue'
-import preResearchTaskManage from './PreResearchTaskManage.vue'
+import predesignManage from './PredesignManage.vue'
+import predesignTaskManage from './PredesignTaskManage.vue'
 import bidBondManage from './BidBondManage.vue'
 </script>
 

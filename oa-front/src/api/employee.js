@@ -58,9 +58,17 @@ export const queryEmployees = (model, pageData) => {
     })
 }
 
+export const queryAllEmployee = (model) => {
+    return request({
+        url: '/employee/all',
+        method: 'POST',
+        data: model,
+    })
+}
+
 export const resetPwd = (id) => {
     return request({
-        url: '/employee/reset/'+id,
+        url: '/employee/reset/' + id,
         method: 'PUT',
     })
 }

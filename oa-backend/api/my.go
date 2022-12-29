@@ -37,3 +37,25 @@ func QueryMyBidbonds(c *gin.Context) {
 	xForms.Data, code = models.SelectBidbonds(&bidbondQuery, &xForms)
 	msg.Message(c, code, xForms)
 }
+
+func QueryMyPredesigns(c *gin.Context) {
+	var predesignQuery models.Predesign
+	_ = c.ShouldBindJSON(&predesignQuery)
+	predesignQuery.EmployeeID = c.MustGet("employeeID").(int)
+
+	xForms := ginUtil.GinArrayPreprocessing(c)
+
+	xForms.Data, code = models.SelectPredesigns(&predesignQuery, &xForms)
+	msg.Message(c, code, xForms)
+}
+
+func QueryMyPredesignTasks(c *gin.Context) {
+	var predesignTaskQuery models.PredesignTask
+	_ = c.ShouldBindJSON(&predesignTaskQuery)
+	predesignTaskQuery.EmployeeID = c.MustGet("employeeID").(int)
+
+	xForms := ginUtil.GinArrayPreprocessing(c)
+
+	xForms.Data, code = models.SelectPredesignTasks(&predesignTaskQuery, &xForms)
+	msg.Message(c, code, xForms)
+}

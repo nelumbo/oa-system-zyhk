@@ -2,8 +2,10 @@ package api
 
 import (
 	"oa-backend/models"
+	ginUtil "oa-backend/utils/gin"
 	"oa-backend/utils/magic"
 	"oa-backend/utils/msg"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +19,7 @@ func SubmitPredesignTask(c *gin.Context) {
 		predesignTaskbak.EmployeeID == c.MustGet("employeeID").(int) {
 		var maps = make(map[string]interface{})
 		maps["final_remark"] = predesignTask.FinalRemark
-		maps["final_date"] = predesignTask.FinalDate
+		maps["final_date"] = time.Now()
 		maps["status"] = magic.PREDESIGN_TASK_STATUS_NOT_APPROVAL
 		code = models.GeneralUpdate(&models.PredesignTask{}, predesignTask.ID, maps)
 	} else {
@@ -51,4 +53,14 @@ func ApprovePredesignTask(c *gin.Context) {
 	}
 
 	msg.Message(c, code, nil)
+}
+
+func QueryPredesignTasks(c *gin.Context) {
+	var predesignTaskQuery models.PredesignTask
+	_ = c.ShouldBindJSON(&predesignTaskQuery)
+
+	xForms := ginUtil.GinArrayPreprocessing(c)
+
+	xForms.Data, code = models.SelectPredesignTasks(&predesignTaskQuery, &xForms)
+	msg.Message(c, code, xForms)
 }

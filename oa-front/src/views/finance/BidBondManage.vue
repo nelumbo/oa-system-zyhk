@@ -21,7 +21,7 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="approve.dialogVisible" title="审批" width="50%" :show-close="false">
+        <el-dialog v-model="approve.dialogVisible" title="审核" width="50%" :show-close="false">
             <el-form :model="approve.model" label-width="100px">
                 <el-form-item label="办事处">
                     <el-input v-model.trim="approve.model.employee.office.name" readonly />
@@ -167,7 +167,7 @@ const base = reactive({
                             }
                             return false
                         },
-                        label: "审批",
+                        label: "审核",
                         type: "primary",
                         align: "center",
                         sortable: false,
@@ -246,10 +246,10 @@ const approve = reactive({
         approve.submitDisabled = true
         approveBidbond(approve.model).then((res) => {
             if (res.status == 1) {
-                message("审批成功", "success")
+                message("审核成功", "success")
                 base.query()
             } else {
-                message("审批失败", "error")
+                message("审核失败", "error")
             }
             approve.dialogVisible = false
             approve.model = {
