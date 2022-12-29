@@ -90,7 +90,7 @@ func SelectEmployees(employeeQuery *Employee, xForms *XForms) (employees []Emplo
 }
 
 func SelectEmployeeByPhone(phone string) (employee Employee, code int) {
-	db.Where("phone = ?", phone).First(&employee)
+	db.Where("phone = ? AND is_delete = ?", phone, false).First(&employee)
 	if employee.ID == 0 {
 		return Employee{}, msg.FAIL
 	}

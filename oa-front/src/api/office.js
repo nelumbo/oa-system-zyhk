@@ -23,13 +23,6 @@ export const editOffice = (office) => {
     })
 }
 
-export const queryOffice = (id) => {
-    return request({
-        url: '/office/' + id,
-        method: 'GET',
-    })
-}
-
 export const queryOffices = (model, pageData) => {
     return request({
         url: '/offices',

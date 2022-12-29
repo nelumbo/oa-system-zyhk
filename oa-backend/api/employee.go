@@ -15,6 +15,7 @@ func AddEmployee(c *gin.Context) {
 	_ = c.ShouldBindJSON(&employee)
 
 	_, code = models.SelectEmployeeByPhone(employee.Phone)
+
 	if code == msg.FAIL {
 		//默认密码等于编号+手机号
 		employee.Password = employee.Number + employee.Phone
@@ -24,6 +25,8 @@ func AddEmployee(c *gin.Context) {
 		} else {
 			code = msg.ERROR
 		}
+	} else {
+		code = msg.FAIL
 	}
 	msg.Message(c, code, nil)
 }

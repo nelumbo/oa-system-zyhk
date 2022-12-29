@@ -1,17 +1,17 @@
 <template>
-    <div>
+    <!-- <div>
         <el-divider content-position="left">
             <h2>排行榜</h2>
         </el-divider>
         <ranking />
-    </div>
+    </div> -->
     <div style="margin-top: 30px;">
         <el-divider content-position="left">
             <h2>我的合同</h2>
         </el-divider>
         <contractManage />
     </div>
-    <div style="margin-top: 30px;">
+    <!-- <div style="margin-top: 30px;">
         <el-divider content-position="left">
             <h2>我的任务</h2>
         </el-divider>
@@ -22,7 +22,7 @@
             <h2>我的回款追踪任务</h2>
         </el-divider>
         <paymentManage />
-    </div>
+    </div> -->
     <div style="margin-top: 30px;">
         <el-divider content-position="left">
             <h2>我发起的预设计</h2>

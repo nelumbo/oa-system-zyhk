@@ -25,7 +25,7 @@ type Dictionary struct {
 }
 
 func SelectDictionaries(dictionaryQuery *Dictionary) (dictionaries []Dictionary, code int) {
-	tx := db.Joins("DictionaryType").Where("dictionary.s_delete = ?", false)
+	tx := db.Joins("DictionaryType").Where("dictionary.is_delete = ?", false)
 	if dictionaryQuery.DictionaryType.Name != "" {
 		tx = tx.Where("DictionaryType.name = ?", dictionaryQuery.DictionaryType.Name)
 	}

@@ -21,14 +21,6 @@ type Office struct {
 	Role Role `gorm:"foreignKey:RoleID" json:"role"`
 }
 
-func SelectOffice(id int) (office Office, code int) {
-	db.Preload("Role").Where("is_delete = ?", false).First(&office, id)
-	if office.ID == 0 {
-		return Office{}, msg.FAIL
-	}
-	return office, msg.SUCCESS
-}
-
 func SelectOffices(officeQuery *Office, xForms *XForms) (offices []Office, code int) {
 	tx := db.Where("is_delete = ?", false)
 	if officeQuery.Name != "" {

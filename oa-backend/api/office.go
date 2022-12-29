@@ -50,18 +50,6 @@ func EditOffice(c *gin.Context) {
 	msg.Message(c, code, nil)
 }
 
-func QueryOffice(c *gin.Context) {
-	var office models.Office
-	id, err := strconv.Atoi(c.Param("id"))
-
-	if err == nil {
-		office, code = models.SelectOffice(id)
-	} else {
-		code = msg.ERROR
-	}
-	msg.Message(c, code, office)
-}
-
 func QueryOffices(c *gin.Context) {
 	var officeQuery models.Office
 	_ = c.ShouldBindJSON(&officeQuery)

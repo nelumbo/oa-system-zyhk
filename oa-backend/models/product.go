@@ -48,8 +48,8 @@ type Product struct {
 type ProductAttribute struct {
 	// TypeUID          string  `gorm:"type:varchar(32);comment:类型UID;default:(-)" json:"typeUID"`
 
-	ID int `gorm:"primary_key" json:"id"`
-
+	ID               int     `gorm:"primary_key" json:"id"`
+	IsDelete         bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	PurchasePrice    float64 `gorm:"type:decimal(20,6);comment:采购价格(元)" json:"purchasePrice"`
 	PurchasePriceUSD float64 `gorm:"type:decimal(20,6);comment:采购价格(美元)" json:"purchasePriceUSD"`
 	StandardPrice    float64 `gorm:"type:decimal(20,6);comment:标准价格(元)" json:"standardPrice"`
@@ -96,7 +96,6 @@ func SelectSuppliers(supplierQuery *Supplier, xForms *XForms) (suppliers []Suppl
 }
 
 func InsertProduct(product *Product) (code int) {
-
 	err = db.Transaction(func(tx *gorm.DB) error {
 
 		if tErr := db.Create(&product.Attribute).Error; tErr != nil {
@@ -143,7 +142,6 @@ func UpdateProduct(product *Product) (code int) {
 }
 
 func UpdateProductAttribute(product *Product) (code int) {
-
 	var productBak Product
 	productBak, code = SelectProduct(product.ID)
 	if code == msg.SUCCESS {

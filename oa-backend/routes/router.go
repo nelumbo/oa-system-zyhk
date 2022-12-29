@@ -42,7 +42,6 @@ func Init() {
 		tRouter.POST("office", api.AddOffice)
 		tRouter.DELETE("office/:id", api.DelOffice)
 		tRouter.PUT("office", api.EditOffice)
-		tRouter.GET("office/:id", api.QueryOffice)
 		tRouter.POST("offices", api.QueryOffices)
 		tRouter.GET("offices", api.QueryAllOffice)
 

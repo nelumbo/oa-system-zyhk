@@ -30,6 +30,7 @@ type Predesign struct {
 
 type PredesignTask struct {
 	ID           int    `gorm:"primary_key" json:"id"`
+	IsDelete     bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	PredesignID  int    `gorm:"type:int;comment:预设计ID;default:(-)" json:"predesignID"`
 	CreaterID    int    `gorm:"type:int;comment:创建者ID;default:(-)" json:"createrID"`
 	EmployeeID   int    `gorm:"type:int;comment:技术员ID;default:(-)" json:"employeeID"`
@@ -146,6 +147,7 @@ func InsertPredesignTask(predesignTaskOld *PredesignTask, maps map[string]interf
 
 func SelectPredesignTasks(predesignTaskQuery *PredesignTask, xForms *XForms) (predesignTasks []PredesignTask, code int) {
 	var maps = make(map[string]interface{})
+	maps["predesign_task.is_delete"] = false
 
 	if predesignTaskQuery.Status != 0 {
 		maps["predesign_task.status"] = predesignTaskQuery.Status

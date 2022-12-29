@@ -1,84 +1,70 @@
 <template>
     <div>
-        <el-row :gutter="20" align="middle">
-            <el-col :span="22">
-                <el-row :gutter="20">
-                    <el-col :span="6">
-                        <el-input v-model="queryObj.no" placeholder="合同编号" />
-                    </el-col>
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.regionUID" placeholder="省份" clearable style="width: 100%;">
-                            <el-option v-for="item in regionItems" :key="item.UID" :label="item.text"
-                                :value="item.UID" />
-                        </el-select>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-input v-model="queryObj.companyName" placeholder="客户单位" />
-                    </el-col>
-                    <el-col :span="6">
-                        <el-input v-model="queryObj.customerName" placeholder="客户名称" />
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20">
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.status" placeholder="合同状态" clearable style="width: 100%;">
-                            <el-option v-for="item in contractStatusItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.productionStatus" placeholder="生产状态" clearable
-                            style="width: 100%;">
-                            <el-option v-for="item in productionStatusItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.collectionStatus" placeholder="回款状态" clearable
-                            style="width: 100%;">
-                            <el-option v-for="item in collectionStatusItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.payType" placeholder="付款类型" clearable style="width: 100%;">
-                            <el-option v-for="item in payTypeItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                </el-row>
-                <el-row :gutter="20">
-                    <el-col :span="6">
-                        <el-date-picker v-model="queryObj.startDate" type="date" placeholder="开始时间"
-                            style="width: 100%;" />
-                    </el-col>
-                    <el-col :span="6">
-                        <el-date-picker v-model="queryObj.endDate" type="date" placeholder="结束时间"
-                            style="width: 100%;" />
-                    </el-col>
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.isSpecial" placeholder="特殊合同" clearable style="width: 100%;">
-                            <el-option v-for="item in isSpecialItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.isPreDeposit" placeholder="预存款合同" clearable style="width: 100%;">
-                            <el-option v-for="item in isPreDepositItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                </el-row>
+        <el-row :gutter="20">
+            <el-col :span="5" :offset="1">
+                <el-input v-model="queryObj.no" placeholder="合同编号" />
+            </el-col>
+            <el-col :span="5">
+                <el-select v-model="queryObj.regionUID" placeholder="省份" clearable style="width: 100%;">
+                    <el-option v-for="item in regionItems" :key="item.UID" :label="item.text" :value="item.UID" />
+                </el-select>
+            </el-col>
+            <el-col :span="5">
+                <el-input v-model="queryObj.companyName" placeholder="客户单位" />
+            </el-col>
+            <el-col :span="5">
+                <el-input v-model="queryObj.customerName" placeholder="客户名称" />
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="5" :offset="1">
+                <el-select v-model="queryObj.status" placeholder="合同状态" clearable style="width: 100%;">
+                    <el-option v-for="item in contractStatusItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
+            <el-col :span="5">
+                <el-select v-model="queryObj.productionStatus" placeholder="生产状态" clearable style="width: 100%;">
+                    <el-option v-for="item in productionStatusItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
+            <el-col :span="5">
+                <el-select v-model="queryObj.collectionStatus" placeholder="回款状态" clearable style="width: 100%;">
+                    <el-option v-for="item in collectionStatusItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
+            <el-col :span="5">
+                <el-select v-model="queryObj.payType" placeholder="付款类型" clearable style="width: 100%;">
+                    <el-option v-for="item in payTypeItems" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
             </el-col>
             <el-col :span="1">
-                <el-row>
-                    <el-button type="primary" @click="query">查询</el-button>
-                </el-row>
+                <el-button type="primary" @click="query">查询</el-button>
             </el-col>
             <el-col :span="1">
-                <el-row>
-                    <el-button type="success">录入</el-button>
-                </el-row>
+                <el-button type="success">录入</el-button>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="5" :offset="1">
+                <el-date-picker v-model="queryObj.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
+            </el-col>
+            <el-col :span="5">
+                <el-date-picker v-model="queryObj.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
+            </el-col>
+            <el-col :span="5">
+                <el-select v-model="queryObj.isSpecial" placeholder="特殊合同" clearable style="width: 100%;">
+                    <el-option v-for="item in isSpecialItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
+            <el-col :span="5">
+                <el-select v-model="queryObj.isPreDeposit" placeholder="预存款合同" clearable style="width: 100%;">
+                    <el-option v-for="item in isPreDepositItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
             </el-col>
         </el-row>
         <divTable :columnObj="columnObj" :tableData="tableData" :pageObj="pageObj" />
@@ -90,8 +76,8 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
-import { contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems, isSpecialItems, isPreDepositItems } from '../../utils/magic'
+import { ref, reactive, onBeforeMount } from 'vue'
+import { contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems, isSpecialItems, isPreDepositItems } from '@/utils/magic'
 
 import divTable from '../../components/divTable/index.vue'
 
@@ -214,9 +200,3 @@ function query() {
 }
 
 </script>
-
-<style>
-.el-row {
-    margin-bottom: 20px;
-}
-</style>

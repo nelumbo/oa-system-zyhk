@@ -106,7 +106,7 @@
 
 <script setup>
 import { ref, reactive, onBeforeMount } from 'vue'
-import { addOffice, editOffice, queryOffice, queryOffices } from "@/api/office"
+import { addOffice, editOffice, queryOffices } from "@/api/office"
 import { queryAllRole } from '@/api/role'
 import { message, messageForCRUD } from '@/components/divMessage/index'
 import { reg_money } from '@/utils/regex'
@@ -238,14 +238,10 @@ const base = reactive({
                 edit.roles = res.data
             }
         })
-        queryOffice(row.id).then((res) => {
-            if (res.status == 1) {
-                edit.model = res.data
-                if (edit.model.roleID == 0) {
-                    edit.model.roleID = null
-                }
-            }
-        })
+        edit.model = row
+        if (edit.model.roleID == 0) {
+            edit.model.roleID = null
+        }
         edit.dialogVisible = true
     },
     openDelDialog: (index, row) => {

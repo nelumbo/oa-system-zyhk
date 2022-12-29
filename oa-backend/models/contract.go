@@ -5,6 +5,7 @@ import (
 	"oa-backend/utils/msg"
 	"strconv"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -46,18 +47,22 @@ type Contract struct {
 	Remarks               string  `gorm:"type:varchar(300);comment:备注" json:"remarks"`
 	ProductionStatus      int     `gorm:"type:int;comment:生产状态(1:生产中 2:生产完成)" json:"productionStatus"`
 	CollectionStatus      int     `gorm:"type:int;comment:回款状态(1:回款中 2:回款完成)" json:"collectionStatus"`
-	Status                int     `gorm:"type:int;comment:状态(-1:审批驳回 0:暂存 1:待审批 2:未完成 3:已完成);not null" json:"status"`
+	Status                int     `gorm:"type:int;comment:状态(-1:审批驳回 0:暂存 1:待审批 2:未完成 3:已完成)" json:"status"`
 	AuditorID             int     `gorm:"type:int;comment:审核员ID;default:(-)" json:"auditorID"`
 	CreateDate            XDate   `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
+	AuditDate             XDate   `gorm:"type:date;comment:审核日期;default:(-)" json:"auditDate"`
 
 	Region   Region    `gorm:"foreignKey:RegionID" json:"region"`
 	Office   Office    `gorm:"foreignKey:OfficeID" json:"office"`
 	Employee Employee  `gorm:"foreignKey:EmployeeID" json:"employee"`
 	Customer Customer  `gorm:"foreignKey:CustomerID" json:"customer"`
 	Vendor   Vendor    `gorm:"foreignKey:VendorID" json:"verdor"`
+	Auditor  Employee  `gorm:"foreignKey:AuditorID" json:"auditor"`
 	Tasks    []Task    `json:"tasks"`
 	Invoices []Invoice `json:"invoices"`
 	Payments []Payment `json:"payments"`
+
+	IsPass bool `gorm:"-" json:"isPass"`
 }
 
 type Task struct {
@@ -100,6 +105,9 @@ type Task struct {
 	InventoryRealEndDate  XDate   `gorm:"type:date;comment:仓库实际提交工作日期;default:(-)" json:"inventoryRealEndDate"`
 	ShipmentStartDate     XDate   `gorm:"type:date;comment:物流接到工作日期;default:(-)" json:"shipmentStartDate"`
 	ShipmentRealEndDate   XDate   `gorm:"type:date;comment:物流实际提交工作日期;default:(-)" json:"shipmentRealEndDate"`
+	AuditorID             int     `gorm:"type:int;comment:审核员ID;default:(-)" json:"auditorID"`
+	CreateDate            XDate   `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
+	AuditDate             XDate   `gorm:"type:date;comment:审核日期;default:(-)" json:"auditDate"`
 
 	Contract      Contract `gorm:"foreignKey:ContractID" json:"contract"`
 	Product       Product  `gorm:"foreignKey:ProductID" json:"product"`
@@ -107,6 +115,9 @@ type Task struct {
 	PurchaseMan   Employee `gorm:"foreignKey:PurchaseManID" json:"purchaseMan"`
 	InventoryMan  Employee `gorm:"foreignKey:InventoryManID" json:"inventoryMan"`
 	ShipmentMan   Employee `gorm:"foreignKey:ShipmentManID" json:"shipmentMan"`
+	Auditor       Employee `gorm:"foreignKey:AuditorID" json:"auditor"`
+
+	IsPass bool `gorm:"-" json:"isPass"`
 }
 
 type Invoice struct {
@@ -150,100 +161,95 @@ type Payment struct {
 	Employee Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
 }
 
-func CreateNo(contract *Contract) (no string) {
-	office, _ := SelectOffice(contract.OfficeID)
-	employee, _ := SelectEmployee(contract.EmployeeID)
-	employeeCount := strconv.Itoa(employee.ContractCount + 1)
-	if len(employeeCount) == 1 {
-		employeeCount = "00" + employeeCount
-	} else if len(employeeCount) == 2 {
-		employeeCount = "0" + employeeCount
+func createNo(contract *Contract) (no string, code int) {
+	var office Office
+	var employee Employee
+
+	_ = GeneralSelect(&office, contract.OfficeID, nil)
+	_ = GeneralSelect(&employee, contract.EmployeeID, nil)
+
+	if office.ID != 0 && employee.ID != 0 {
+		employeeCount := strconv.Itoa(employee.ContractCount + 1)
+		if len(employeeCount) == 1 {
+			employeeCount = "00" + employeeCount
+		} else if len(employeeCount) == 2 {
+			employeeCount = "0" + employeeCount
+		}
+		no = "Bjscistar" + strings.ReplaceAll(contract.CreateDate.Format("2006-01-02"), "-", "") + "-" + office.Number + employee.Number + employeeCount
+		code = msg.SUCCESS
+	} else {
+		code = msg.ERROR
 	}
-	no = "Bjscistar" + strings.ReplaceAll(contract.CreateDate.Format("2006-01-02"), "-", "") + "-" + office.Number + employee.Number + employeeCount
 	return
 }
 
-func DeleteContract(id int) (code int) {
-	err := db.Model(&Contract{ID: id}).Where("is_delete = ? AND status = ?", false, -1).Update("is_delete", true).Error
-	if err != nil {
-		return msg.ERROR
-	}
-	return msg.SUCCESS
-}
+func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code int) {
+	if contractBak.IsPass {
+		var no string
+		no, code = createNo(contractBak)
+		if code == msg.SUCCESS {
+			maps["no"] = no
+			maps["status"] = magic.CONTRACT_STATUS_NOT_FINISH
+			maps["production_status"] = magic.CONTATCT_PRODUCTION_STATUS_ING
+			maps["collection_status"] = magic.CONTATCT_COLLECTION_STATUS_ING
 
-func ApproveContract(id int, status int, employeeID int) (code int) {
-	var maps = make(map[string]interface{})
-	if status == magic.CONTRACT_STATUS_UNFINISHED {
-		maps["status"] = status
-		maps["auditor_id"] = employeeID
-		maps["production_status"] = magic.CONTATCT_PRODUCTION_STATUS_ING
-		maps["collection_status"] = magic.CONTATCT_COLLECTION_STATUS_ING
-
-		err = db.Transaction(func(tx *gorm.DB) error {
-			var contract Contract
-
-			if tErr := tx.Preload("Tasks").Where("is_delete = ?", false).First(&contract, id).Error; tErr != nil {
-				return tErr
-			}
-			maps["No"] = CreateNo(&contract)
-			//业务员累计合同数目+1
-			if tErr := tx.Exec("UPDATE employee SET contract_count = contract_count + 1 WHERE id = ?", contract.EmployeeID).Error; tErr != nil {
-				return tErr
-			}
-			//修改合同基本属性
-			if tErr := tx.Model(&Contract{ID: id}).Updates(maps).Error; tErr != nil {
-				return tErr
-			}
-			//产品可售库存减少
-			for i := range contract.Tasks {
-				if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", contract.Tasks[i].Number, contract.Tasks[i].ProductID).Error; tErr != nil {
+			err = db.Transaction(func(tx *gorm.DB) error {
+				var contract Contract
+				if tErr := tx.Preload("Tasks").Where("is_delete = ?", false).First(&contract, contractBak.ID).Error; tErr != nil {
 					return tErr
 				}
-			}
-			//修改合同产品任务的开始时间
-			t := GetNowXDateString()
-			if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", id, 1).Update("inventory_start_date", t).Error; tErr != nil {
-				return tErr
-			}
-			if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", id, 2).Update("purchase_start_date", t).Error; tErr != nil {
-				return tErr
-			}
-			if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", id, 3).Update("technician_start_date", t).Error; tErr != nil {
-				return tErr
-			}
-			return nil
-		})
-	} else if status == magic.CONTRACT_STATUS_REJECT {
-		maps["status"] = status
-		maps["auditor_id"] = employeeID
+				//业务员累计合同数目+1
+				if tErr := tx.Exec("UPDATE employee SET contract_count = contract_count + 1 WHERE id = ?", contract.EmployeeID).Error; tErr != nil {
+					return tErr
+				}
+				//更新合同信息
+				if tErr := tx.Model(&Contract{ID: contractBak.ID}).Updates(maps).Error; tErr != nil {
+					return tErr
+				}
+				//产品可售库存减少
+				for i := range contract.Tasks {
+					if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", contract.Tasks[i].Number, contract.Tasks[i].ProductID).Error; tErr != nil {
+						return tErr
+					}
+				}
+				//修改合同产品任务的开始时间
+				t := time.Now().Format("2006-01-02")
+				if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", contractBak.ID, magic.TASK_TYPE_1).Update("inventory_start_date", t).Error; tErr != nil {
+					return tErr
+				}
+				if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", contractBak.ID, magic.TASK_TYPE_2).Update("purchase_start_date", t).Error; tErr != nil {
+					return tErr
+				}
+				if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", contractBak.ID, magic.TASK_TYPE_3).Update("technician_start_date", t).Error; tErr != nil {
+					return tErr
+				}
+				return nil
+			})
+		} else {
+			return
+		}
+	} else {
+		maps["status"] = magic.CONTRACT_STATUS_REJECT
 		err = db.Transaction(func(tx *gorm.DB) error {
 			//更新合同信息
-			if tErr := tx.Model(&Contract{ID: id}).Updates(maps).Error; tErr != nil {
+			if tErr := tx.Model(&Contract{ID: contractBak.ID}).Updates(maps).Error; tErr != nil {
 				return tErr
 			}
 			//删除子任务
-			if tErr := tx.Model(&Task{ContractID: id}).Update("is_delete", true).Error; tErr != nil {
+			if tErr := tx.Model(&Task{ContractID: contractBak.ID}).Update("is_delete", true).Error; tErr != nil {
 				return tErr
 			}
 			return nil
 		})
 	}
-	if err != nil {
-		code = msg.ERROR
-	} else {
-		code = msg.SUCCESS
-	}
-	return code
+	return
 }
 
-func RejectContract(id int, employeeID int) (code int) {
+// employeeID 记录用
+func RejectContract(contract *Contract, employeeID int) (code int) {
 	err = db.Transaction(func(tx *gorm.DB) error {
-		var contract Contract
 		var payments []Payment
-		if tErr := tx.First(&contract, id).Error; tErr != nil {
-			return tErr
-		}
-		if tErr := tx.Preload("Task.Product.Attribute.Type").Where("contract_id = ?", id).Find(&payments).Error; tErr != nil {
+		if tErr := tx.Preload("Tasks.Product.Type").Where("contract_id = ?", contract.ID).Find(&payments).Error; tErr != nil {
 			return tErr
 		}
 		//回款记录统计
@@ -251,13 +257,16 @@ func RejectContract(id int, employeeID int) (code int) {
 		if contract.IsPreDeposit {
 			for k := range payments {
 				if payments[k].TaskID != 0 {
+					//预付款自动生成的分成利润
 					tempMoney += payments[k].PushMoney * 0.5
-					tempMoneyCold += (payments[k].PushMoney - payments[k].PushMoney*0.5)
+					tempMoneyCold += payments[k].PushMoney - payments[k].PushMoney*0.5
 					tempBusinessMoney += payments[k].BusinessMoney
+					//产品类型是否计算任务量
 					if !payments[k].Task.Product.Type.IsTaskLoad {
 						tempTargetLoad -= payments[k].Money
 					}
 				} else {
+					//预付款任务量
 					tempTargetLoad += payments[k].Money
 				}
 			}
@@ -266,6 +275,7 @@ func RejectContract(id int, employeeID int) (code int) {
 				tempMoney += payments[k].PushMoney * 0.5
 				tempMoneyCold += payments[k].PushMoney - payments[k].PushMoney*0.5
 				tempBusinessMoney += payments[k].BusinessMoney
+				//产品类型是否计算任务量
 				if payments[k].Task.Product.Type.IsTaskLoad {
 					tempTargetLoad += payments[k].Money
 				}
@@ -278,20 +288,23 @@ func RejectContract(id int, employeeID int) (code int) {
 		if tErr := tx.Exec("UPDATE office SET target_load = target_load - ?,money = money - ?, money_cold = money_cold - ?, business_money = business_money - ? WHERE id = ?", tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney, contract.OfficeID).Error; tErr != nil {
 			return tErr
 		}
+
 		//合同状态变更为驳回
-		if tErr := tx.Model(&Contract{ID: id}).Update("status", -1).Error; tErr != nil {
+		if tErr := tx.Model(&Contract{ID: contract.ID}).Update("status", magic.CONTRACT_STATUS_REJECT).Error; tErr != nil {
 			return tErr
 		}
+
 		//删除任务，回款记录，支票
-		if tErr := tx.Model(&Task{ContractID: id}).Update("is_delete", true).Error; tErr != nil {
+		if tErr := tx.Model(&Task{ContractID: contract.ID}).Update("is_delete", true).Error; tErr != nil {
 			return tErr
 		}
-		if tErr := tx.Delete(&Payment{ContractID: id}).Update("is_delete", true).Error; tErr != nil {
+		if tErr := tx.Delete(&Payment{ContractID: contract.ID}).Update("is_delete", true).Error; tErr != nil {
 			return tErr
 		}
-		if tErr := tx.Model(&Invoice{ContractID: id}).Update("is_delete", true).Error; tErr != nil {
+		if tErr := tx.Model(&Invoice{ContractID: contract.ID}).Update("is_delete", true).Error; tErr != nil {
 			return tErr
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -306,7 +319,8 @@ func SelectContract(id int) (contract Contract, code int) {
 		Preload("Tasks.TechnicianMan").Preload("Tasks.PurchaseMan").
 		Preload("Tasks.InventoryMan").Preload("Tasks.ShipmentMan").
 		Preload("Invoices.Employee").Preload("Payments.Employee").
-		Where(&contract, id)
+		Where("contract.is_delete = ?", false).
+		First(&contract, id)
 	if contract.ID == 0 {
 		return Contract{}, msg.FAIL
 	}
@@ -329,38 +343,29 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 	return contracts, msg.SUCCESS
 }
 
-func InsertTask(task *Task) (code int) {
-	var contract Contract
-	db.First(&contract, task.ContractID)
-	//预存款合同添加任务
-	if contract.IsPreDeposit {
-		if contract.PreDeposit >= task.TotalPrice {
-			err = db.Transaction(func(tdb *gorm.DB) error {
-				//创建任务
-				if tErr := tdb.Create(&task).Error; tErr != nil {
-					return tErr
-				}
-				//减去合同预存款并加上合同总金额
-				if tErr := tdb.Exec("UPDATE contract SET pre_deposit = pre_deposit - ? WHERE id = ?", task.TotalPrice, contract.ID).Error; tErr != nil {
-					return tErr
-				}
-				return nil
-			})
-		} else {
-			return msg.FAIL
+// 预存款合同添加任务
+func InsertTask(contract *Contract, task *Task) (code int) {
+	err = db.Transaction(func(tdb *gorm.DB) error {
+		//创建任务
+		if tErr := tdb.Create(&task).Error; tErr != nil {
+			return tErr
 		}
-	} else {
-		return msg.ERROR
-	}
+		//减去合同预存款并加上合同总金额
+		if tErr := tdb.Exec("UPDATE contract SET pre_deposit = pre_deposit - ? WHERE id = ?", task.TotalPrice, contract.ID).Error; tErr != nil {
+			return tErr
+		}
+		return nil
+	})
 	if err != nil {
 		return msg.ERROR
 	}
 	return msg.SUCCESS
 }
 
-// func ApproveTask()(code int){
-
-// }
+func ApproveTask(task *Task, employeeID int) (code int) {
+	//TODO
+	return
+}
 
 func SelectInvoices(invoiceQuery *Invoice) (invoices []Invoice, code int) {
 	err = db.Where("is_delete = ?", false).Where("contract_id = ?", invoiceQuery.ContractID).Find(&invoices).Error

@@ -13,7 +13,6 @@ func AddProduct(c *gin.Context) {
 	var product models.Product
 	_ = c.ShouldBindJSON(&product)
 
-	// code = models.GeneralInsert(&product)
 	code = models.InsertProduct(&product)
 	msg.Message(c, code, nil)
 }

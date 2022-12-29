@@ -10,9 +10,6 @@
             <el-col :span="1">
                 <el-button type="primary" @click="base.query">查询</el-button>
             </el-col>
-            <el-col :span="1">
-                <el-button type="success" @click="base.openAddDialog">发起</el-button>
-            </el-col>
         </el-row>
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
