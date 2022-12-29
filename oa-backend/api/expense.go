@@ -44,9 +44,35 @@ func AddExpense(c *gin.Context) {
 }
 
 func DelExpense(c *gin.Context) {
+	var expenseBak models.Expense
 	id, err := strconv.Atoi(c.Param("id"))
 	if err == nil {
-		code = models.DeleteExpense(id, c.MustGet("employeeID").(int))
+		code = models.GeneralSelect(&expenseBak, id, nil)
+		if code == msg.SUCCESS && expenseBak.EmployeeID == c.MustGet("employeeID").(int) &&
+			(expenseBak.Status == magic.EXPENSE_STATUS_FAIL || expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_1) {
+			code = models.GeneralDelete(&models.Expense{}, id)
+		} else {
+			code = msg.FAIL
+		}
+	} else {
+		code = msg.ERROR
+	}
+	msg.Message(c, code, nil)
+}
+
+func EditExpense(c *gin.Context) {
+	var expense, expenseBak models.Expense
+	_ = c.ShouldBindJSON(&expense)
+	code = models.GeneralSelect(&expenseBak, expense.ID, nil)
+
+	if code == msg.SUCCESS && expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_1 &&
+		expenseBak.EmployeeID == c.MustGet("employeeID").(int) {
+		var maps = make(map[string]interface{})
+		maps["create_date"] = time.Now()
+		maps["type"] = expense.Type
+		maps["amount"] = expense.Amount
+		maps["text"] = expense.Text
+		code = models.GeneralUpdate(&models.Expense{}, expense.ID, maps)
 	} else {
 		code = msg.ERROR
 	}
@@ -99,17 +125,6 @@ func ApprovalExpense(c *gin.Context) {
 		code = msg.FAIL
 	}
 	msg.Message(c, code, nil)
-}
-
-func QueryExpense(c *gin.Context) {
-	var expense models.Expense
-	id, err := strconv.Atoi(c.Param("id"))
-	if err == nil {
-		expense, code = models.SelectExpense(id)
-	} else {
-		code = msg.ERROR
-	}
-	msg.Message(c, code, expense)
 }
 
 func QueryExpenses(c *gin.Context) {

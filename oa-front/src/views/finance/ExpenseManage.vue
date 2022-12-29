@@ -26,7 +26,7 @@
                 <el-button type="primary" @click="base.query">查询</el-button>
             </el-col>
         </el-row>
-        <el-row :gutter="20">
+        <el-row :gutter="20" style="margin-top: 5px;">
             <el-col :span="5" :offset="1">
                 <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
             </el-col>
@@ -120,22 +120,11 @@
 <script setup>
 import { computed, reactive, onBeforeMount } from 'vue'
 import { expenseTypeItems, expenseStatusItems } from '@/utils/magic'
-import { approveExpense, queryExpense, queryExpenses } from "@/api/expense"
+import { approveExpense, queryExpenses } from "@/api/expense"
 import { queryAllOffice } from "@/api/office";
 import { message } from '@/components/divMessage/index'
 
 import divTable from '../../components/divTable/index.vue'
-
-const typeString = computed(() => {
-    var temp = "";
-    expenseTypeItems.some((item) => {
-        if (item.value == approve.model.type) {
-            temp = item.label;
-            return;
-        }
-    });
-    return temp;
-})
 
 const base = reactive({
     offices: [],
@@ -274,19 +263,11 @@ const base = reactive({
         base.query()
     },
     openViewDialog: (index, row) => {
-        queryExpense(row.id).then((res) => {
-            if (res.status == 1) {
-                view.model = res.data
-            }
-        })
+        view.model = row
         view.dialogVisible = true
     },
     openApproveDialog: (index, row) => {
-        queryExpense(row.id).then((res) => {
-            if (res.status == 1) {
-                approve.model = res.data
-            }
-        })
+        approve.model = row
         approve.dialogVisible = true
     },
     typeToString: (type) => {

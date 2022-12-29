@@ -23,9 +23,16 @@ func AddBidbond(c *gin.Context) {
 }
 
 func DelBidbond(c *gin.Context) {
+	var bidbondBak models.Bidbond
 	id, err := strconv.Atoi(c.Param("id"))
 	if err == nil {
-		code = models.DeleteBidbond(id, c.MustGet("employeeID").(int))
+		code = models.GeneralSelect(&bidbondBak, id, nil)
+		if code == msg.SUCCESS && bidbondBak.EmployeeID == c.MustGet("employeeID").(int) &&
+			(bidbondBak.Status == magic.BIDBOND_STATUS_FAIL || bidbondBak.Status == magic.BIDBOND_STATUS_NOT_APPROVAL) {
+			code = models.GeneralDelete(&models.Bidbond{}, id)
+		} else {
+			code = msg.FAIL
+		}
 	} else {
 		code = msg.ERROR
 	}

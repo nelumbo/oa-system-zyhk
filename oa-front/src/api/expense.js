@@ -17,16 +17,9 @@ export const delExpense = (id) => {
 
 export const approveExpense = (expense) => {
     return request({
-        url: '/expense',
+        url: '/expense/approve',
         method: 'PUT',
         data: expense
-    })
-}
-
-export const queryExpense = (id) => {
-    return request({
-        url: '/expense/' + id,
-        method: 'GET',
     })
 }
 

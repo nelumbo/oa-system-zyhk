@@ -27,16 +27,6 @@ type Bidbond struct {
 	IsPass bool `gorm:"-" json:"isPass"`
 }
 
-func DeleteBidbond(id int, employeeID int) (code int) {
-	err = db.Model(&Bidbond{ID: id}).
-		Where(map[string]interface{}{"employee_id": employeeID, "status": -1}).
-		Update("is_delete", true).Error
-	if err != nil {
-		return msg.ERROR
-	}
-	return msg.SUCCESS
-}
-
 func SelectBidbond(id int) (bidbond Bidbond, code int) {
 	db.Preload("Employee").Preload("Auditor").Preload("Finalce").
 		Where("is_delete = ?", false).

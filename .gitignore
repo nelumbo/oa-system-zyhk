@@ -4,6 +4,8 @@
 /oa-front/dist
 
 #backend
+/oa-backend/.vscode
 /oa-backend/config/config_bak.yaml
 /oa-backend/main
 /oa-backend/log
+/oa-backend/__debug_bin.exe

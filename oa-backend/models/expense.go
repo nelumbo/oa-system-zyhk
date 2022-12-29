@@ -37,16 +37,6 @@ type Expense struct {
 	EndDate   string `gorm:"-" json:"endDate"`
 }
 
-func DeleteExpense(id int, employeeID int) (code int) {
-	err = db.Model(&Expense{ID: id}).
-		Where(map[string]interface{}{"employee_id": employeeID, "status": -1}).
-		Update("is_delete", true).Error
-	if err != nil {
-		return msg.ERROR
-	}
-	return msg.SUCCESS
-}
-
 func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interface{}) (code int) {
 
 	if expense.Type == magic.EXPENSE_TYPE_CaiLvFei {
@@ -123,16 +113,6 @@ func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interf
 		return msg.ERROR
 	}
 	return msg.SUCCESS
-}
-
-func SelectExpense(id int) (expense Expense, code int) {
-	db.Preload("Employee.Office").Preload("Approver").Preload("Finance").Preload("Cashier").
-		Where("is_delete = ?", false).
-		First(&expense, id)
-	if expense.ID == 0 {
-		return Expense{}, msg.FAIL
-	}
-	return expense, msg.SUCCESS
 }
 
 func SelectExpenses(expenseQuery *Expense, xForms *XForms) (expenses []Expense, code int) {

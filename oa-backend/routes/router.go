@@ -89,8 +89,8 @@ func Init() {
 
 		tRouter.POST("expense", api.AddExpense)
 		tRouter.DELETE("expense/:id", api.DelExpense)
-		tRouter.PUT("expense", api.ApprovalExpense)
-		tRouter.GET("expense/:id", api.QueryExpense)
+		tRouter.PUT("expense", api.EditExpense)
+		tRouter.PUT("expense/approve", api.ApprovalExpense)
 		tRouter.POST("expenses", api.QueryExpenses)
 
 		tRouter.POST("bidbond", api.AddBidbond)

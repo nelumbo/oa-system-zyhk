@@ -157,6 +157,9 @@ const base = reactive({
                             if (row.status == -1) {
                                 return true
                             }
+                            if (row.status == 1) {
+                                return true
+                            }
                             return false
                         },
                         label: "删除",
