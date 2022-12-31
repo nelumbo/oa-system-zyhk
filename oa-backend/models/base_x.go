@@ -59,17 +59,14 @@ func (t *XTime) Scan(v interface{}) error {
 	return fmt.Errorf("can not convert %v to timestamp", v)
 }
 
-func (t *XDate) UnmarshalJSON(data []byte) error {
-	if len(data) == 2 || string(data) == "null" {
-		return nil
-	}
-	var err error
-	str := string(data)
-	timeStr := strings.Trim(str, "\"")
-	t1, err := time.Parse("2006-01-02", timeStr)
-	*t = XDate{t1}
-	return err
-}
+// func (t *XDate) UnmarshalJSON(data []byte) error {
+// 	var err error
+// 	str := string(data)
+// 	timeStr := strings.Trim(str, "\"")
+// 	t1, err := time.Parse("2006-01-02", timeStr)
+// 	*t = XDate{t1}
+// 	return err
+// }
 
 func (t XDate) MarshalJSON() ([]byte, error) {
 	if t.IsZero() {
@@ -95,11 +92,3 @@ func (t *XDate) Scan(v interface{}) error {
 	}
 	return fmt.Errorf("can not convert %v to timestamp", v)
 }
-
-func GetNowXDateString() string {
-	return time.Now().Format("2006-01-02")
-}
-
-// func getNowXTime() string {
-// 	return time.Now().Format("2006-01-02 15:04:05")
-// }

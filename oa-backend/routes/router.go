@@ -28,6 +28,8 @@ func Init() {
 		tRouter.POST("my/bidbonds", api.QueryMyBidbonds)
 		tRouter.POST("my/predesigns", api.QueryMyPredesigns)
 		tRouter.POST("my/predesignTasks", api.QueryMyPredesignTasks)
+		tRouter.POST("my/contracts", api.QueryMyContracts)
+		tRouter.POST("my/contracts/save", api.QueryMySaveContracts)
 
 		tRouter.POST("employee", api.AddEmployee)
 		tRouter.DELETE("employee/:id", api.DelEmployee)
@@ -111,6 +113,26 @@ func Init() {
 		tRouter.PUT("predesignTask/submit", api.SubmitPredesignTask)
 		tRouter.PUT("predesignTask/approve", api.ApprovePredesignTask)
 		tRouter.POST("predesignTasks", api.QueryPredesignTasks)
+
+		tRouter.POST("contract/save", api.SaveContract)
+		tRouter.POST("contract", api.AddContract)
+		tRouter.DELETE("contract/:id", api.DelContract)
+		tRouter.PUT("contract/approve", api.ApproveContract)
+		tRouter.PUT("contract/reject", api.RejectContract)
+		tRouter.GET("contract/:id", api.QueryContract)
+		tRouter.POST("contracts", api.QueryContracts)
+
+		tRouter.POST("task", api.AddTask)
+		tRouter.PUT("task/distribute", api.DistributeTask)
+		tRouter.PUT("task/next", api.NextTask)
+		tRouter.PUT("task/reject", api.RejectTask)
+
+		tRouter.POST("payment", api.AddPayment)
+		tRouter.PUT("payment", api.EditPayment)
+
+		tRouter.POST("invoice", api.AddInvoice)
+		tRouter.DELETE("invoice/:id", api.DelInvoice)
+		tRouter.PUT("invoice", api.EditInvoice)
 	}
 
 	_ = r.Run(config.SystemConfig.Server.Port)

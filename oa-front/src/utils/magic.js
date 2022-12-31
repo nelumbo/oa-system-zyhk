@@ -57,6 +57,17 @@ export const payTypeItems = [
 
 export const isSpecialItems = [
     {
+        value: true,
+        label: '是',
+    },
+    {
+        value: false,
+        label: '否',
+    },
+]
+
+export const boolItems = [
+    {
         value: 1,
         label: '是',
     },
@@ -68,11 +79,11 @@ export const isSpecialItems = [
 
 export const isPreDepositItems = [
     {
-        value: 1,
+        value: true,
         label: '是',
     },
     {
-        value: 2,
+        value: false,
         label: '否',
     },
 ]

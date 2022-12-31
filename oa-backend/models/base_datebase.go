@@ -49,6 +49,8 @@ func initDB() {
 		&Customer{},
 		&Contract{},
 		&Task{},
+		&Payment{},
+		&Invoice{},
 
 		&Expense{},
 		&Bidbond{},

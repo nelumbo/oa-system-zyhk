@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-row :gutter="10">
+        <el-row :gutter="20">
             <el-col :span="6" :offset="2">
                 <el-select v-model="base.model.officeID" placeholder="办事处" clearable style="width: 100%;">
                     <el-option v-for="item in base.offices" :key="item.id" :label="item.name" :value="item.id" />

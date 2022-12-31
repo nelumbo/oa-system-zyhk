@@ -18,6 +18,10 @@ func SaveContract(c *gin.Context) {
 
 	contract.EmployeeID = c.MustGet("employeeID").(int)
 	contract.Status = magic.CONTRACT_STATUS_SAVE
+	contract.CreateDate.Time = time.Now()
+	contract.TotalAmount = 0
+	contract.Tasks = nil
+
 	code = models.GeneralInsert(&contract)
 
 	msg.Message(c, code, nil)
@@ -50,7 +54,9 @@ func DelContract(c *gin.Context) {
 	if err == nil {
 		code = models.GeneralSelect(&contractBak, id, nil)
 		if code == msg.SUCCESS && contractBak.EmployeeID == c.MustGet("employeeID").(int) &&
-			(contractBak.Status == magic.CONTRACT_STATUS_REJECT || contractBak.Status == magic.CONTRACT_STATUS_NOT_APPROVAL) {
+			(contractBak.Status == magic.CONTRACT_STATUS_REJECT ||
+				contractBak.Status == magic.CONTRACT_STATUS_SAVE ||
+				contractBak.Status == magic.CONTRACT_STATUS_NOT_APPROVAL) {
 			code = models.GeneralDelete(&models.Contract{}, id)
 		} else {
 			code = msg.FAIL

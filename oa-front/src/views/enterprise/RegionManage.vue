@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-row :gutter="10">
+        <el-row :gutter="20">
             <el-col :span="6" :offset="8">
                 <el-input v-model="base.model.name" placeholder="名称" clearable maxlength="25" />
             </el-col>

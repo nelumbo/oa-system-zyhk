@@ -14,6 +14,7 @@ import (
 func AddBidbond(c *gin.Context) {
 	var bidbond models.Bidbond
 	_ = c.ShouldBindJSON(&bidbond)
+
 	bidbond.EmployeeID = c.MustGet("employeeID").(int)
 	bidbond.CreateDate.Time = time.Now()
 	bidbond.Status = magic.BIDBOND_STATUS_NOT_APPROVAL

@@ -1,16 +1,16 @@
 <template>
     <div>
-        <el-row :gutter="10">
+        <el-row :gutter="20">
             <el-col :span="6" :offset="2">
                 <el-select v-model="base.model.typeID" placeholder="类型" clearable style="width: 100%;">
                     <el-option v-for="item in base.productTypes" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
             </el-col>
             <el-col :span="6">
-                <el-input v-model="base.model.name" placeholder="产品名称" />
+                <el-input v-model="base.model.name" placeholder="产品名称" clearable maxlength="25" />
             </el-col>
             <el-col :span="6">
-                <el-input v-model="base.model.specification" placeholder="规格" />
+                <el-input v-model="base.model.specification" placeholder="规格" clearable maxlength="25" />
             </el-col>
             <el-col :span="1">
                 <el-button type="primary" @click="base.query">查询</el-button>
@@ -93,7 +93,7 @@
         </el-dialog>
 
         <el-dialog v-model="addDLC.dialogVisible" title="供应商选择" width="50%" :show-close="false">
-            <el-row :gutter="10">
+            <el-row :gutter="20">
                 <el-col :span="6" :offset="2">
                     <el-input v-model="addDLC.model.name" placeholder="供应商名称" clearable maxlength="25" />
                 </el-col>
@@ -107,8 +107,8 @@
                     <el-button type="primary" @click="addDLC.query">查询</el-button>
                 </el-col>
             </el-row>
-            <divSelectTable :queryObj="addDLC.model" :queryFunc="querySuppliers" :selectObj="add.model.suppliers"
-                ref="supplierSelect"></divSelectTable>
+            <divSelectTable :queryObj="addDLC.model" :queryFunc="querySuppliers" :arrayObj="add.model.suppliers"
+                :headers="addDLC.headers" ref="supplierSelect"></divSelectTable>
             <el-row>
                 <el-col :span="24">
                     <h3>已选择：</h3>
@@ -228,7 +228,7 @@
         </el-dialog>
 
         <el-dialog v-model="editDLC.dialogVisible" title="供应商选择" width="50%" :show-close="false">
-            <el-row :gutter="10">
+            <el-row :gutter="20">
                 <el-col :span="6" :offset="2">
                     <el-input v-model="editDLC.model.name" placeholder="供应商名称" clearable maxlength="25" />
                 </el-col>
@@ -242,8 +242,8 @@
                     <el-button type="primary" @click="editDLC.query">查询</el-button>
                 </el-col>
             </el-row>
-            <divSelectTable :queryObj="editDLC.model" :queryFunc="querySuppliers" :selectObj="edit.model.suppliers"
-                ref="supplierSelect"></divSelectTable>
+            <divSelectTable :queryObj="editDLC.model" :queryFunc="querySuppliers" :arrayObj="edit.model.suppliers"
+                :headers="editDLC.headers" ref="supplierSelect"></divSelectTable>
             <el-row>
                 <el-col :span="24">
                     <h3>已选择：</h3>
@@ -479,7 +479,7 @@ const base = reactive({
         })
         edit.baseDialogVisible = true
     },
-    openEditDLCDialog: (index, row) => {
+    openEditDLCDialog: () => {
         editDLC.dialogVisible = true
     },
     openEditMoneyDialog: (index, row) => {
@@ -555,6 +555,12 @@ const add = reactive({
 
 const addDLC = reactive({
     dialogVisible: false,
+    headers: [
+        {
+            prop: "name",
+            label: "名称",
+        },
+    ],
     model: {
         name: "",
         linkman: "",
@@ -703,6 +709,12 @@ const edit = reactive({
 
 const editDLC = reactive({
     dialogVisible: false,
+    headers: [
+        {
+            prop: "name",
+            label: "名称",
+        },
+    ],
     model: {
         name: "",
         linkman: "",

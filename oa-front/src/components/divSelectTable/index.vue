@@ -10,13 +10,24 @@ import { ref, reactive, onBeforeMount } from 'vue'
 import divTable from '@/components/divTable/index.vue'
 
 const props = defineProps({
+    isRadio: {
+        type: Boolean,
+        default: false,
+    },
     queryObj: {
         type: Object
     },
     queryFunc: {
         type: Function
     },
-    selectObj: {
+    arrayObj: {
+        type: Array,
+        default: []
+    },
+    chooseFunc: {
+        type: Function
+    },
+    headers: {
         type: Array,
         default: []
     }
@@ -27,16 +38,22 @@ const base = reactive({
         highlightCurrentRow: true,
         headers: [
             {
-                prop: "name",
-                label: "名称",
-            },
-            {
                 type: "operation",
                 label: "操作",
                 operations: [
                     {
                         isShow: (index, row) => {
-                            return !props.selectObj.some(item => item.id == row.id)
+                            return props.isRadio
+                        },
+                        label: "选择",
+                        type: "success",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => props.chooseFunc(index, row)
+                    },
+                    {
+                        isShow: (index, row) => {
+                            return !props.isRadio && !props.arrayObj.some(item => item.id == row.id)
                         },
                         label: "添加",
                         type: "success",
@@ -46,7 +63,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return props.selectObj.some(item => item.id == row.id)
+                            return !props.isRadio && props.arrayObj.some(item => item.id == row.id)
                         },
                         label: "移除",
                         type: "danger",
@@ -86,12 +103,12 @@ const base = reactive({
         base.query()
     },
     select: (index, row) => {
-        if (!(props.selectObj.some(item => item.id == row.id))) {
-            props.selectObj.push(row)
+        if (!(props.arrayObj.some(item => item.id == row.id))) {
+            props.arrayObj.push(row)
         }
     },
     remove: (index, row) => {
-        props.selectObj.forEach((item, index, array) => {
+        props.arrayObj.forEach((item, index, array) => {
             if (item.id == row.id) {
                 array.splice(index, 1)
             }
@@ -99,6 +116,7 @@ const base = reactive({
     }
 })
 onBeforeMount(() => {
+    base.column.headers.unshift.apply(base.column.headers,props.headers)
     base.query()
 })
 

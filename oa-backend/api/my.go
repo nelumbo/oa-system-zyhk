@@ -59,3 +59,20 @@ func QueryMyPredesignTasks(c *gin.Context) {
 	xForms.Data, code = models.SelectPredesignTasks(&predesignTaskQuery, &xForms)
 	msg.Message(c, code, xForms)
 }
+
+func QueryMyContracts(c *gin.Context) {
+	var contactQuery models.Contract
+	_ = c.ShouldBindJSON(&contactQuery)
+	contactQuery.EmployeeID = c.MustGet("employeeID").(int)
+
+	xForms := ginUtil.GinArrayPreprocessing(c)
+
+	xForms.Data, code = models.SelectContracts(&contactQuery, &xForms)
+	msg.Message(c, code, xForms)
+}
+
+func QueryMySaveContracts(c *gin.Context) {
+	xForms := ginUtil.GinArrayPreprocessing(c)
+	xForms.Data, code = models.SelectMySaveContracts(c.MustGet("employeeID").(int), &xForms)
+	msg.Message(c, code, xForms)
+}

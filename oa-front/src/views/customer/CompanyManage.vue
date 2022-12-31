@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-row :gutter="10">
+        <el-row :gutter="20">
             <el-col :span="6" :offset="5">
                 <el-select v-model="base.model.regionID" placeholder="区域" clearable style="width: 100%;">
                     <el-option v-for="item in base.regions" :key="item.id" :label="item.name" :value="item.id" />

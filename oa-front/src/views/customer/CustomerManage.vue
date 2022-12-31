@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-row :gutter="10">
+        <el-row :gutter="20">
             <el-col :span="4" :offset="3">
                 <el-select v-model="base.model.customerCompany.regionID" placeholder="区域" clearable
                     style="width: 100%;">

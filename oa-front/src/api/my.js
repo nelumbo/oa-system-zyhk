@@ -54,3 +54,27 @@ export const queryMyPredesignTasks = (model, pageData) => {
         }
     })
 }
+
+export const queryMyContracts = (model, pageData) => {
+    return request({
+        url: '/my/contracts',
+        method: 'POST',
+        data: model,
+        params: {
+            "pageSize": pageData.pageSize,
+            "pageNo": pageData.pageNo,
+        }
+    })
+}
+
+export const queryMySaveContracts = (model, pageData) => {
+    return request({
+        url: '/my/contracts/save',
+        method: 'POST',
+        data: model,
+        params: {
+            "pageSize": pageData.pageSize,
+            "pageNo": pageData.pageNo,
+        }
+    })
+}

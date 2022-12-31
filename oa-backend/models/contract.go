@@ -27,7 +27,7 @@ type Contract struct {
 	EmployeeID            int     `gorm:"type:int;comment:业务员ID;default:(-)" json:"employeeID"`
 	CustomerID            int     `gorm:"type:int;comment:客户ID;default:(-)" json:"customerID"`
 	ContractDate          XDate   `gorm:"type:date;comment:签订日期" json:"contractDate"`
-	VendorID              int     `gorm:"type:int;comment:签订单位;default:(-)" json:"verdorID"`
+	VendorID              int     `gorm:"type:int;comment:签订单位;default:(-)" json:"vendorID"`
 	EstimatedDeliveryDate XDate   `gorm:"type:date;comment:合同交货日期" json:"estimatedDeliveryDate"`
 	EndDeliveryDate       XDate   `gorm:"type:date;comment:实际交货日期;default:(-)" json:"endDeliveryDate"`
 	EndPaymentDate        XDate   `gorm:"type:date;comment:最后回款日期;default:(-)" json:"endPaymentDate"`
@@ -41,7 +41,7 @@ type Contract struct {
 	PayType               int     `gorm:"type:int;comment:付款类型(1:人民币 2:美元)" json:"payType"`
 	TotalAmount           float64 `gorm:"type:decimal(20,6);comment:总金额" json:"totalAmount"`
 	PaymentTotalAmount    float64 `gorm:"type:decimal(20,6);comment:回款总金额(人民币)" json:"paymentTotalAmount"`
-	Remarks               string  `gorm:"type:varchar(300);comment:备注" json:"remarks"`
+	Remark                string  `gorm:"type:varchar(300);comment:备注" json:"remark"`
 	ProductionStatus      int     `gorm:"type:int;comment:生产状态(1:生产中 2:生产完成)" json:"productionStatus"`
 	CollectionStatus      int     `gorm:"type:int;comment:回款状态(1:回款中 2:回款完成)" json:"collectionStatus"`
 	Status                int     `gorm:"type:int;comment:状态(-1:审批驳回 0:暂存 1:待审批 2:未完成 3:已完成)" json:"status"`
@@ -59,7 +59,11 @@ type Contract struct {
 	Invoices []Invoice `json:"invoices"`
 	Payments []Payment `json:"payments"`
 
-	IsPass bool `gorm:"-" json:"isPass"`
+	IsPass          bool   `gorm:"-" json:"isPass"`
+	StartDate       string `gorm:"-" json:"startDate"`
+	EndDate         string `gorm:"-" json:"endDate"`
+	IsSpecialNum    int    `gorm:"-" json:"isSpecialNum"`
+	IsPreDepositNum int    `gorm:"-" json:"isPreDepositNum"`
 }
 
 type Task struct {
@@ -339,13 +343,95 @@ func SelectContract(id int) (contract Contract, code int) {
 	return contract, msg.SUCCESS
 }
 
+func SelectMySaveContracts(employeeID int, xForms *XForms) (contracts []Contract, code int) {
+	var maps = make(map[string]interface{})
+	maps["contract.is_delete"] = false
+	maps["contract.employee_id"] = employeeID
+	maps["contract.status"] = 0
+
+	err = db.Where(maps).Find(&contracts).Count(&xForms.Total).
+		Preload("Customer.CustomerCompany.Region").Preload("Employee").
+		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
+		Find(&contracts).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, msg.ERROR
+	}
+	return contracts, msg.SUCCESS
+}
+
 func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contract, code int) {
 	var maps = make(map[string]interface{})
 	maps["contract.is_delete"] = false
-	//TODO 搜索条件
+
+	if contractQuery.EmployeeID != 0 {
+		maps["contract.employee_id"] = contractQuery.EmployeeID
+	}
+	if contractQuery.RegionID != 0 {
+		maps["contract.region_id"] = contractQuery.RegionID
+	}
+	if contractQuery.Status != 0 {
+		maps["contract.status"] = contractQuery.Status
+	}
+	if contractQuery.ProductionStatus != 0 {
+		maps["contract.production_status"] = contractQuery.ProductionStatus
+	}
+	if contractQuery.CollectionStatus != 0 {
+		maps["contract.collection_status"] = contractQuery.CollectionStatus
+	}
+	if contractQuery.PayType != 0 {
+		maps["contract.pay_type"] = contractQuery.PayType
+	}
+	if contractQuery.IsSpecialNum == 1 {
+		maps["contract.is_special"] = true
+	} else if contractQuery.IsSpecialNum == 2 {
+		maps["contract.is_special"] = false
+	}
+	if contractQuery.IsPreDepositNum == 1 {
+		maps["contract.is_pre_deposit"] = true
+	} else if contractQuery.IsPreDepositNum == 2 {
+		maps["contract.is_pre_deposit"] = false
+	}
+
 	tx := db.Where(maps)
 
+	if contractQuery.Status == 0 {
+		tx = tx.Where("contract.status <> ?", contractQuery.Status)
+	}
+
+	if contractQuery.No != "" {
+		tx = tx.Where("contract.no LIKE ?", "%"+contractQuery.No+"%")
+	}
+
+	if contractQuery.Customer.CustomerCompany.Name != "" && contractQuery.Customer.Name != "" {
+		tx = tx.Joins("customer").
+			Joins("left join customer_company on customer.customer_company_id = customer_company.id").
+			Where("customer.name LIKE ? AND customer_company.name LIKE ?", "%"+contractQuery.Customer.Name+"%", "%"+contractQuery.Customer.CustomerCompany.Name+"%")
+	} else {
+		if contractQuery.Customer.CustomerCompany.Name != "" {
+			tx = tx.Joins("customer").
+				Joins("left join customer_company on Customer.customer_company_id = customer_company.id").
+				Where("customer_company.name LIKE ?", "%"+contractQuery.Customer.CustomerCompany.Name+"%")
+		}
+		if contractQuery.Customer.Name != "" {
+			tx = tx.Joins("customer").
+				Where("customer.name LIKE ?", "%"+contractQuery.Customer.Name+"%")
+		}
+	}
+
+	if contractQuery.StartDate != "" && contractQuery.EndDate != "" {
+		tx = tx.Where("contract.contract_date BETWEEN ? AND ?", contractQuery.StartDate, contractQuery.EndDate)
+	} else {
+		if contractQuery.StartDate != "" {
+			tx = tx.Where("contract.contract_date >= ?", contractQuery.StartDate)
+		}
+		if contractQuery.EndDate != "" {
+			tx = tx.Where("contract.contract_date <= ?", contractQuery.EndDate)
+		}
+	}
+
 	err = tx.Find(&contracts).Count(&xForms.Total).
+		Preload("Customer.CustomerCompany").Preload("Employee").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
 		Find(&contracts).Error
 
