@@ -16,12 +16,12 @@ func DistributeTask(c *gin.Context) {
 	var contractBak models.Contract
 	_ = c.ShouldBindJSON(&task)
 
-	_ = models.GeneralSelect(taskBak, task.ID, nil)
-	_ = models.GeneralSelect(contractBak, task.ContractID, nil)
+	_ = models.GeneralSelect(&taskBak, task.ID, nil)
+	_ = models.GeneralSelect(&contractBak, task.ContractID, nil)
 
 	if taskBak.ID != 0 && contractBak.ID != 0 && taskBak.ContractID == task.ContractID &&
 		taskBak.Status == magic.TASK_STATUS_NOT_DISTRIBUTE &&
-		contractBak.Status == magic.CONTRATCT_PRODUCTION_STATUS_ING {
+		contractBak.Status == magic.CONTRACT_STATUS_NOT_FINISH {
 
 		taskBak.Contract = contractBak
 
@@ -73,7 +73,7 @@ func NextTask(c *gin.Context) {
 	var task, taskBak models.Task
 	_ = c.ShouldBindJSON(&task)
 
-	_ = models.GeneralSelect(taskBak, task.ID, nil)
+	_ = models.GeneralSelect(&taskBak, task.ID, nil)
 
 	if taskBak.ID != 0 && task.Status == taskBak.Status {
 		var maps = make(map[string]interface{})
@@ -138,7 +138,7 @@ func AddTask(c *gin.Context) {
 	var contractBak models.Contract
 	_ = c.ShouldBindJSON(&task)
 
-	code = models.GeneralSelect(contractBak, task.ContractID, nil)
+	code = models.GeneralSelect(&contractBak, task.ContractID, nil)
 
 	if code == msg.SUCCESS && contractBak.IsPreDeposit && contractBak.PreDeposit >= task.TotalPrice {
 		code = models.InsertTask(&contractBak, &task)

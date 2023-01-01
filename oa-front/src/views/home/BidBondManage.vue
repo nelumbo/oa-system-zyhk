@@ -154,10 +154,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status == -1) {
-                                return true
-                            }
-                            if (row.status == 1) {
+                            if (row.status == -1 || row.status == 1) {
                                 return true
                             }
                             return false

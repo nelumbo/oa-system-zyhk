@@ -80,7 +80,7 @@
                 <el-input v-model="base.model.paymentContent" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
                     maxlength="300" />
             </el-form-item>
-            <el-form-item label="备注" prop="remark">
+            <el-form-item label="备注(发货地址等，如是经销商，须说明终端客户)" prop="remark">
                 <el-input v-model="base.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
                     maxlength="300" />
             </el-form-item>
@@ -221,14 +221,13 @@
                 </span>
             </template>
         </el-dialog>
-
     </div>
     <el-row style="margin-top: 30px;">
         <el-col :span="2" :offset="7">
-            <el-button type="success" @click="base.save" :disabled="base.submitDisabled">暂存</el-button>
+            <el-button type="success" @click="base.save" :disabled="base.submitDisabled" size="large">暂存</el-button>
         </el-col>
         <el-col :span="2" :offset="6">
-            <el-button type="primary" @click="base.submit" :disabled="base.submitDisabled">提交</el-button>
+            <el-button type="primary" @click="base.submit" :disabled="base.submitDisabled" size="large">提交</el-button>
         </el-col>
     </el-row>
 </template>
@@ -298,30 +297,44 @@ const pre = reactive({
             {
                 prop: "createDate",
                 label: "创建时间",
+                width: "15%",
             },
             {
                 prop: "customer.customerCompany.name",
                 label: "客户单位",
+                width: "10%",
             },
             {
                 prop: "customer.name",
                 label: "客户",
+                width: "10%",
+            },
+            {
+                prop: "contractDate",
+                label: "签订日期",
+                width: "15%",
             },
             {
                 prop: "estimatedDeliveryDate",
-                label: "合同交货日期",
+                label: "交货日期",
+                width: "15%",
             },
             {
-                prop: "preDeposit",
-                label: "剩余预存款金额",
+                type: "boolean",
+                prop: "isSpecial",
+                label: "特殊合同",
+                width: "10%",
             },
             {
-                prop: "status",
-                label: "状态",
+                type: "boolean",
+                prop: "isPreDeposit",
+                label: "预存款合同",
+                width: "10%",
             },
             {
                 type: "operation",
                 label: "操作",
+                width: "15%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -475,58 +488,53 @@ const base = reactive({
         base.model.preDepositRecord = 0
     },
     save: () => {
-        baseForm.value.validate((valid) => {
-            if (valid) {
-                base.submitDisabled = true
-                saveContract(base.model).then((res) => {
-                    if (res.status == 1) {
-                        message("录入成功", "success")
-                        router.push("home")
-                    } else {
-                        message("录入失败", "error")
-                    }
-                    base.dialogVisible = false
-                    base.model = {
-                        regionID: null,
-                        customerID: null,
-                        vendorID: null,
-                        contractDate: new Date(
-                            Date.now() - new Date().getTimezoneOffset() * 60000
-                        )
-                            .toISOString(),
-                        estimatedDeliveryDate: "",
-                        payType: 1,
-                        totalPrice: computed(() => {
-                            if (cart.tasks) {
-                                let temp = 0
-                                cart.tasks.forEach((item, index) => {
-                                    temp += item.totalPrice
-                                })
-                                return temp
-                            } else {
-                                return 0
-                            }
-                        }),
-                        isSpecial: false,
-                        isPreDeposit: false,
-                        preDepositRecord: 0,
-                        invoiceType: 2,
-                        invoiceContent: "",
-                        paymentContent: "",
-                        remark: "",
-                        tasks: [],
-                    }
-                    base.submitDisabled = false
-                })
+        base.submitDisabled = true
+        saveContract(base.model).then((res) => {
+            if (res.status == 1) {
+                message("保存成功", "success")
+                router.push("home")
             } else {
-                return false;
+                message("保存失败", "error")
             }
-        });
+            base.dialogVisible = false
+            base.model = {
+                regionID: null,
+                customerID: null,
+                vendorID: null,
+                contractDate: new Date(
+                    Date.now() - new Date().getTimezoneOffset() * 60000
+                )
+                    .toISOString(),
+                estimatedDeliveryDate: "",
+                payType: 1,
+                totalPrice: computed(() => {
+                    if (cart.tasks) {
+                        let temp = 0
+                        cart.tasks.forEach((item, index) => {
+                            temp += item.totalPrice
+                        })
+                        return temp
+                    } else {
+                        return 0
+                    }
+                }),
+                isSpecial: false,
+                isPreDeposit: false,
+                preDepositRecord: 0,
+                invoiceType: 2,
+                invoiceContent: "",
+                paymentContent: "",
+                remark: "",
+                tasks: [],
+            }
+            base.submitDisabled = false
+        })
     },
     submit: () => {
         baseForm.value.validate((valid) => {
             if (valid) {
                 base.submitDisabled = true
+                base.model.tasks = cart.tasks
                 addContract(base.model).then((res) => {
                     if (res.status == 1) {
                         message("录入成功", "success")

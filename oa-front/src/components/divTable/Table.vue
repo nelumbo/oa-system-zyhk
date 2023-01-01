@@ -21,6 +21,7 @@
                     @click="textarea.openTextareaDialog(header.label, scope.row[header.prop])">
                     {{ scope.row[header.prop] }}
                 </span>
+
                 <!-- 按钮 -->
                 <!-- <span v-if="header.type === 'operation'" v-for="(operation, oi) in header.operations" :key="oi"> -->
                 <!-- <el-button v-if="operation.isShow()" :icon="operation.icon" :type="operation.type"
@@ -32,6 +33,22 @@
                         @click="operation.onClick(scope.$index, scope.row)" class="operation" :size="operation.size">
                         {{ operation.label }}
                     </el-button>
+                </span>
+
+
+                <!-- 特殊 -->
+                <!-- 合同未回款额计算 -->
+                <span v-if="header.type === 'contractNotPayment'">
+                    {{ scope.row.isPreDeposit ? "-" : scope.row.totalAmount - scope.row.paymentTotalAmount }}
+                </span>
+
+                <!-- 合同预存款展示 -->
+                <span v-if="header.type === 'contractPreDeposit'">
+                    {{ scope.row.isPreDeposit ? scope.row[header.prop] : "-" }}
+                </span>
+
+                <span v-if="header.type === 'contractType'">
+                    {{ contractStatusToText(scope.row) }}
                 </span>
             </template>
         </el-table-column>
@@ -45,6 +62,7 @@
   
 <script setup>
 import { reactive } from 'vue'
+import { contractStatusItems, productionStatusItems, collectionStatusItems } from '@/utils/magic'
 const props = defineProps({
     columnObj: {
         type: Object,
@@ -80,6 +98,18 @@ function statusToText(items, status) {
         }
     });
     return temp;
+}
+
+function contractStatusToText(row) {
+    if (row.status == 2) {
+        return (
+            statusToText(productionStatusItems, row.productionStatus) +
+            "," +
+            statusToText(collectionStatusItems, row.collectionStatus)
+        );
+    } else {
+        return statusToText(contractStatusItems, row.status);
+    }
 }
 </script>
 

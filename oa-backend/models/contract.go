@@ -53,7 +53,7 @@ type Contract struct {
 	Office   Office    `gorm:"foreignKey:OfficeID" json:"office"`
 	Employee Employee  `gorm:"foreignKey:EmployeeID" json:"employee"`
 	Customer Customer  `gorm:"foreignKey:CustomerID" json:"customer"`
-	Vendor   Vendor    `gorm:"foreignKey:VendorID" json:"verdor"`
+	Vendor   Vendor    `gorm:"foreignKey:VendorID" json:"vendor"`
 	Auditor  Employee  `gorm:"foreignKey:AuditorID" json:"auditor"`
 	Tasks    []Task    `json:"tasks"`
 	Invoices []Invoice `json:"invoices"`
@@ -91,7 +91,7 @@ type Task struct {
 	Number               int     `gorm:"type:int;comment:数量" json:"number"`
 	Price                float64 `gorm:"type:decimal(20,6);comment:单价" json:"price"`
 	TotalPrice           float64 `gorm:"type:decimal(20,6);comment:总价" json:"totalPrice"`
-	PaymentTotalPrice    float64 `gorm:"type:decimal(20,6);comment:回款总金额(CNY)" json:"paymentTotalPrice"`
+	PaymentTotalPrice    float64 `gorm:"type:decimal(20,6);comment:回款总金额" json:"paymentTotalPrice"`
 	Status               int     `gorm:"type:int;comment:状态(1:待设计 2:待采购 3:待入/出库 4:待装配 5:待发货 6:已发货)" json:"status"`
 	Type                 int     `gorm:"type:int;comment:类型(1:标准/第三方有库存 2:标准/第三方无库存 3:非标准定制)" json:"type"`
 	TechnicianManID      int     `gorm:"type:int;comment:技术负责人ID;default:(-)" json:"technicianManID"`
@@ -199,6 +199,21 @@ func createNo(contract *Contract) (no string, code int) {
 	return
 }
 
+func InsertContract(contract *Contract) (code int) {
+
+	if contract.ID == 0 {
+		err = db.Create(&contract).Error
+	} else {
+		err = db.Updates(&contract).Error
+	}
+
+	if err != nil {
+		return msg.ERROR
+	} else {
+		return msg.SUCCESS
+	}
+}
+
 func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code int) {
 	if contractBak.IsPass {
 		var no string
@@ -210,24 +225,29 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 			maps["collection_status"] = magic.CONTRATCT_COLLECTION_STATUS_ING
 
 			err = db.Transaction(func(tx *gorm.DB) error {
-				var contract Contract
-				if tErr := tx.Preload("Tasks").Where("is_delete = ?", false).First(&contract, contractBak.ID).Error; tErr != nil {
-					return tErr
+
+				if contractBak.IsPreDeposit {
+					var contract Contract
+					if tErr := tx.Preload("Tasks").Where("is_delete = ?", false).First(&contract, contractBak.ID).Error; tErr != nil {
+						return tErr
+					}
+					//产品可售库存减少
+					for i := range contract.Tasks {
+						if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", contract.Tasks[i].Number, contract.Tasks[i].ProductID).Error; tErr != nil {
+							return tErr
+						}
+					}
 				}
+
 				//业务员累计合同数目+1
-				if tErr := tx.Exec("UPDATE employee SET contract_count = contract_count + 1 WHERE id = ?", contract.EmployeeID).Error; tErr != nil {
+				if tErr := tx.Exec("UPDATE employee SET contract_count = contract_count + 1 WHERE id = ?", contractBak.EmployeeID).Error; tErr != nil {
 					return tErr
 				}
 				//更新合同信息
 				if tErr := tx.Model(&Contract{ID: contractBak.ID}).Updates(maps).Error; tErr != nil {
 					return tErr
 				}
-				//产品可售库存减少
-				for i := range contract.Tasks {
-					if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", contract.Tasks[i].Number, contract.Tasks[i].ProductID).Error; tErr != nil {
-						return tErr
-					}
-				}
+
 				//修改合同产品任务的开始时间
 				// t := time.Now().Format("2006-01-02")
 				// if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", contractBak.ID, magic.TASK_TYPE_1).Update("inventory_start_date", t).Error; tErr != nil {
@@ -248,13 +268,13 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 		maps["status"] = magic.CONTRACT_STATUS_REJECT
 		err = db.Transaction(func(tx *gorm.DB) error {
 			//更新合同信息
-			if tErr := tx.Model(&Contract{ID: contractBak.ID}).Updates(maps).Error; tErr != nil {
+			if tErr := tx.Model(&Contract{}).Where("id", contractBak.ID).Updates(maps).Error; tErr != nil {
 				return tErr
 			}
 			//删除子任务
-			if tErr := tx.Model(&Task{ContractID: contractBak.ID}).Update("is_delete", true).Error; tErr != nil {
-				return tErr
-			}
+			// if tErr := tx.Model(&Task{}).Where("contract_id", contractBak.ID).Updates(map[string]interface{}{"is_delete": true, "contract_id": nil}).Error; tErr != nil {
+			// 	return tErr
+			// }
 			return nil
 		})
 	}
@@ -330,10 +350,11 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 }
 
 func SelectContract(id int) (contract Contract, code int) {
-	db.Preload("Region").Preload("Office").Preload("Employee").Preload("Customer").Preload("ContractUnit").
-		Preload("Tasks.Product.Type").
+	db.Preload("Region").Preload("Office").Preload("Employee").
+		Preload("Customer.CustomerCompany").Preload("Vendor").
 		Preload("Tasks.TechnicianMan").Preload("Tasks.PurchaseMan").
 		Preload("Tasks.InventoryMan").Preload("Tasks.ShipmentMan").
+		Preload("Tasks.Product.Type").
 		Preload("Invoices.Employee").Preload("Payments.Employee").
 		Where("contract.is_delete = ?", false).
 		First(&contract, id)

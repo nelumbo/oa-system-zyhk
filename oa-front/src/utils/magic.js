@@ -5,10 +5,6 @@ export const contractStatusItems = [
         label: '驳回',
     },
     {
-        value: 0,
-        label: '暂存',
-    },
-    {
         value: 1,
         label: '待审核',
     },
@@ -88,6 +84,21 @@ export const isPreDepositItems = [
     },
 ]
 
+export const taskTypeItems = [
+    {
+        value: 1,
+        label: '标准/第三方有库存',
+    },
+    {
+        value: 2,
+        label: '标准/第三方无库存',
+    },
+    {
+        value: 3,
+        label: '非标准定制',
+    },
+]
+
 export const taskStatusItems = [
     {
         value: -1,
@@ -95,7 +106,7 @@ export const taskStatusItems = [
     },
     {
         value: 0,
-        label: '待审核',
+        label: '待分发',
     },
     {
         value: 1,
