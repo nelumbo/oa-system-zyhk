@@ -131,14 +131,39 @@ func ApproveContract(c *gin.Context) {
 	msg.Message(c, code, nil)
 }
 
+// 预存款合同完成
+func FinalContract(c *gin.Context) {
+	var contract models.Contract
+	_ = c.ShouldBindJSON(&contract)
+
+	code = models.FinalContract(&contract)
+
+	msg.Message(c, code, nil)
+}
+
+// 重置合同状态
+func ResetContractCollectionStatus(c *gin.Context) {
+	var contract, contractBak models.Contract
+	_ = c.ShouldBindJSON(&contract)
+
+	_ = models.GeneralSelect(&contractBak, contract.ID, nil)
+
+	if contractBak.ID != 0 && contractBak.Status == magic.CONTRACT_STATUS_NOT_FINISH {
+		code = models.GeneralUpdate(&models.Contract{}, contract.ID, map[string]interface{}{"collection_status": magic.CONTRATCT_COLLECTION_STATUS_ING})
+	} else {
+		code = msg.FAIL
+	}
+	msg.Message(c, code, nil)
+}
+
 // 驳回已通过的合同
 func RejectContract(c *gin.Context) {
 	var contract, contractBak models.Contract
 	_ = c.ShouldBindJSON(&contract)
 
-	_ = models.GeneralSelect(&contractBak, contract.EmployeeID, nil)
+	_ = models.GeneralSelect(&contractBak, contract.ID, nil)
 
-	if contractBak.Status == magic.CONTRACT_STATUS_NOT_FINISH {
+	if contractBak.Status == magic.CONTRACT_STATUS_NOT_FINISH || contract.Status == magic.CONTRACT_STATUS_FINISH {
 		code = models.RejectContract(&contractBak, c.MustGet("employeeID").(int))
 	} else {
 		code = msg.FAIL

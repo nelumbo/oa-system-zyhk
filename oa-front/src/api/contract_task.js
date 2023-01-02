@@ -24,6 +24,14 @@ export const nextTask = (task) => {
     })
 }
 
+export const resetTask = (task) => {
+    return request({
+        url: '/task/reset',
+        method: 'PUT',
+        data: task
+    })
+}
+
 export const rejectTask = (task) => {
     return request({
         url: '/task/reject',

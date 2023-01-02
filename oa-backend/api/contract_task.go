@@ -54,7 +54,7 @@ func DistributeTask(c *gin.Context) {
 
 			maps["technician_man_id"] = task.TechnicianManID
 			maps["technician_start_date"] = tn
-			maps["technician_days"] = task.PurchaseDays
+			maps["technician_days"] = task.TechnicianDays
 			maps["technician_end_date"] = tn.AddDate(0, 0, task.PurchaseDays)
 
 			maps["purchase_man_id"] = task.PurchaseManID
@@ -75,30 +75,30 @@ func NextTask(c *gin.Context) {
 
 	_ = models.GeneralSelect(&taskBak, task.ID, nil)
 
-	if taskBak.ID != 0 && task.Status == taskBak.Status {
+	if taskBak.ID != 0 {
 		var maps = make(map[string]interface{})
 		employeeID := c.MustGet("employeeID").(int)
 		tn := time.Now()
 		if taskBak.Status == magic.TASK_STATUS_NOT_DESIGN && taskBak.TechnicianManID == employeeID {
-			maps["stauts"] = magic.TASK_STATUS_NOT_PURCHASE
+			maps["status"] = magic.TASK_STATUS_NOT_PURCHASE
 
 			maps["technician_final_date"] = tn
-			maps["technician_remark"] = task.TechnicianRemark
+			maps["technician_remark"] = task.Remark
 
 			maps["purchase_end_date"] = tn.AddDate(0, 0, taskBak.PurchaseDays)
 			maps["purchase_start_date"] = tn
 		} else if taskBak.Status == magic.TASK_STATUS_NOT_PURCHASE && taskBak.PurchaseManID == employeeID {
-			maps["stauts"] = magic.TASK_STATUS_NOT_STORAGE
+			maps["status"] = magic.TASK_STATUS_NOT_STORAGE
 
 			maps["purchase_final_date"] = tn
-			maps["purchase_remark"] = task.TechnicianRemark
+			maps["purchase_remark"] = task.Remark
 
 			maps["inventory_start_date"] = tn
 		} else if taskBak.Status == magic.TASK_STATUS_NOT_STORAGE && taskBak.InventoryManID == employeeID {
 			maps["inventory_final_date"] = tn
-			maps["inventory_remark"] = task.TechnicianRemark
+			maps["inventory_remark"] = task.Remark
 			if taskBak.Type == magic.TASK_TYPE_3 {
-				maps["stauts"] = magic.TASK_STATUS_NOT_ASSEMBLY
+				maps["status"] = magic.TASK_STATUS_NOT_ASSEMBLY
 
 				maps["assembly_start_date"] = tn
 			} else {
@@ -107,24 +107,132 @@ func NextTask(c *gin.Context) {
 				maps["shipment_start_date"] = tn
 			}
 		} else if taskBak.Status == magic.TASK_STATUS_NOT_ASSEMBLY && taskBak.TechnicianManID == employeeID {
-			maps["stauts"] = magic.TASK_STATUS_NOT_SHIPMENT
+			maps["status"] = magic.TASK_STATUS_NOT_SHIPMENT
 
 			maps["assembly_final_date"] = tn
-			maps["assembly_remark"] = task.TechnicianRemark
+			maps["assembly_remark"] = task.Remark
 
 			maps["shipment_start_date"] = tn
 		} else if taskBak.Status == magic.TASK_STATUS_NOT_SHIPMENT && taskBak.ShipmentManID == employeeID {
-			maps["stauts"] = magic.TASK_STATUS_SHIPMENT
+			maps["status"] = magic.TASK_STATUS_SHIPMENT
 
 			maps["shipment_final_date"] = tn
-			maps["shipment_remark"] = task.TechnicianRemark
+			maps["shipment_remark"] = task.Remark
 		} else {
 			code = msg.FAIL
 		}
 
 		if code != msg.FAIL {
-			code = models.NextTask(&models.Task{}, maps)
+			code = models.NextTask(&taskBak, maps)
 		}
+	} else {
+		code = msg.FAIL
+	}
+
+	msg.Message(c, code, nil)
+}
+
+// 合同任务重置
+func ResetTask(c *gin.Context) {
+	var task, taskBak models.Task
+	var contractBak models.Contract
+	_ = c.ShouldBindJSON(&task)
+
+	code = models.GeneralSelect(&taskBak, task.ID, nil)
+	_ = models.GeneralSelect(&contractBak, task.ContractID, nil)
+
+	if taskBak.ID != 0 &&
+		taskBak.Status != magic.TASK_STATUS_REJECT &&
+		taskBak.Status != magic.TASK_STATUS_NOT_DISTRIBUTE {
+
+		taskBak.Contract = contractBak
+
+		var maps = make(map[string]interface{})
+		tn := time.Now()
+		maps["type"] = task.Type
+		maps["auditor_id"] = c.MustGet("employeeID").(int)
+		maps["audit_date"] = tn
+		maps["inventory_man_id"] = task.InventoryManID
+		maps["shipment_man_id"] = task.ShipmentManID
+		if contractBak.IsSpecial {
+			maps["push_money_percentages"] = task.PushMoneyPercentages
+		}
+		switch task.Type {
+		case magic.TASK_TYPE_1:
+			maps["status"] = magic.TASK_STATUS_NOT_STORAGE
+
+			maps["technician_man_id"] = nil
+			maps["purchase_man_id"] = nil
+			maps["technician_days"] = nil
+			maps["purchase_days"] = nil
+			maps["technician_start_date"] = nil
+			maps["technician_end_date"] = nil
+			maps["technician_final_date"] = nil
+			maps["purchase_start_date"] = nil
+			maps["purchase_end_date"] = nil
+			maps["purchase_final_date"] = nil
+			maps["inventory_start_date"] = tn
+			maps["inventory_final_date"] = nil
+			maps["assembly_start_date"] = nil
+			maps["assembly_final_date"] = nil
+			maps["shipment_start_date"] = nil
+			maps["shipment_final_date"] = nil
+			maps["purchase_remark"] = nil
+			maps["inventory_remark"] = nil
+			maps["inventory_remark"] = nil
+			maps["assembly_remark"] = nil
+			maps["shipment_remark"] = nil
+		case magic.TASK_TYPE_2:
+			maps["status"] = magic.TASK_STATUS_NOT_PURCHASE
+
+			maps["technician_man_id"] = nil
+			maps["purchase_man_id"] = task.PurchaseManID
+			maps["technician_days"] = nil
+			maps["purchase_days"] = task.PurchaseDays
+			maps["technician_start_date"] = nil
+			maps["technician_end_date"] = nil
+			maps["technician_final_date"] = nil
+			maps["purchase_start_date"] = tn
+			maps["purchase_end_date"] = tn.AddDate(0, 0, task.PurchaseDays)
+			maps["purchase_final_date"] = nil
+			maps["inventory_start_date"] = nil
+			maps["inventory_final_date"] = nil
+			maps["assembly_start_date"] = nil
+			maps["assembly_final_date"] = nil
+			maps["shipment_start_date"] = nil
+			maps["shipment_final_date"] = nil
+			maps["purchase_remark"] = nil
+			maps["inventory_remark"] = nil
+			maps["inventory_remark"] = nil
+			maps["assembly_remark"] = nil
+			maps["shipment_remark"] = nil
+		case magic.TASK_TYPE_3:
+			maps["status"] = magic.TASK_STATUS_NOT_DESIGN
+
+			maps["technician_man_id"] = task.TechnicianManID
+			maps["purchase_man_id"] = task.PurchaseManID
+			maps["technician_days"] = task.TechnicianDays
+			maps["purchase_days"] = task.PurchaseDays
+			maps["technician_start_date"] = tn
+			maps["technician_end_date"] = tn.AddDate(0, 0, task.PurchaseDays)
+			maps["technician_final_date"] = nil
+			maps["purchase_start_date"] = nil
+			maps["purchase_end_date"] = nil
+			maps["purchase_final_date"] = nil
+			maps["inventory_start_date"] = nil
+			maps["inventory_final_date"] = nil
+			maps["assembly_start_date"] = nil
+			maps["assembly_final_date"] = nil
+			maps["shipment_start_date"] = nil
+			maps["shipment_final_date"] = nil
+			maps["purchase_remark"] = nil
+			maps["inventory_remark"] = nil
+			maps["inventory_remark"] = nil
+			maps["assembly_remark"] = nil
+			maps["shipment_remark"] = nil
+		}
+
+		code = models.GeneralUpdate(&models.Task{}, task.ID, maps)
 	} else {
 		code = msg.FAIL
 	}

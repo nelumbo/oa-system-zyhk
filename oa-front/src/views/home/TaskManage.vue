@@ -1,120 +1,347 @@
 <template>
     <div>
-        <el-row>
-            <el-col :span="22">
-                <el-row :gutter="20">
-                    <el-col :span="6"></el-col>
-                    <el-col :span="6">
-                        <el-input v-model="queryObj.no" placeholder="合同编号" />
-                    </el-col>
-                    <el-col :span="6">
-                        <el-select v-model="queryObj.status" placeholder="任务状态" clearable style="width: 100%;">
-                            <el-option v-for="item in taskStatusItems" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-col>
-                    <el-col :span="1">
-                        <el-button type="primary" @click="query">查询</el-button>
-                    </el-col>
-                </el-row>
+        <el-row :gutter="20">
+            <el-col :span="6" :offset="5">
+                <el-input v-model="base.model.contract.no" placeholder="合同编号" clearable maxlength="50" />
+            </el-col>
+            <el-col :span="6">
+                <el-select v-model="base.model.status" placeholder="任务状态" clearable style="width: 100%;">
+                    <el-option v-for="item in taskStatusSelectItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
+            <el-col :span="1">
+                <el-button type="primary" @click="base.query">查询</el-button>
             </el-col>
         </el-row>
-        <divTable :columnObj="columnObj" :tableData="tableData" :pageObj="pageObj" />
+        <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
+            :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
+
+        <el-dialog v-model="view.dialogVisible" title="查看" width="50%" :show-close="false">
+            <el-divider content-position="left">
+                <h2>基本信息</h2>
+            </el-divider>
+            <el-form :model="view.model" label-width="120px">
+                <el-form-item label="客户公司">
+                    <el-input v-model="view.model.customer.customerCompany.name" readonly />
+                </el-form-item>
+                <el-form-item label="客户">
+                    <el-input v-model="view.model.customer.name" readonly />
+                </el-form-item>
+                <el-form-item label="联系电话">
+                    <el-input v-model="view.model.customer.phone" readonly />
+                </el-form-item>
+                <el-form-item label="合同备注">
+                    <el-input v-model="view.model.remark" type="textarea" autosize readonly />
+                </el-form-item>
+                <el-form-item label="产品库备注">
+                    <el-input v-model="view.model.task.product.remark" type="textarea" autosize readonly />
+                </el-form-item>
+                <el-form-item label="销售备注">
+                    <el-input v-model="view.model.task.remark" type="textarea" autosize readonly />
+                </el-form-item>
+            </el-form>
+            <el-divider content-position="left" style="margin-top: 50px;">
+                <h2>负责人备注</h2>
+            </el-divider>
+            <el-form :model="view.model" label-width="120px">
+                <el-form-item label="技术备注">
+                    <el-input v-model="view.model.task.technicianRemark" type="textarea" autosize readonly />
+                </el-form-item>
+                <el-form-item label="采购备注">
+                    <el-input v-model="view.model.task.purchaseRemark" type="textarea" autosize readonly />
+                </el-form-item>
+                <el-form-item label="查看备注">
+                    <el-input v-model="view.model.task.inventoryRemark" type="textarea" autosize readonly />
+                </el-form-item>
+                <el-form-item label="装配备注">
+                    <el-input v-model="view.model.task.assemblyRemark" type="textarea" autosize readonly />
+                </el-form-item>
+                <el-form-item label="物流备注">
+                    <el-input v-model="view.model.task.shipmentRemark" type="textarea" autosize readonly />
+                </el-form-item>
+            </el-form>
+            <el-divider content-position="left" style="margin-top: 50px;">
+                <h2>任务详情</h2>
+            </el-divider>
+            <divTable :columnObj="view.column" :tableData="view.model.tasks" :allShow="true" />
+        </el-dialog>
+
+        <el-dialog v-model="next.dialogVisible" title="提交" width="50%" :show-close="false">
+            <el-form :model="next.model" label-width="60px">
+                <el-form-item label="备注" prop="createRemark">
+                    <el-input v-model="next.model.remark" type="textarea" :autosize="{ minRows: 9, maxRows: 18 }"
+                        maxlength="300" />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="primary" @click="next.submit" :disabled="next.submitDisabled">提交</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
-import { taskStatusItems } from '../../utils/magic'
+import { reactive, onBeforeMount } from 'vue'
+import { taskStatusItems, taskStatusSelectItems } from '@/utils/magic'
+import { queryMyTasks } from "@/api/my"
+import { queryContract } from "@/api/contract"
+import { nextTask } from "@/api/contract_task"
+import { message } from '@/components/divMessage/index'
 
-import divTable from '../../components/divTable/index.vue'
+import divTable from '@/components/divTable/index.vue'
 
-const queryObj = reactive({
-    employeeUID: "",
-    no: "",
-    status: null,
+const base = reactive({
+    model: {
+        status: null,
+        contract: {
+            no: "",
+        }
+    },
+    column: {
+        headers: [
+            {
+                prop: "contract.no",
+                label: "合同编号",
+                width: "10%",
+            },
+            {
+                prop: "product.name",
+                label: "产品",
+                width: "5%",
+            },
+            {
+                prop: "totalPrice",
+                label: "总价",
+                width: "5%",
+            },
+            {
+                prop: "number",
+                label: "数量",
+                width: "5%",
+            },
+            {
+                prop: "product.numberCount",
+                label: "库存",
+                width: "5%",
+            },
+            {
+                prop: "product.unit",
+                label: "单位",
+                width: "5%",
+            },
+            {
+                prop: "totalPrice",
+                label: "总金额",
+                width: "5%",
+            },
+            {
+                prop: "contract.estimatedDeliveryDate",
+                label: "合同交货时间",
+                width: "8%",
+            },
+            {
+                type: "employees",
+                prop: "employees",
+                label: "负责人",
+                width: "8%",
+            },
+            {
+                type: "transform",
+                prop: "status",
+                label: "状态",
+                items: taskStatusItems,
+                width: "8%",
+            },
+            {
+                type: "taskStartDate",
+                prop: "taskStartDate",
+                label: "开始时间",
+                width: "8%",
+            },
+            {
+                type: "taskDays",
+                prop: "taskDays",
+                label: "限时天数",
+                width: "8%",
+            },
+            {
+                type: "taskFinalDate",
+                prop: "taskFinalDate",
+                label: "提交时间",
+                width: "10%",
+            },
+            {
+                type: "operation",
+                label: "操作",
+                width: "10%",
+                operations: [
+                    {
+                        isShow: (index, row) => {
+                            return true
+                        },
+                        label: "查看",
+                        type: "success",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openViewDialog(index, row)
+                    },
+                    {
+                        isShow: (index, row) => {
+                            if (row.status > 1 && row.status < 6)
+                                return true
+                        },
+                        label: "提交",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openNextDialog(index, row)
+                    },
+                ]
+            },
+        ],
+    },
+    tableData: [],
+    pageData: {
+        total: 0,
+        pageSize: 10,
+        pageNo: 1
+    },
+    query: () => {
+        queryMyTasks(base.model, base.pageData).then((res) => {
+            if (res.status == 1) {
+                base.tableData = res.data.data
+                base.pageData.total = res.data.total
+                base.pageData.pageSize = res.data.pageSize
+                base.pageData.pageNo = res.data.pageNo
+            } else {
+                message("查询失败", "error")
+            }
+        })
+    },
+    handleSizeChange: (e) => {
+        base.pageData.pageSize = e
+        base.pageData.pageNo = 1
+        base.query()
+    },
+    handleCurrentChange: (e) => {
+        base.pageData.pageNo = e
+        base.query()
+    },
+    openViewDialog: (index, row) => {
+        queryContract(row.contractID).then((res) => {
+            if (res.status == 1) {
+                view.model = res.data
+                view.model.task = row
+            }
+        })
+        view.dialogVisible = true
+    },
+    openNextDialog: (index, row) => {
+        next.model.id = row.id
+        next.dialogVisible = true
+    },
 })
 
-const columnObj = {
-    headers: [
-        {
-            prop: "no",
-            label: "合同编号",
+const view = reactive({
+    dialogVisible: false,
+    model: {
+        customer: {
+            customerCompany: {
+                name: "",
+            },
+            name: "",
+            phone: "",
         },
-        {
-            prop: "product.name",
-            label: "产品",
+        remark: "",
+        product: {
+            specification: "",
+            remark: "",
         },
-        {
-            prop: "totalPrice",
-            label: "总价",
+        tasks: [],
+        task: {
+            product: {
+                name: "",
+                remark: ""
+            },
+            remark: "",
         },
-        {
-            prop: "number",
-            label: "需求数量",
-        },
-        {
-            prop: "product.numberCount",
-            label: "库存数量",
-        },
-        {
-            prop: "preDeposit",
-            label: "单位",
-        },
-        {
-            prop: "unit",
-            label: "总金额",
-        },
-        {
-            prop: "contract.estimatedDeliveryDate",
-            label: "合同交货时间",
-        },
-        {
-            prop: "employee",
-            label: "负责人",
-        },
-        {
-            prop: "status",
-            label: "状态",
-        },
-        {
-            prop: "startDate",
-            label: "开始时间",
-        },
-        {
-            prop: "days",
-            label: "限时天数",
-        },
-        {
-            prop: "realEndDate",
-            label: "实际提交时间",
-        },
-        {
-            type: "operation",
-            label: "操作",
-            operations: []
-        },
-    ],
-}
+    },
+    column: {
+        headers: [
+            {
+                prop: "id",
+                label: "ID",
+                width: "5%",
+            },
+            {
+                prop: "product.type.name",
+                label: "产品类型",
+                width: "5%",
+            },
+            {
+                prop: "product.name",
+                label: "产品名称",
+                width: "10%",
+            },
+            {
+                prop: "number",
+                label: "数量",
+                width: "5%",
+            },
+            {
+                prop: "product.unit",
+                label: "单位",
+                width: "5%",
+            },
+            {
+                type: "employees",
+                prop: "employees",
+                label: "负责人",
+                width: "5%",
+            },
+            {
+                type: "transform",
+                prop: "status",
+                label: "状态",
+                items: taskStatusItems,
+                width: "10%",
+            },
+        ]
+    },
+})
 
-const tableData = []
-
-const pageObj = {
-    total: 0,
-    pageData: {
-        page: 0,
-        size: 10
+const next = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    model: {
+        id: 0,
+        remark: "",
+    },
+    submit: () => {
+        next.submitDisabled = true
+        nextTask(next.model).then((res) => {
+            if (res.status == 1) {
+                message("提交成功", "success")
+                base.query()
+            } else {
+                message("提交失败", "error")
+            }
+            next.dialogVisible = false
+            next.model = {
+                id: 0,
+                remark: "",
+            }
+            next.submitDisabled = false
+        })
     }
-}
+})
 
-function query() {
-    alert(JSON.stringify(queryObj))
-}
-
+onBeforeMount(() => {
+    base.query()
+})
 </script>
-
-<style>
-.el-row {
-    margin-bottom: 20px;
-}
-</style>

@@ -78,3 +78,15 @@ export const queryMySaveContracts = (model, pageData) => {
         }
     })
 }
+
+export const queryMyTasks = (model, pageData) => {
+    return request({
+        url: '/my/tasks',
+        method: 'POST',
+        data: model,
+        params: {
+            "pageSize": pageData.pageSize,
+            "pageNo": pageData.pageNo,
+        }
+    })
+}

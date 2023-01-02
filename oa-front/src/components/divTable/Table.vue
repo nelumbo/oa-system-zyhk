@@ -50,6 +50,44 @@
                 <span v-if="header.type === 'contractType'">
                     {{ contractStatusToText(scope.row) }}
                 </span>
+
+                <span v-if="header.type === 'employees'">
+                    <div v-if="scope.row.technicianMan.name">
+                        技术：{{ scope.row.technicianMan.name }}
+                    </div>
+                    <div v-if="scope.row.purchaseMan.name">
+                        采购：{{ scope.row.purchaseMan.name }}
+                    </div>
+                    <div v-if="scope.row.inventoryMan.name">
+                        仓库：{{ scope.row.inventoryMan.name }}
+                    </div>
+                    <div v-if="scope.row.shipmentMan.name">
+                        物流：{{ scope.row.shipmentMan.name }}
+                    </div>
+                </span>
+
+                <span v-if="header.type === 'taskStartDate'">
+                    <div v-if="scope.row.type == 3">技术：{{ scope.row.technicianStartDate }}</div>
+                    <div v-if="scope.row.type > 1 && scope.row.status > 1">
+                        采购：{{ scope.row.purchaseStartDate }}
+                    </div>
+                    <div v-if="scope.row.status > 2">仓库：{{ scope.row.inventoryStartDate }}</div>
+                    <div v-if="scope.row.type == 3 && scope.row.status > 3">装配：{{ scope.row.assemblyStartDate }}</div>
+                    <div v-if="scope.row.status > 4">物流：{{ scope.row.shipmentStartDate }}</div>
+                </span>
+
+                <span v-if="header.type === 'taskDays'">
+                    <div v-if="scope.row.type == 3">技术：{{ scope.row.technicianDays }}天</div>
+                    <div v-if="scope.row.type > 1"> 采购：{{ scope.row.purchaseDays }}天</div>
+                </span>
+
+                <span v-if="header.type === 'taskFinalDate'">
+                    <div v-if="scope.row.type == 3 && scope.row.status > 1">技术：{{ scope.row.technicianFinalDate }}</div>
+                    <div v-if="scope.row.type > 1 && scope.row.status > 2"> 采购：{{ scope.row.purchaseFinalDate }}</div>
+                    <div v-if="scope.row.status > 3">仓库：{{ scope.row.inventoryFinalDate }}</div>
+                    <div v-if="scope.row.type > 4 && scope.row.status > 3">装配：{{ scope.row.assemblyFinalDate }}</div>
+                    <div v-if="scope.row.status > 5">物流：{{ scope.row.shipmentFinalDate }}</div>
+                </span>
             </template>
         </el-table-column>
     </el-table>

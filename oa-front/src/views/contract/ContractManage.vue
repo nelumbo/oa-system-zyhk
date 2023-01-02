@@ -84,6 +84,162 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
+        <el-dialog v-model="view.dialogVisible" title="合同查看" width="75%" :show-close="false">
+            <el-divider content-position="left">
+                <h2>基本信息</h2>
+            </el-divider>
+            <el-form :model="view.model" label-width="120px">
+                <el-row>
+                    <el-col :span="6">
+                        <el-form-item label="合同编号">
+                            <el-input v-model="view.model.no" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="录入时间">
+                            <el-input v-model="view.model.createDate" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="办事处">
+                            <el-input v-model="view.model.office.name" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="业务员">
+                            <el-input v-model="view.model.employee.name" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="区域">
+                            <el-input v-model="view.model.region.name" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="客户公司">
+                            <el-input v-model="view.model.customer.customerCompany.name" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="客户">
+                            <el-input v-model="view.model.customer.name" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6"></el-col>
+                    <el-col :span="6">
+                        <el-form-item label="签订日期">
+                            <el-input v-model="view.model.contractDate" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="交货日期">
+                            <el-input v-model="view.model.estimatedDeliveryDate" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="实际交货日期">
+                            <el-input v-model="view.model.endDeliveryDate" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="最后回款日期">
+                            <el-input v-model="view.model.endPaymentDate" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="特殊合同">
+                            <el-input v-model="view.isSpecialString" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="预存款合同">
+                            <el-input v-model="view.isPreDepositString" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="12"></el-col>
+                    <el-col :span="6">
+                        <el-form-item label="签订单位">
+                            <el-input v-model="view.model.vendor.name" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="付款类型">
+                            <el-input v-model="view.payTypeString" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="总金额">
+                            <el-input v-model="view.model.totalAmount" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="回款额">
+                            <el-input v-model="view.model.paymentTotalAmount" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="发票类型">
+                            <el-input v-model="view.invoiceTypeString" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="18"></el-col>
+                    <el-col :span="24">
+                        <el-form-item label="发票内容">
+                            <el-input v-model="view.model.invoiceContent" type="textarea"
+                                :autosize="{ minRows: 1, maxRows: 9 }" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="24">
+                        <el-form-item label="付款方式">
+                            <el-input v-model="view.model.paymentContent" type="textarea"
+                                :autosize="{ minRows: 1, maxRows: 9 }" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="24">
+                        <el-form-item label="备注">
+                            <el-input v-model="view.model.remark" type="textarea" :autosize="{ minRows: 1, maxRows: 9 }"
+                                readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="合同状态">
+                            <el-input v-model="view.statusString" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="生产状态">
+                            <el-input v-model="view.productionStatusString" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="回款状态">
+                            <el-input v-model="view.collectionStatusString" readonly />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+            </el-form>
+            <el-divider content-position="left" style="margin-top: 15px;">
+                <h2>产品详情</h2>
+            </el-divider>
+            <divTable :columnObj="view.columnT" :tableData="view.model.tasks" :allShow="true" />
+            <el-divider content-position="left" style="margin-top: 15px;">
+                <h2>开票记录</h2>
+            </el-divider>
+            <divTable :columnObj="view.columnI" :tableData="view.model.invoices" :allShow="true" />
+            <el-divider content-position="left" style="margin-top: 15px;">
+                <h2>回款详情</h2>
+            </el-divider>
+            <divTable :columnObj="view.columnP" :tableData="view.model.payments" :allShow="true" />
+        </el-dialog>
+
+        <el-dialog v-model="viewDLC.dialogVisible" title="物流备注" width="50%" :show-close="false">
+            <el-form :model="viewDLC.model" label-width="120px">
+                <el-form-item label="物流备注">
+                    <el-input v-model="viewDLC.model.shipmentRemark" readonly />
+                </el-form-item>
+            </el-form>
+        </el-dialog>
+
         <el-dialog v-model="approve.dialogVisible" title="合同审批" width="90%" :show-close="false">
             <el-divider content-position="left">
                 <h2>基本信息</h2>
@@ -237,19 +393,54 @@
 
             <el-row style="margin-top: 30px;" v-if="approve.model.status == 2 || approve.model.status == 3">
                 <el-col :span="2" :offset="4">
-                    <el-button type="danger" @click="approve.pass" :disabled="base.submitDisabled"
-                        v-if="approve.model.isPreDeposit" size="large">预生产合同生产完成</el-button>
+                    <el-button type="danger" @click="approve.openFinalDialog"
+                        :disabled="approve.model.productionStatus != 1" v-if="approve.model.isPreDeposit"
+                        size="large">预生产合同完成</el-button>
                 </el-col>
                 <el-col :span="2" :offset="4">
-                    <el-button type="danger" @click="approve.pass" :disabled="base.submitDisabled"
-                        size="large">回款状态回退</el-button>
+                    <el-button type="danger" @click="approve.openResetDialog"
+                        :disabled="approve.model.collectionStatus != 2" size="large">回款状态回退</el-button>
                 </el-col>
                 <el-col :span="2" :offset="4">
-                    <el-button type="danger" @click="approve.reject" :disabled="base.submitDisabled"
+                    <el-button type="danger" @click="approve.openRejectDialog"
+                        :disabled="approve.model.status !== 2 && approve.model.status !== 3"
                         size="large">合同作废</el-button>
                 </el-col>
             </el-row>
 
+        </el-dialog>
+
+        <el-dialog v-model="final.dialogVisible" title="预存款合同完成" width="50%" :show-close="false">
+            <h1>是否确定该预存款合同已完成？</h1>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="danger" @click="final.submit" :disabled="final.submitDisabled">确定</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
+
+        <el-dialog v-model="reset.dialogVisible" title="合同回款状态回退" width="50%" :show-close="false">
+            <h1>是否确定回退该合同的回款状态？</h1>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="danger" @click="reset.submit" :disabled="reset.submitDisabled">确定</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
+
+        <el-dialog v-model="reject.dialogVisible" title="合同作废" width="50%" :show-close="false">
+            <h1>是否确定作废该合同？</h1>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="danger" @click="reject.submit" :disabled="reject.submitDisabled">确定</el-button>
+                    </div>
+                </span>
+            </template>
         </el-dialog>
 
         <el-dialog v-model="distribute.dialogVisible" title="分发" width="50%" :show-close="false">
@@ -373,6 +564,130 @@
                 </span>
             </template>
         </el-dialog>
+
+        <el-dialog v-model="resetContractTask.dialogVisible" title="重置" width="50%" :show-close="false">
+            <el-form :model="resetContractTask.model" label-width="80px" :rules="rules" ref="resetContractTaskForm">
+                <el-row>
+                    <el-col :span="24">
+                        <el-form-item label="类型" prop="type">
+                            <el-select v-model="resetContractTask.model.type" @change="resetContractTask.changeType"
+                                style="width: 100%;">
+                                <el-option v-for="item in taskTypeItems" :key="item.value" :label="item.label"
+                                    :value="item.value" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row v-if="resetContractTask.model.type == 3">
+                    <el-col :span="2">
+                        <el-form-item label="技术"></el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="办事处">
+                            <el-select v-model="resetContractTask.office1" @change="resetContractTask.changeOffice1"
+                                style="width: 100%;">
+                                <el-option v-for="item in resetContractTask.offices" :key="item.id" :label="item.name"
+                                    :value="item.id" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="员工" prop="technicianManID">
+                            <el-select v-model="resetContractTask.model.technicianManID" style="width: 100%;">
+                                <el-option v-for="item in resetContractTask.employees1" :key="item.id"
+                                    :label="item.name" :value="item.id" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="天数" prop="technicianDays">
+                            <el-input-number v-model="resetContractTask.model.technicianDays" :controls="false"
+                                :min="0" />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row v-if="resetContractTask.model.type > 1">
+                    <el-col :span="2">
+                        <el-form-item label="采购"></el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="办事处">
+                            <el-select v-model="resetContractTask.office2" @change="resetContractTask.changeOffice2"
+                                style="width: 100%;">
+                                <el-option v-for="item in resetContractTask.offices" :key="item.id" :label="item.name"
+                                    :value="item.id" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="员工" prop="purchaseManID">
+                            <el-select v-model="resetContractTask.model.purchaseManID" style="width: 100%;">
+                                <el-option v-for="item in resetContractTask.employees2" :key="item.id"
+                                    :label="item.name" :value="item.id" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="天数" prop="purchaseDays">
+                            <el-input-number v-model="resetContractTask.model.purchaseDays" :controls="false"
+                                :min="0" />
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="2">
+                        <el-form-item label="仓库"></el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="办事处">
+                            <el-select v-model="resetContractTask.office3" @change="resetContractTask.changeOffice3"
+                                style="width: 100%;">
+                                <el-option v-for="item in resetContractTask.offices" :key="item.id" :label="item.name"
+                                    :value="item.id" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="员工" prop="inventoryManID">
+                            <el-select v-model="resetContractTask.model.inventoryManID" style="width: 100%;">
+                                <el-option v-for="item in resetContractTask.employees3" :key="item.id"
+                                    :label="item.name" :value="item.id" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="2">
+                        <el-form-item label="物流"></el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="办事处">
+                            <el-select v-model="resetContractTask.office4" @change="resetContractTask.changeOffice4"
+                                style="width: 100%;">
+                                <el-option v-for="item in resetContractTask.offices" :key="item.id" :label="item.name"
+                                    :value="item.id" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="6">
+                        <el-form-item label="员工" prop="shipmentManID">
+                            <el-select v-model="resetContractTask.model.shipmentManID" style="width: 100%;">
+                                <el-option v-for="item in resetContractTask.employees4" :key="item.id"
+                                    :label="item.name" :value="item.id" />
+                            </el-select>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="primary" @click="resetContractTask.submit"
+                            :disabled="resetContractTask.submitDisabled">提交</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -380,16 +695,17 @@
 import { ref, reactive, onBeforeMount, computed } from 'vue'
 import { contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems, invoiceTypeItems, taskTypeItems, taskStatusItems } from '@/utils/magic'
 import { queryAllRegion } from "@/api/region"
-import { approveContract, queryContract, queryContracts } from "@/api/contract"
+import { approveContract, finalContract, resetContract, rejectContract, queryContract, queryContracts } from "@/api/contract"
 import { queryAllOffice } from "@/api/office"
 import { queryAllEmployee } from "@/api/employee"
-import { distributeTask } from "@/api/contract_task"
+import { distributeTask, resetTask, rejectTask } from "@/api/contract_task"
 import { message } from '@/components/divMessage/index'
 import { reg_number } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
 
 const distributeForm = ref(null)
+const resetContractTaskForm = ref(null)
 const rules = reactive({
     type: [
         { required: true, message: '请选择', trigger: 'blur' },
@@ -509,7 +825,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (row.status > 0) {
+                                return true
+                            }
+                            return false
                         },
                         label: "审批",
                         type: "primary",
@@ -566,6 +885,299 @@ const base = reactive({
             }
         })
         approve.dialogVisible = true
+    }
+})
+
+const view = reactive({
+    dialogVisible: false,
+    isSpecialString: computed(() => {
+        if (view.model.isSpecial) {
+            return "是"
+        } else {
+            return "否"
+        }
+    }),
+    isPreDepositString: computed(() => {
+        if (view.model.isPreDeposit) {
+            return "是"
+        } else {
+            return "否"
+        }
+    }),
+    payTypeString: computed(() => {
+        var temp = "";
+        payTypeItems.some((item) => {
+            if (item.value == view.model.payType) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    invoiceTypeString: computed(() => {
+        var temp = "";
+        invoiceTypeItems.some((item) => {
+            if (item.value == view.model.invoiceType) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    statusString: computed(() => {
+        var temp = "";
+        contractStatusItems.some((item) => {
+            if (item.value == view.model.status) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    productionStatusString: computed(() => {
+        var temp = "";
+        productionStatusItems.some((item) => {
+            if (item.value == view.model.productionStatus) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    collectionStatusString: computed(() => {
+        var temp = "";
+        collectionStatusItems.some((item) => {
+            if (item.value == view.model.collectionStatus) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    model: {
+        no: "",
+        createDate: "",
+        office: {
+            name: "",
+        },
+        employee: {
+            name: "",
+        },
+        region: {
+            name: "",
+        },
+        customer: {
+            customerCompany: {
+                name: "",
+            },
+            name: "",
+        },
+        contractDate: "",
+        estimatedDeliveryDate: "",
+        endDeliveryDate: "",
+        endPaymentDate: "",
+        isSpecial: false,
+        isPreDeposit: false,
+        vendor: {
+            name: "",
+        },
+        payType: null,
+        totalAmount: 0,
+        paymentTotalAmount: 0,
+        invoiceType: null,
+        invoiceContent: "",
+        paymentContent: "",
+        remark: "",
+        status: null,
+        productionStatus: null,
+        collectionStatus: null,
+        tasks: [],
+        invoices: [],
+        payments: [],
+    },
+    columnT: {
+        headers: [
+            {
+                prop: "id",
+                label: "ID",
+                width: "5%",
+            },
+            {
+                prop: "product.type.name",
+                label: "产品类型",
+                width: "5%",
+            },
+            {
+                prop: "product.name",
+                label: "产品名称",
+                width: "5%",
+            },
+            {
+                prop: "product.specification",
+                label: "规格",
+                width: "5%",
+            },
+            {
+                prop: "number",
+                label: "数量",
+                width: "5%",
+            },
+            {
+                prop: "product.unit",
+                label: "单位",
+                width: "5%",
+            },
+            {
+                prop: "productAttribute.standardPrice",
+                label: "标准定价(人民币)",
+                width: "8%",
+            },
+            {
+                prop: "productAttribute.standardPriceUSD",
+                label: "标准定价(美元)",
+                width: "8%",
+            },
+            {
+                prop: "product.price",
+                label: "售卖单价",
+                width: "8%",
+            },
+            {
+                prop: "product.totalPrice",
+                label: "售卖总价",
+                width: "8%",
+            },
+            {
+                type: "employees",
+                prop: "employees",
+                label: "负责人",
+                width: "5%",
+            },
+            {
+                type: "taskStartDate",
+                prop: "taskStartDate",
+                label: "开始时间",
+                width: "8%",
+            },
+            {
+                type: "taskDays",
+                prop: "taskDays",
+                label: "限时天数",
+                width: "8%",
+            },
+            {
+                type: "taskFinalDate",
+                prop: "taskFinalDate",
+                label: "提交时间",
+                width: "10%",
+            },
+            {
+                type: "transform",
+                prop: "status",
+                label: "状态",
+                items: taskStatusItems,
+                width: "10%",
+            },
+            {
+                type: "operation",
+                label: "操作",
+                width: "10%",
+                operations: [
+                    {
+                        isShow: (index, row) => {
+                            if (row.status == 6) {
+                                return true
+                            }
+                            return false
+                        },
+                        label: "查看快递单号",
+                        type: "success",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => view.openViewDLCDialog(index, row)
+                    },
+                ]
+            },
+        ]
+    },
+    columnI: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
+            },
+            {
+                prop: "no",
+                label: "发票号",
+            },
+            {
+                prop: "money",
+                label: "金额",
+            },
+        ],
+    },
+    columnP: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
+            },
+            {
+                prop: "paymentDate",
+                label: "回款时间",
+            },
+            {
+                prop: "task.id",
+                label: "任务id",
+            },
+            {
+                prop: "task.product.name",
+                label: "产品",
+            },
+            {
+                prop: "task.product.type.name",
+                label: "产品类型",
+            },
+            {
+                prop: "money",
+                label: "回款金额",
+            },
+            {
+                prop: "theoreticalPushMoney",
+                label: "理论提成",
+            },
+            {
+                prop: "fine",
+                label: "回款延迟扣除",
+            },
+            {
+                prop: "pushMoney",
+                label: "实际提成",
+            },
+            {
+                prop: "businessMoney",
+                label: "业务费用",
+            },
+        ],
+    },
+    openViewDLCDialog: (index, row) => {
+        viewDLC.model.shipmentRemark = row.shipmentRemark
+        viewDLC.dialogVisible = true
+    }
+})
+
+const viewDLC = reactive({
+    dialogVisible: false,
+    model: {
+        shipmentRemark: "",
     }
 })
 
@@ -762,6 +1374,19 @@ const approve = reactive({
                         sortable: false,
                         onClick: (index, row) => approve.openDistributeDialog(index, row)
                     },
+                    {
+                        isShow: (index, row) => {
+                            if (approve.model.status == 2 && row.status > 0) {
+                                return true
+                            }
+                            return false
+                        },
+                        label: "重置",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => approve.openResetTaskDialog(index, row)
+                    },
                 ]
             },
         ]
@@ -815,6 +1440,15 @@ const approve = reactive({
             approve.submitDisabled = false
         })
     },
+    openFinalDialog: () => {
+        final.dialogVisible = true
+    },
+    openResetDialog: () => {
+        reset.dialogVisible = true
+    },
+    openRejectDialog: () => {
+        reject.dialogVisible = true
+    },
     openDistributeDialog: (index, row) => {
         queryAllOffice().then((res) => {
             if (res.status == 1) {
@@ -824,6 +1458,74 @@ const approve = reactive({
         distribute.model.id = row.id
         distribute.model.contractID = row.contractID
         distribute.dialogVisible = true
+    },
+    openResetTaskDialog: (index, row) => {
+        queryAllOffice().then((res) => {
+            if (res.status == 1) {
+                resetContractTask.offices = res.data
+            }
+        })
+        resetContractTask.model.id = row.id
+        resetContractTask.model.contractID = row.contractID
+        resetContractTask.model.type = row.type
+        resetContractTask.dialogVisible = true
+    }
+})
+
+const final = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    submit: () => {
+        final.submitDisabled = true
+        finalContract({ "id": approve.model.id }).then((res) => {
+            if (res.status == 1) {
+                message("提交成功", "success")
+                approve.dialogVisible = false
+                base.query()
+            } else {
+                message("提交失败", "error")
+            }
+            final.dialogVisible = false
+            final.submitDisabled = false
+        })
+    }
+})
+
+const reset = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    submit: () => {
+        reset.submitDisabled = true
+        resetContract({ "id": approve.model.id }).then((res) => {
+            if (res.status == 1) {
+                message("回退成功", "success")
+                approve.dialogVisible = false
+                base.query()
+            } else {
+                message("回退失败", "error")
+            }
+            reset.dialogVisible = false
+            reset.submitDisabled = false
+        })
+    }
+})
+
+const reject = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    submit: () => {
+        reject.submitDisabled = true
+        rejectContract({ "id": approve.model.id }).then((res) => {
+            if (res.status == 1) {
+                message("合同作废成功", "success")
+                approve.dialogVisible = false
+                base.query()
+            } else {
+                message("合同作废失败", "error")
+            }
+            reject.dialogVisible = false
+            reject.submitDisabled = false
+        })
     }
 })
 
@@ -933,7 +1635,138 @@ const distribute = reactive({
             }
         })
     },
+})
 
+const resetContractTask = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    offices: [],
+    office1: null,
+    office2: null,
+    office3: null,
+    office4: null,
+    employees1: [],
+    employees2: [],
+    employees3: [],
+    employees4: [],
+    model: {
+        id: null,
+        contractID: null,
+        type: 1,
+        technicianManID: null,
+        purchaseManID: null,
+        inventoryManID: null,
+        shipmentManID: null,
+        technicianDays: 0,
+        purchaseDays: 0,
+    },
+    submit: () => {
+        resetContractTaskForm.value.validate((valid) => {
+            if (valid) {
+                resetContractTask.submitDisabled = true
+                resetTask(resetContractTask.model).then((res) => {
+                    if (res.status == 1) {
+                        message("重置成功", "success")
+                        queryContract(approve.model.id).then((res) => {
+                            if (res.status == 1) {
+                                approve.model = res.data
+                            }
+                        })
+                    } else {
+                        message("重置失败", "error")
+                    }
+                    resetContractTask.dialogVisible = false
+                    resetContractTask.model = {
+                        id: null,
+                        contractID: null,
+                        technicianManID: null,
+                        purchaseManID: null,
+                        inventoryManID: null,
+                        shipmentManID: null,
+                        technicianDays: 0,
+                        purchaseDays: 0,
+                    }
+                    resetContractTask.submitDisabled = false
+                })
+            } else {
+                return false;
+            }
+        });
+    },
+    changeType: () => {
+        resetContractTask.office1 = null
+        resetContractTask.office2 = null
+        resetContractTask.office3 = null
+        resetContractTask.office4 = null
+        resetContractTask.employees1 = []
+        resetContractTask.employees2 = []
+        resetContractTask.employees3 = []
+        resetContractTask.employees4 = []
+        resetContractTask.model.technicianManID = null
+        resetContractTask.model.purchaseManID = null
+        resetContractTask.model.inventoryManID = null
+        resetContractTask.model.shipmentManID = null
+    },
+    changeOffice1: () => {
+        resetContractTask.employees1 = []
+        resetContractTask.model.technicianManID = null
+        queryAllEmployee({ "office_id": resetContractTask.office1 }).then((res) => {
+            if (res.status == 1) {
+                resetContractTask.employees1 = res.data
+            }
+        })
+    },
+    changeOffice2: () => {
+        resetContractTask.employees2 = []
+        resetContractTask.model.purchaseManID = null
+        queryAllEmployee({ "office_id": resetContractTask.office2 }).then((res) => {
+            if (res.status == 1) {
+                resetContractTask.employees2 = res.data
+            }
+        })
+    },
+    changeOffice3: () => {
+        resetContractTask.employees3 = []
+        resetContractTask.model.inventoryManID = null
+        queryAllEmployee({ "office_id": resetContractTask.office3 }).then((res) => {
+            if (res.status == 1) {
+                resetContractTask.employees3 = res.data
+            }
+        })
+    },
+    changeOffice4: () => {
+        resetContractTask.employees4 = []
+        resetContractTask.model.shipmentManID = null
+        queryAllEmployee({ "office_id": resetContractTask.office4 }).then((res) => {
+            if (res.status == 1) {
+                resetContractTask.employees4 = res.data
+            }
+        })
+    },
+})
+
+const rejectContractTask = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    model: {
+        id: 0,
+    },
+    submit: () => {
+        rejectContractTask.submitDisabled = true
+        rejectTask(reject.model).then((res) => {
+            if (res.status == 1) {
+                message("删除成功", "success")
+                base.query()
+            } else {
+                message("删除失败", "error")
+            }
+            rejectContractTask.dialogVisible = false
+            rejectContractTask.model = {
+                id: 0,
+            }
+            rejectContractTask.submitDisabled = false
+        })
+    }
 })
 
 onBeforeMount(() => {

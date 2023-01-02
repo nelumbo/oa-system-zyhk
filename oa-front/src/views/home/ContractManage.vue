@@ -203,15 +203,26 @@
                     </el-col>
                 </el-row>
             </el-form>
-            <!-- <el-divider content-position="left" style="margin-top: 15px;">
+            <el-divider content-position="left" style="margin-top: 15px;">
                 <h2>产品详情</h2>
             </el-divider>
+            <divTable :columnObj="view.columnT" :tableData="view.model.tasks" :allShow="true" />
             <el-divider content-position="left" style="margin-top: 15px;">
                 <h2>开票记录</h2>
             </el-divider>
+            <divTable :columnObj="view.columnI" :tableData="view.model.invoices" :allShow="true" />
             <el-divider content-position="left" style="margin-top: 15px;">
                 <h2>回款详情</h2>
-            </el-divider> -->
+            </el-divider>
+            <divTable :columnObj="view.columnP" :tableData="view.model.payments" :allShow="true" />
+        </el-dialog>
+
+        <el-dialog v-model="viewDLC.dialogVisible" title="物流备注" width="50%" :show-close="false">
+            <el-form :model="viewDLC.model" label-width="120px">
+                <el-form-item label="物流备注">
+                    <el-input v-model="viewDLC.model.shipmentRemark" readonly />
+                </el-form-item>
+            </el-form>
         </el-dialog>
 
         <el-dialog v-model="del.dialogVisible" title="合同删除" width="50%" :show-close="false">
@@ -230,7 +241,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, reactive, onBeforeMount, computed } from 'vue'
-import { contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems, invoiceTypeItems } from '@/utils/magic'
+import { contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems, invoiceTypeItems, taskStatusItems } from '@/utils/magic'
 import { queryAllRegion } from "@/api/region"
 import { queryMyContracts } from "@/api/my"
 import { delContract, queryContract } from "@/api/contract"
@@ -496,6 +507,170 @@ const view = reactive({
         status: null,
         productionStatus: null,
         collectionStatus: null,
+        tasks: [],
+        invoices: [],
+        payments: [],
+    },
+    columnT: {
+        headers: [
+            {
+                prop: "id",
+                label: "ID",
+                width: "5%",
+            },
+            {
+                prop: "product.type.name",
+                label: "产品类型",
+                width: "5%",
+            },
+            {
+                prop: "product.name",
+                label: "产品名称",
+                width: "10%",
+            },
+            {
+                prop: "number",
+                label: "数量",
+                width: "5%",
+            },
+            {
+                prop: "product.unit",
+                label: "单位",
+                width: "5%",
+            },
+            {
+                prop: "productAttribute.standardPrice",
+                label: "标准定价(人民币)",
+                width: "8%",
+            },
+            {
+                prop: "productAttribute.standardPriceUSD",
+                label: "标准定价(美元)",
+                width: "8%",
+            },
+            {
+                prop: "product.price",
+                label: "售卖单价",
+                width: "8%",
+            },
+            {
+                prop: "product.totalPrice",
+                label: "售卖总价",
+                width: "8%",
+            },
+            {
+                type: "employees",
+                prop: "employees",
+                label: "负责人",
+                width: "5%",
+            },
+            {
+                type: "transform",
+                prop: "status",
+                label: "状态",
+                items: taskStatusItems,
+                width: "10%",
+            },
+            {
+                type: "operation",
+                label: "操作",
+                width: "10%",
+                operations: [
+                    {
+                        isShow: (index, row) => {
+                            if (row.status == 6) {
+                                return true
+                            }
+                            return false
+                        },
+                        label: "查看快递单号",
+                        type: "success",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => view.openViewDLCDialog(index, row)
+                    },
+                ]
+            },
+        ]
+    },
+    columnI: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
+            },
+            {
+                prop: "no",
+                label: "发票号",
+            },
+            {
+                prop: "money",
+                label: "金额",
+            },
+        ],
+    },
+    columnP: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
+            },
+            {
+                prop: "paymentDate",
+                label: "回款时间",
+            },
+            {
+                prop: "task.id",
+                label: "任务id",
+            },
+            {
+                prop: "task.product.name",
+                label: "产品",
+            },
+            {
+                prop: "task.product.type.name",
+                label: "产品类型",
+            },
+            {
+                prop: "money",
+                label: "回款金额",
+            },
+            {
+                prop: "theoreticalPushMoney",
+                label: "理论提成",
+            },
+            {
+                prop: "fine",
+                label: "回款延迟扣除",
+            },
+            {
+                prop: "pushMoney",
+                label: "实际提成",
+            },
+            {
+                prop: "businessMoney",
+                label: "业务费用",
+            },
+        ],
+    },
+    openViewDLCDialog: (index, row) => {
+        viewDLC.model.shipmentRemark = row.shipmentRemark
+        viewDLC.dialogVisible = true
+    }
+})
+
+const viewDLC = reactive({
+    dialogVisible: false,
+    model: {
+        shipmentRemark: "",
     }
 })
 

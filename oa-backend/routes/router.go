@@ -30,6 +30,7 @@ func Init() {
 		tRouter.POST("my/predesignTasks", api.QueryMyPredesignTasks)
 		tRouter.POST("my/contracts", api.QueryMyContracts)
 		tRouter.POST("my/contracts/save", api.QueryMySaveContracts)
+		tRouter.POST("my/tasks", api.QueryMyTasks)
 
 		tRouter.POST("employee", api.AddEmployee)
 		tRouter.DELETE("employee/:id", api.DelEmployee)
@@ -118,6 +119,8 @@ func Init() {
 		tRouter.POST("contract", api.AddContract)
 		tRouter.DELETE("contract/:id", api.DelContract)
 		tRouter.PUT("contract/approve", api.ApproveContract)
+		tRouter.PUT("contract/final", api.FinalContract)
+		tRouter.PUT("contract/reset", api.ResetContractCollectionStatus)
 		tRouter.PUT("contract/reject", api.RejectContract)
 		tRouter.GET("contract/:id", api.QueryContract)
 		tRouter.POST("contracts", api.QueryContracts)
@@ -125,10 +128,12 @@ func Init() {
 		tRouter.POST("task", api.AddTask)
 		tRouter.PUT("task/distribute", api.DistributeTask)
 		tRouter.PUT("task/next", api.NextTask)
+		tRouter.PUT("task/reset", api.ResetTask)
 		tRouter.PUT("task/reject", api.RejectTask)
 
 		tRouter.POST("payment", api.AddPayment)
 		tRouter.PUT("payment", api.EditPayment)
+		tRouter.PUT("payment/final", api.FinalPayment)
 
 		tRouter.POST("invoice", api.AddInvoice)
 		tRouter.DELETE("invoice/:id", api.DelInvoice)

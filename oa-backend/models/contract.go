@@ -30,7 +30,7 @@ type Contract struct {
 	VendorID              int     `gorm:"type:int;comment:签订单位;default:(-)" json:"vendorID"`
 	EstimatedDeliveryDate XDate   `gorm:"type:date;comment:合同交货日期" json:"estimatedDeliveryDate"`
 	EndDeliveryDate       XDate   `gorm:"type:date;comment:实际交货日期;default:(-)" json:"endDeliveryDate"`
-	EndPaymentDate        XDate   `gorm:"type:date;comment:最后回款日期;default:(-)" json:"endPaymentDate"`
+	EndPaymentDate        XDate   `gorm:"type:date;comment:完成回款日期;default:(-)" json:"endPaymentDate"`
 	InvoiceType           int     `gorm:"type:int;comment:开票类型" json:"invoiceType"`
 	InvoiceContent        string  `gorm:"type:varchar(300);comment:开票内容" json:"invoiceContent"`
 	PaymentContent        string  `gorm:"type:varchar(300);comment:付款方式" json:"paymentContent"`
@@ -111,8 +111,8 @@ type Task struct {
 	PurchaseFinalDate    XDate   `gorm:"type:date;comment:采购实际完成日期;default:(-)" json:"purchaseFinalDate"`
 	InventoryStartDate   XDate   `gorm:"type:date;comment:仓库接到工作日期;default:(-)" json:"inventoryStartDate"`
 	InventoryFinalDate   XDate   `gorm:"type:date;comment:仓库实际完成日期;default:(-)" json:"inventoryFinalDate"`
-	AssemblyStartDate    XDate   `gorm:"type:date;comment:装配接到工作日期;default:(-)" json:"assemblyStartDate2"`
-	AssemblyFinalDate    XDate   `gorm:"type:date;comment:装配实际完成日期;default:(-)" json:"assemblyFinalDate2"`
+	AssemblyStartDate    XDate   `gorm:"type:date;comment:装配接到工作日期;default:(-)" json:"assemblyStartDate"`
+	AssemblyFinalDate    XDate   `gorm:"type:date;comment:装配实际完成日期;default:(-)" json:"assemblyFinalDate"`
 	ShipmentStartDate    XDate   `gorm:"type:date;comment:物流接到工作日期;default:(-)" json:"shipmentStartDate"`
 	ShipmentFinalDate    XDate   `gorm:"type:date;comment:物流实际完成日期;default:(-)" json:"shipmentFinalDate"`
 	TechnicianRemark     string  `gorm:"type:varchar(300);comment:技术备注" json:"technicianRemark"`
@@ -281,11 +281,43 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 	return
 }
 
+// 预存款合同完成
+func FinalContract(contract *Contract) (code int) {
+	var contractBak Contract
+	_ = db.Preload("Tasks").First(&contractBak, contract.ID).Error
+
+	if contractBak.ID != 0 && contractBak.IsPreDeposit &&
+		contractBak.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
+		isFinish := true
+		for k := range contractBak.Tasks {
+			if contractBak.Tasks[k].Status != magic.TASK_STATUS_SHIPMENT &&
+				contractBak.Tasks[k].Status != magic.TASK_STATUS_REJECT {
+				isFinish = false
+				break
+			}
+		}
+
+		if isFinish {
+			err = db.Model(&Contract{}).Where("id = ?", contract.ID).Update("status", magic.CONTRACT_STATUS_FINISH).Error
+			if err != nil {
+				return msg.FAIL
+			}
+			return msg.SUCCESS
+		}
+	} else {
+		code = msg.FAIL
+	}
+
+	return
+}
+
+//回款状态回退
+
 // employeeID 记录用
 func RejectContract(contract *Contract, employeeID int) (code int) {
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var payments []Payment
-		if tErr := tx.Preload("Tasks.Product.Type").Where("contract_id = ?", contract.ID).Find(&payments).Error; tErr != nil {
+		if tErr := tx.Preload("Task.Product.Type").Where("contract_id = ?", contract.ID).Find(&payments).Error; tErr != nil {
 			return tErr
 		}
 		//回款记录统计
@@ -326,18 +358,18 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 		}
 
 		//合同状态变更为驳回
-		if tErr := tx.Model(&Contract{ID: contract.ID}).Update("status", magic.CONTRACT_STATUS_REJECT).Error; tErr != nil {
+		if tErr := tx.Model(&Contract{}).Where("id", contract.ID).Update("status", magic.CONTRACT_STATUS_REJECT).Error; tErr != nil {
 			return tErr
 		}
 
 		//删除任务，回款记录，支票
-		if tErr := tx.Model(&Task{ContractID: contract.ID}).Update("is_delete", true).Error; tErr != nil {
+		if tErr := tx.Model(&Task{}).Where("contract_id", contract.ID).Update("is_delete", true).Error; tErr != nil {
 			return tErr
 		}
-		if tErr := tx.Delete(&Payment{ContractID: contract.ID}).Update("is_delete", true).Error; tErr != nil {
+		if tErr := tx.Model(&Payment{}).Where("contract_id", contract.ID).Update("is_delete", true).Error; tErr != nil {
 			return tErr
 		}
-		if tErr := tx.Model(&Invoice{ContractID: contract.ID}).Update("is_delete", true).Error; tErr != nil {
+		if tErr := tx.Model(&Invoice{}).Where("contract_id", contract.ID).Update("is_delete", true).Error; tErr != nil {
 			return tErr
 		}
 
@@ -355,7 +387,9 @@ func SelectContract(id int) (contract Contract, code int) {
 		Preload("Tasks.TechnicianMan").Preload("Tasks.PurchaseMan").
 		Preload("Tasks.InventoryMan").Preload("Tasks.ShipmentMan").
 		Preload("Tasks.Product.Type").
-		Preload("Invoices.Employee").Preload("Payments.Employee").
+		Preload("Invoices.Employee").
+		Preload("Payments.Task.Product.Type").
+		Preload("Payments.Employee").
 		Where("contract.is_delete = ?", false).
 		First(&contract, id)
 	if contract.ID == 0 {
@@ -452,7 +486,8 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 	}
 
 	err = tx.Find(&contracts).Count(&xForms.Total).
-		Preload("Customer.CustomerCompany").Preload("Employee").
+		Preload("Office").Preload("Employee").
+		Preload("Customer.CustomerCompany").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
 		Find(&contracts).Error
 
@@ -522,6 +557,9 @@ func DistributeTask(task *Task, maps map[string]interface{}) (code int) {
 					return tErr
 				}
 			}
+			if tErr := tx.Model(&Task{}).Where("id = ?", task.ID).Updates(maps).Error; tErr != nil {
+				return tErr
+			}
 			return nil
 		})
 
@@ -537,39 +575,44 @@ func NextTask(task *Task, maps map[string]interface{}) (code int) {
 
 	err = db.Transaction(func(tx *gorm.DB) error {
 
-		var contract Contract
+		if maps["stauts"] == magic.TASK_STATUS_SHIPMENT {
+			var contract Contract
 
-		if tErr := tx.Preload("Tasks").
-			Where("contract.is_delete = ?", false).
-			First(&contract, task.ContractID).Error; tErr != nil {
-			return tErr
+			if tErr := tx.Preload("Tasks").
+				First(&contract, task.ContractID).Error; tErr != nil {
+				return tErr
+			}
+
+			if contract.ID != 0 && !contract.IsPreDeposit {
+				isFinish := true
+				for _, task := range contract.Tasks {
+					if task.Status != magic.TASK_STATUS_SHIPMENT {
+						isFinish = false
+						break
+					}
+				}
+
+				if isFinish {
+					if contract.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
+						if tErr := tx.Model(&Contract{}).
+							Where("id = ?", task.ContractID).
+							Updates(map[string]interface{}{"production_status": magic.CONTRATCT_PRODUCTION_STATUS_FINISH, "status": magic.CONTRACT_STATUS_FINISH}).Error; tErr != nil {
+							return tErr
+						}
+					} else {
+						if tErr := tx.Model(&Contract{}).
+							Where("id = ?", task.ContractID).
+							Update("production_status", magic.CONTRATCT_PRODUCTION_STATUS_FINISH).Error; tErr != nil {
+							return tErr
+						}
+					}
+				}
+
+			}
 		}
 
-		if !contract.IsPreDeposit {
-			isFinish := true
-			for _, task := range contract.Tasks {
-				if task.Status != magic.TASK_STATUS_SHIPMENT {
-					isFinish = false
-					break
-				}
-			}
-
-			if isFinish {
-				if contract.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
-					if tErr := tx.Model(&Contract{}).
-						Where("id = ?", task.ContractID).
-						Updates(map[string]interface{}{"production_status": magic.CONTRARCT_STATUS_FINISH, "status": magic.CONTRACT_STATUS_NOT_FINISH}).Error; tErr != nil {
-						return tErr
-					}
-				} else {
-					if tErr := tx.Model(&Contract{}).
-						Where("id = ?", task.ContractID).
-						Update("production_status", magic.CONTRARCT_STATUS_FINISH).Error; tErr != nil {
-						return tErr
-					}
-				}
-			}
-
+		if tErr := tx.Model(&Task{}).Where("id", task.ID).Updates(maps).Error; tErr != nil {
+			return tErr
 		}
 		return nil
 	})
@@ -579,6 +622,20 @@ func NextTask(task *Task, maps map[string]interface{}) (code int) {
 	}
 
 	return msg.SUCCESS
+}
+
+func ResetTask(task *Task, maps map[string]interface{}) (code int) {
+
+	if task.Contract.IsSpecial && maps["push_money_percentages"] != task.PushMoneyPercentages {
+		//特殊合同重置要修改利润提成payment
+		//TODO
+		code = GeneralUpdate(&Task{}, task.ID, maps)
+	} else {
+		//非特殊合同直接修改
+		code = GeneralUpdate(&Task{}, task.ID, maps)
+	}
+
+	return
 }
 
 // 预存款合同驳回请求
@@ -599,7 +656,7 @@ func RejectTask(id int) (code int) {
 			return tErr
 		}
 		//退回该任务的预存款金额
-		if tErr := tx.Exec("UPDATE contract SET pre_deposit = pre_deposit + ? WHERE uid = ?", task.TotalPrice, task.ContractID).Error; tErr != nil {
+		if tErr := tx.Exec("UPDATE contract SET pre_deposit = pre_deposit + ? WHERE id = ?", task.TotalPrice, task.ContractID).Error; tErr != nil {
 			return tErr
 		}
 		//任务若已经分配了退报销
@@ -628,6 +685,37 @@ func RejectTask(id int) (code int) {
 	} else {
 		return msg.SUCCESS
 	}
+}
+
+func SelectMyTasks(taskQuery *Task, employeeID int, xForms *XForms) (tasks []Task, code int) {
+	var maps = make(map[string]interface{})
+	maps["task.is_delete"] = false
+
+	if taskQuery.Status != 0 {
+		maps["task.status"] = taskQuery.Status
+	}
+
+	tx := db.Where(maps).Where(db.Where("technician_man_id = ?", employeeID).
+		Or("purchase_man_id = ?", employeeID).
+		Or("inventory_man_id = ?", employeeID).
+		Or("shipment_man_id = ?", employeeID))
+
+	if taskQuery.Contract.No != "" {
+		tx = tx.Joins("Contract")
+		tx = tx.Where("Contract.no LIKE ?", "%"+taskQuery.Contract.No+"%")
+	}
+
+	err = tx.Find(&tasks).Count(&xForms.Total).
+		Preload("Contract").
+		Preload("Product.Type").Preload("TechnicianMan").
+		Preload("PurchaseMan").Preload("InventoryMan").Preload("ShipmentMan").
+		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
+		Find(&tasks).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, msg.ERROR
+	}
+	return tasks, msg.SUCCESS
 }
 
 func DeleteInvoice(id int) (code int) {
@@ -716,5 +804,95 @@ func InsertPayment(payment *Payment) (code int) {
 	} else {
 		code = msg.FAIL
 	}
+	return
+}
+
+func UpdatePayment(payment *Payment) (code int) {
+	var paymentBak Payment
+	var contractBak Contract
+	_ = db.First(&paymentBak, payment.ID)
+	_ = db.First(&contractBak, paymentBak.ContractID)
+	if contractBak.ID != 0 {
+		if contractBak.IsPreDeposit {
+			err = db.Transaction(func(tx *gorm.DB) error {
+				//合同回款金额更新，总付款金额更新
+				tempPaymentTotalAmount := payment.Money - paymentBak.Money
+				if tErr := tx.Exec("UPDATE contract SET payment_total_amount = payment_total_amount + ?,pre_deposit = pre_deposit + ? WHERE id = ?", tempPaymentTotalAmount, tempPaymentTotalAmount, paymentBak.ContractID).Error; tErr != nil {
+					return tErr
+				}
+				//办事处任务量更新
+				if tErr := tx.Exec("UPDATE office SET target_load = target_load + ? WHERE id = ?", tempPaymentTotalAmount, contractBak.OfficeID).Error; tErr != nil {
+					return tErr
+				}
+				//更新回款记录
+				var maps = make(map[string]interface{})
+				maps["employee_id"] = payment.EmployeeID
+				maps["payment_date"] = payment.PaymentDate
+				maps["money"] = payment.Money
+				if tErr := tx.Model(&Payment{}).Where("id = ?", paymentBak.ID).Updates(maps).Error; tErr != nil {
+					return tErr
+				}
+				return nil
+			})
+		} else {
+			err = db.Transaction(func(tx *gorm.DB) error {
+				var task Task
+
+				if tErr := tx.Preload("Contract").
+					Preload("Product.Type").
+					Preload("ProductAttribute").
+					First(&task, payment.TaskID).Error; tErr != nil {
+					return tErr
+				}
+
+				//重新计算提成
+				payment.TheoreticalPushMoney, payment.Fine, payment.PushMoney, payment.BusinessMoney = calculatePercentage(payment, &task)
+				tempMoney := payment.Money - paymentBak.Money
+				tempOldPushMoney1 := paymentBak.PushMoney * 0.5
+				tempOldPushMoney2 := paymentBak.PushMoney - tempOldPushMoney1
+				tempPushMoney1 := payment.PushMoney*0.5 - tempOldPushMoney1
+				tempPushMoney2 := payment.PushMoney - payment.PushMoney*0.5 - tempOldPushMoney2
+				tempBusinessMoney := payment.BusinessMoney - paymentBak.BusinessMoney
+
+				//更新回款记录
+				var maps = make(map[string]interface{})
+				maps["employee_id"] = payment.EmployeeID
+				maps["payment_date"] = payment.PaymentDate
+				maps["money"] = payment.Money
+				maps["theoretical_push_money"] = payment.TheoreticalPushMoney
+				maps["fine"] = payment.Fine
+				maps["push_money"] = payment.PushMoney
+				maps["business_money"] = payment.BusinessMoney
+				if tErr := tx.Model(&Payment{}).Where("id = ?", paymentBak.ID).Updates(maps).Error; tErr != nil {
+					return tErr
+				}
+				//更新合同数据
+				if tErr := tx.Exec("UPDATE contract SET payment_total_amount = payment_total_amount + ? WHERE id = ?", tempMoney, paymentBak.ContractID).Error; tErr != nil {
+					return tErr
+				}
+				//更新任务数据
+				if tErr := tx.Exec("UPDATE task SET payment_total_price = payment_total_price + ? WHERE id = ?", tempMoney, paymentBak.TaskID).Error; tErr != nil {
+					return tErr
+				}
+				//更新办事处数据
+				if task.Product.Type.IsTaskLoad {
+					if tErr := tx.Exec("UPDATE office SET target_load = target_load + ?, money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempMoney, tempPushMoney1, tempPushMoney2, tempBusinessMoney, contractBak.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				} else {
+					if tErr := tx.Exec("UPDATE office SET money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempPushMoney1, tempPushMoney2, tempBusinessMoney, contractBak.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				}
+				return nil
+			})
+		}
+	} else {
+		code = msg.FAIL
+	}
+	if err != nil {
+		code = msg.ERROR
+	}
+	code = msg.SUCCESS
 	return
 }

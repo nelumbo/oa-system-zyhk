@@ -31,6 +31,22 @@ export const approveContract = (contract) => {
     })
 }
 
+export const finalContract = (contract) => {
+    return request({
+        url: '/contract/final',
+        method: 'PUT',
+        data: contract
+    })
+}
+
+export const resetContract = (contract) => {
+    return request({
+        url: '/contract/reset',
+        method: 'PUT',
+        data: contract
+    })
+}
+
 export const rejectContract = (contract) => {
     return request({
         url: '/contract/reject',

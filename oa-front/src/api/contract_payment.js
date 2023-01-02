@@ -15,3 +15,11 @@ export const editPayment = (payment) => {
         data: payment
     })
 }
+
+export const finalPayment = (payment) => {
+    return request({
+        url: '/payment/final',
+        method: 'PUT',
+        data: payment
+    })
+}

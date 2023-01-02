@@ -134,6 +134,33 @@ export const taskStatusItems = [
     },
 ]
 
+export const taskStatusSelectItems = [
+    {
+        value: 1,
+        label: '待设计',
+    },
+    {
+        value: 2,
+        label: '待采购',
+    },
+    {
+        value: 3,
+        label: '待入/出库',
+    },
+    {
+        value: 4,
+        label: '待装配',
+    },
+    {
+        value: 5,
+        label: '待发货',
+    },
+    {
+        value: 6,
+        label: '已发货',
+    },
+]
+
 export const invoiceTypeItems = [
     {
         value: 1,

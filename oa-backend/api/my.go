@@ -76,3 +76,13 @@ func QueryMySaveContracts(c *gin.Context) {
 	xForms.Data, code = models.SelectMySaveContracts(c.MustGet("employeeID").(int), &xForms)
 	msg.Message(c, code, xForms)
 }
+
+func QueryMyTasks(c *gin.Context) {
+	var taskQuery models.Task
+	_ = c.ShouldBindJSON(&taskQuery)
+
+	xForms := ginUtil.GinArrayPreprocessing(c)
+
+	xForms.Data, code = models.SelectMyTasks(&taskQuery, c.MustGet("employeeID").(int), &xForms)
+	msg.Message(c, code, xForms)
+}
