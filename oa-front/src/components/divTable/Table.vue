@@ -66,6 +66,12 @@
                     </div>
                 </span>
 
+
+                <span v-if="header.type === 'taskID'">
+                    {{ scope.row.task.id == 0 ? "" : scope.row.task.id }}
+                </span>
+
+
                 <span v-if="header.type === 'taskStartDate'">
                     <div v-if="scope.row.type == 3">技术：{{ scope.row.technicianStartDate }}</div>
                     <div v-if="scope.row.type > 1 && scope.row.status > 1">
@@ -85,7 +91,7 @@
                     <div v-if="scope.row.type == 3 && scope.row.status > 1">技术：{{ scope.row.technicianFinalDate }}</div>
                     <div v-if="scope.row.type > 1 && scope.row.status > 2"> 采购：{{ scope.row.purchaseFinalDate }}</div>
                     <div v-if="scope.row.status > 3">仓库：{{ scope.row.inventoryFinalDate }}</div>
-                    <div v-if="scope.row.type > 4 && scope.row.status > 3">装配：{{ scope.row.assemblyFinalDate }}</div>
+                    <div v-if="scope.row.type == 3 && scope.row.status > 4">装配：{{ scope.row.assemblyFinalDate }}</div>
                     <div v-if="scope.row.status > 5">物流：{{ scope.row.shipmentFinalDate }}</div>
                 </span>
             </template>

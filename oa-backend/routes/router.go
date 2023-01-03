@@ -130,6 +130,7 @@ func Init() {
 		tRouter.PUT("task/next", api.NextTask)
 		tRouter.PUT("task/reset", api.ResetTask)
 		tRouter.PUT("task/reject", api.RejectTask)
+		tRouter.DELETE("task/:id", api.DelTask)
 
 		tRouter.POST("payment", api.AddPayment)
 		tRouter.PUT("payment", api.EditPayment)

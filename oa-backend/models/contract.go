@@ -387,6 +387,7 @@ func SelectContract(id int) (contract Contract, code int) {
 		Preload("Tasks.TechnicianMan").Preload("Tasks.PurchaseMan").
 		Preload("Tasks.InventoryMan").Preload("Tasks.ShipmentMan").
 		Preload("Tasks.Product.Type").
+		Preload("Tasks.ProductAttribute").
 		Preload("Invoices.Employee").
 		Preload("Payments.Task.Product.Type").
 		Preload("Payments.Employee").
@@ -495,6 +496,16 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 		return nil, msg.ERROR
 	}
 	return contracts, msg.SUCCESS
+}
+
+func SelectTask(id int) (task Task, code int) {
+	db.Preload("Contract").
+		Where("task.is_delete = ?", false).
+		First(&task, id)
+	if task.ID == 0 {
+		return Task{}, msg.FAIL
+	}
+	return task, msg.SUCCESS
 }
 
 // 预存款合同添加任务
@@ -685,6 +696,16 @@ func RejectTask(id int) (code int) {
 	} else {
 		return msg.SUCCESS
 	}
+}
+
+func DeleteTask(id int) (code int) {
+	err = db.Model(&Task{}).Where("id = ?", id).
+		Updates(map[string]interface{}{"contract_id": nil, "is_delete": true}).Error
+
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
 }
 
 func SelectMyTasks(taskQuery *Task, employeeID int, xForms *XForms) (tasks []Task, code int) {

@@ -60,6 +60,21 @@
             <divTable :columnObj="view.columnP" :tableData="view.model.payments" :allShow="true" />
         </el-dialog>
 
+        <el-dialog v-model="viewP.dialogVisible" title="查看" width="75%" :show-close="false">
+            <el-divider content-position="left">
+                <h2>发票记录</h2>
+            </el-divider>
+            <divTable :columnObj="viewP.columnI" :tableData="viewP.model.invoices" :allShow="true" />
+            <el-divider content-position="left" style="margin-top: 30px;">
+                <h2>回款记录</h2>
+            </el-divider>
+            <divTable :columnObj="viewP.columnP" :tableData="viewP.model.payments" :allShow="true" />
+            <el-divider content-position="left" style="margin-top: 30px;">
+                <h2>提成计算</h2>
+            </el-divider>
+            <divTable :columnObj="viewP.columnAuto" :tableData="viewP.model.paymentAutos" :allShow="true" />
+        </el-dialog>
+
         <el-dialog v-model="addI.dialogVisible" title="发票添加" width="75%" :show-close="false">
             <el-divider content-position="left">
                 <h2>业务员备注</h2>
@@ -151,50 +166,71 @@
             <el-divider content-position="left" style="margin-top: 50px;">
                 <h2>回款记录</h2>
             </el-divider>
-            <divTable :columnObj="addP.column" :tableData="addP.contract.payments" :allShow="true" />
+            <divTable :columnObj="addP.columnP" :tableData="addP.contract.payments" :allShow="true"
+                v-if="addP.contract.isPreDeposit" />
+            <divTable :columnObj="addP.column" :tableData="addP.contract.payments" :allShow="true" v-else />
             <el-divider content-position="left" style="margin-top: 50px;">
                 <h2>添加回款记录</h2>
             </el-divider>
             <el-form :model="addP.model" label-width="100px" :rules="rules" ref="addPForm">
-                <el-row>
-                    <el-col :span="8">
-                        <el-form-item label="产品" prop="taskID">
-                            <el-select v-model="addP.model.taskID" placeholder="请选择" @change="addP.taskChange"
-                                style="width: 100%;">
-                                <el-option v-for="item in addP.contract.tasks" :key="item.id"
-                                    :label="item.product.name + '/任务id:' + item.id" :value="item.id" />
-                            </el-select>
+                <div v-if="addP.contract.isPreDeposit">
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="金额" prop="money">
+                                <el-input-number v-model="addP.model.money" :controls="false" :min="0" :max="9999999999"
+                                    style="width: 100%;" />
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="回款日期" prop="paymentDate">
+                                <el-date-picker v-model="addP.model.paymentDate" type="date" style="width: 100%;" />
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </div>
+                <div v-else>
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="产品" prop="taskID">
+                                <el-select v-model="addP.model.taskID" placeholder="请选择" @change="addP.taskChange"
+                                    style="width: 100%;">
+                                    <el-option v-for="item in addP.contract.tasks" :key="item.id"
+                                        :label="item.product.name + '/任务id:' + item.id" :value="item.id" />
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-form-item label="已回款金额" v-show="false" prop="taskID">
+                            <el-input v-model="addP.task.taskID" disabled />
                         </el-form-item>
-                    </el-col>
-                    <el-form-item label="已回款金额" v-show="false" prop="taskID">
-                        <el-input v-model="addP.task.taskID" disabled />
-                    </el-form-item>
-                    <el-col :span="8">
-                        <el-form-item label="总金额">
-                            <el-input v-model="addP.task.totalPrice" disabled />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="已回款金额">
-                            <el-input v-model="addP.task.paymentTotalPrice" disabled />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row>
-                    <el-col :span="8">
-                        <el-form-item label="金额" prop="money">
-                            <el-input-number v-model="addP.model.money" :controls="false" :min="0"
-                                :max="addP.task.totalPrice - addP.task.paymentTotalPrice" style="width: 100%;" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-                <el-row>
-                    <el-col :span="8">
-                        <el-form-item label="回款日期" prop="paymentDate">
-                            <el-date-picker v-model="addP.model.paymentDate" type="date" style="width: 100%;" />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
+                        <el-col :span="8">
+                            <el-form-item label="总金额">
+                                <el-input v-model="addP.task.totalPrice" disabled />
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-form-item label="已回款金额">
+                                <el-input v-model="addP.task.paymentTotalPrice" disabled />
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="金额" prop="money">
+                                <el-input-number v-model="addP.model.money" :controls="false" :min="0"
+                                    :max="addP.task.totalPrice - addP.task.paymentTotalPrice" style="width: 100%;" />
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="回款日期" prop="paymentDate">
+                                <el-date-picker v-model="addP.model.paymentDate" type="date" style="width: 100%;" />
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                </div>
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
@@ -207,34 +243,20 @@
 
         <el-dialog v-model="editP.dialogVisible" title="回款记录编辑" width="75%" :show-close="false">
             <el-form :model="editP.model" label-width="100px" :rules="rules" ref="editPForm">
-                <el-row>
+                <el-row v-if="addP.contract.isPreDeposit">
                     <el-col :span="8">
-                        <el-form-item label="产品" prop="taskID">
-                            <el-select v-model="editP.model.taskID" disabled style="width: 100%;">
-                                <el-option v-for="item in addP.contract.tasks" :key="item.id"
-                                    :label="item.product.name + '/任务id:' + item.id" :value="item.id" />
-                            </el-select>
-                        </el-form-item>
-                    </el-col>
-                    <el-form-item label="已回款金额" v-show="false" prop="taskID">
-                        <el-input v-model="editP.task.taskID" disabled />
-                    </el-form-item>
-                    <el-col :span="8">
-                        <el-form-item label="总金额">
-                            <el-input v-model="editP.task.totalPrice" disabled />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="8">
-                        <el-form-item label="已回款金额">
-                            <el-input v-model="editP.task.paymentTotalPrice" disabled />
+                        <el-form-item label="金额" prop="money">
+                            <el-input-number v-model="editP.model.money" :controls="false" :min="0" :max="9999999999"
+                                style="width: 100%;" />
                         </el-form-item>
                     </el-col>
                 </el-row>
-                <el-row>
+                <el-row v-else>
                     <el-col :span="8">
                         <el-form-item label="金额" prop="money">
                             <el-input-number v-model="editP.model.money" :controls="false" :min="0"
-                                :max="editP.task.totalPrice - editP.task.paymentTotalPrice" style="width: 100%;" />
+                                :max="editP.task.totalPrice - editP.task.paymentTotalPrice + editP.payment.money"
+                                style="width: 100%;" />
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -321,80 +343,80 @@ const base = reactive({
             {
                 prop: "no",
                 label: "合同编号",
-                width: "12%",
+                width: "15%",
             },
             {
                 prop: "office.name",
                 label: "办事处",
-                width: "4%",
+                width: "5%",
             },
             {
                 prop: "employee.name",
                 label: "业务员",
-                width: "4%",
+                width: "5%",
             },
             {
                 prop: "customer.customerCompany.name",
-                label: "客户单位",
-                width: "4%",
+                label: "客户公司",
+                width: "5%",
             },
             {
                 prop: "customer.name",
                 label: "客户",
-                width: "4%",
+                width: "5%",
             },
             {
                 type: "transform",
                 prop: "payType",
                 items: payTypeItems,
                 label: "付款类型",
-                width: "4%",
+                width: "5%",
             },
             {
                 type: "boolean",
                 prop: "isPreDeposit",
-                label: "是否预存款",
-                width: "6%",
+                label: "预存款",
+                width: "5%",
             },
             {
                 prop: "totalAmount",
-                label: "合同总金额",
-                width: "6%",
+                label: "总金额",
+                width: "5%",
             },
             {
                 prop: "paymentTotalAmount",
-                label: "总回款额",
-                width: "4%",
+                label: "总回款",
+                width: "5%",
             },
             {
                 type: "contractNotPayment",
                 prop: "notPaymentTotalAmount",
                 label: "未回款",
-                width: "4%",
+                width: "5%",
             },
             {
                 type: "transform",
                 prop: "invoiceType",
                 items: invoiceTypeItems,
-                label: "开票类型",
-                width: "4%",
+                label: "发票",
+                width: "5%",
             },
             {
                 prop: "endPaymentDate",
-                label: "完成回款时间",
-                width: "8%",
+                label: "完成时间",
+                width: "5%",
             },
             {
                 type: "transform",
                 prop: "collectionStatus",
                 items: collectionStatusItems,
-                label: "回款状态",
-                width: "4%",
+                label: "状态",
+                width: "5%",
             },
             {
                 type: "operation",
                 label: "操作",
-                width: "20%",
+                width: "25%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -404,7 +426,13 @@ const base = reactive({
                         type: "success",
                         align: "center",
                         sortable: false,
-                        onClick: (index, row) => base.openViewDialog(index, row)
+                        onClick: (index, row) => {
+                            if (row.isPreDeposit) {
+                                return base.openViewPDialog(index, row)
+                            } else {
+                                base.openViewDialog(index, row)
+                            }
+                        }
                     },
                     {
                         isShow: (index, row) => {
@@ -476,7 +504,19 @@ const base = reactive({
                 view.model = res.data
             }
         })
+
         view.dialogVisible = true
+    },
+    openViewPDialog: (index, row) => {
+        queryContract(row.id).then((res) => {
+            if (res.status == 1) {
+                let arrs = units.paymentsSeparation(res.data.payments)
+                res.data.payments = arrs[0]
+                res.data.paymentAutos = arrs[1]
+                viewP.model = res.data
+            }
+        })
+        viewP.dialogVisible = true
     },
     openAddIDialog: (index, row) => {
         queryContract(row.id).then((res) => {
@@ -488,17 +528,12 @@ const base = reactive({
         addI.dialogVisible = true
     },
     openAddPDialog: (index, row) => {
-        queryContract(row.id).then((res) => {
-            if (res.status == 1) {
-                addP.contract = res.data
-            }
-        })
+        addP.beforeFun(row.id)
         addP.task = {
             totalPrice: 0,
             paymentTotalPrice: 0,
         }
         addP.model = {
-            contractID: null,
             taskID: null,
             money: 0,
             paymentDate: "",
@@ -517,13 +552,17 @@ const view = reactive({
     dialogVisible: false,
     model: {
         invoices: [],
-        payments: []
+        payments: [],
     },
     columnI: {
         headers: [
             {
                 prop: "createDate",
                 label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
             },
             {
                 prop: "no",
@@ -582,7 +621,97 @@ const view = reactive({
                 label: "业务费用",
             },
         ],
-    }
+    },
+})
+
+const viewP = reactive({
+    dialogVisible: false,
+    model: {
+        invoices: [],
+        payments: [],
+        paymentAutos: [],
+    },
+    columnI: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
+            },
+            {
+                prop: "no",
+                label: "发票号",
+            },
+            {
+                prop: "money",
+                label: "金额",
+            },
+        ],
+    },
+    columnP: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
+            },
+            {
+                prop: "paymentDate",
+                label: "回款时间",
+            },
+            {
+                prop: "money",
+                label: "回款金额",
+            },
+        ]
+    },
+    columnAuto: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "task.id",
+                label: "任务id",
+            },
+            {
+                prop: "task.product.name",
+                label: "产品",
+            },
+            {
+                prop: "task.product.type.name",
+                label: "产品类型",
+            },
+            {
+                prop: "money",
+                label: "回款金额",
+            },
+            {
+                prop: "theoreticalPushMoney",
+                label: "理论提成",
+            },
+            {
+                prop: "fine",
+                label: "回款延迟扣除",
+            },
+            {
+                prop: "pushMoney",
+                label: "实际提成",
+            },
+            {
+                prop: "businessMoney",
+                label: "业务费用",
+            },
+        ],
+    },
+
 })
 
 const addI = reactive({
@@ -768,6 +897,18 @@ const delI = reactive({
 })
 
 const addP = reactive({
+    beforeFun: (contractID) => {
+        queryContract(contractID).then((res) => {
+            if (res.status == 1) {
+                if (res.data.isPreDeposit) {
+                    let arrs = units.paymentsSeparation(res.data.payments)
+                    res.data.payments = arrs[0]
+                    res.data.paymentAutos = arrs[1]
+                }
+                addP.contract = res.data
+            }
+        })
+    },
     dialogVisible: false,
     submitDisabled: false,
     payTypeString: computed(() => {
@@ -781,11 +922,13 @@ const addP = reactive({
         return temp;
     }),
     contract: {
+        isPreDeposit: "",
         payType: null,
         totalAmount: 0,
         paymentContent: "",
         tasks: [],
         payments: [],
+        paymentAutos: [],
     },
     task: {
         totalPrice: 0,
@@ -823,6 +966,7 @@ const addP = reactive({
                 label: "回款时间",
             },
             {
+                type: "taskID",
                 prop: "task.id",
                 label: "任务id",
             },
@@ -872,6 +1016,42 @@ const addP = reactive({
             },
         ]
     },
+    columnP: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
+            },
+            {
+                prop: "paymentDate",
+                label: "回款时间",
+            },
+            {
+                prop: "money",
+                label: "回款金额",
+            },
+            {
+                type: "operation",
+                label: "操作",
+                operations: [
+                    {
+                        isShow: (index, row) => {
+                            return true
+                        },
+                        label: "编辑",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => addP.openEditPDialog(index, row)
+                    }
+                ]
+            },
+        ]
+    },
     submit: () => {
         addPForm.value.validate((valid) => {
             if (valid) {
@@ -879,11 +1059,7 @@ const addP = reactive({
                 addPayment(addP.model).then((res) => {
                     if (res.status == 1) {
                         message("添加成功", "success")
-                        queryContract(addP.model.contractID).then((res) => {
-                            if (res.status == 1) {
-                                addP.contract = res.data
-                            }
-                        })
+                        addP.beforeFun(addP.model.contractID)
                         base.query()
                     } else {
                         message("添加失败", "error")
@@ -893,7 +1069,7 @@ const addP = reactive({
                         paymentTotalPrice: 0,
                     }
                     addP.model.taskID = null
-                    addP.model.no = 0
+                    addP.model.money = 0
                     addP.model.paymentDate = 0
                     addP.submitDisabled = false
                 })
@@ -903,6 +1079,7 @@ const addP = reactive({
         });
     },
     openEditPDialog: (index, row) => {
+        editP.payment.money = row.money
         editP.task = row.task
         editP.model.id = row.id
         editP.model.contractID = row.contractID
@@ -916,6 +1093,9 @@ const addP = reactive({
 const editP = reactive({
     dialogVisible: false,
     submitDisabled: false,
+    payment: {
+        money: 0,
+    },
     task: {
         totalPrice: 0,
         paymentTotalPrice: 0,
@@ -934,14 +1114,13 @@ const editP = reactive({
                 editPayment(editP.model).then((res) => {
                     if (res.status == 1) {
                         message("编辑成功", "success")
-                        queryContract(addP.model.contractID).then((res) => {
-                            if (res.status == 1) {
-                                addP.contract = res.data
-                            }
-                        })
+                        addP.beforeFun(addP.model.contractID)
                         base.query()
                     } else {
                         message("编辑失败", "error")
+                    }
+                    editP.payment = {
+                        money: 0,
                     }
                     editP.task = {
                         totalPrice: 0,
@@ -988,6 +1167,32 @@ const final = reactive({
             final.dialogVisible = false
             final.submitDisabled = false
         })
+    },
+})
+
+const units = reactive({
+    paymentsSeparation: (payments) => {
+        let arr1 = payments.filter(
+            function (item) {
+                if (item.task.id == 0) {
+                    return item
+                }
+            })
+        let arr2 = payments.filter(
+            function (item) {
+                if (item.task.id > 0) {
+                    return item
+                }
+            })
+
+        if (!arr1) {
+            arr1 = []
+        }
+        if (!arr2) {
+            arr2 = []
+        }
+
+        return [arr1, arr2]
     },
 })
 

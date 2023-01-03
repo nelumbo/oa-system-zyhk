@@ -84,7 +84,7 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="view.dialogVisible" title="合同查看" width="75%" :show-close="false">
+        <el-dialog v-model="view.dialogVisible" title="合同查看" width="90%" :show-close="false">
             <el-divider content-position="left">
                 <h2>基本信息</h2>
             </el-divider>
@@ -227,9 +227,16 @@
             </el-divider>
             <divTable :columnObj="view.columnI" :tableData="view.model.invoices" :allShow="true" />
             <el-divider content-position="left" style="margin-top: 15px;">
-                <h2>回款详情</h2>
+                <h2>回款记录</h2>
             </el-divider>
-            <divTable :columnObj="view.columnP" :tableData="view.model.payments" :allShow="true" />
+            <divTable :columnObj="view.columnPP" :tableData="view.model.payments" :allShow="true"
+                v-if="view.model.isPreDeposit" />
+            <divTable :columnObj="view.columnP" :tableData="view.model.payments" :allShow="true" v-else />
+            <el-divider content-position="left" style="margin-top: 15px;" v-if="view.model.isPreDeposit">
+                <h2>提成记录</h2>
+            </el-divider>
+            <divTable :columnObj="view.columnAuto" :tableData="view.model.paymentAutos" :allShow="true"
+                v-if="view.model.isPreDeposit" />
         </el-dialog>
 
         <el-dialog v-model="viewDLC.dialogVisible" title="物流备注" width="50%" :show-close="false">
@@ -688,6 +695,18 @@
                 </span>
             </template>
         </el-dialog>
+
+        <el-dialog v-model="rejectContractTask.dialogVisible" title="驳回" width="50%" :show-close="false">
+            <h1>是否确定驳回该任务？</h1>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="danger" @click="rejectContractTask.submit"
+                            :disabled="rejectContractTask.submitDisabled">确定</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -873,6 +892,11 @@ const base = reactive({
     openViewDialog: (index, row) => {
         queryContract(row.id).then((res) => {
             if (res.status == 1) {
+                if (res.data.isPreDeposit) {
+                    let arrs = units.paymentsSeparation(res.data.payments)
+                    res.data.payments = arrs[0]
+                    res.data.paymentAutos = arrs[1]
+                }
                 view.model = res.data
             }
         })
@@ -994,23 +1018,24 @@ const view = reactive({
         tasks: [],
         invoices: [],
         payments: [],
+        paymentAutos: [],
     },
     columnT: {
         headers: [
             {
                 prop: "id",
                 label: "ID",
-                width: "5%",
+                width: "3%",
             },
             {
                 prop: "product.type.name",
                 label: "产品类型",
-                width: "5%",
+                width: "6%",
             },
             {
                 prop: "product.name",
                 label: "产品名称",
-                width: "5%",
+                width: "6%",
             },
             {
                 prop: "product.specification",
@@ -1029,59 +1054,59 @@ const view = reactive({
             },
             {
                 prop: "productAttribute.standardPrice",
-                label: "标准定价(人民币)",
+                label: "标价(人民币)",
                 width: "8%",
             },
             {
                 prop: "productAttribute.standardPriceUSD",
-                label: "标准定价(美元)",
+                label: "标价(美元)",
                 width: "8%",
             },
             {
-                prop: "product.price",
+                prop: "price",
                 label: "售卖单价",
-                width: "8%",
+                width: "6%",
             },
             {
-                prop: "product.totalPrice",
+                prop: "totalPrice",
                 label: "售卖总价",
-                width: "8%",
+                width: "6%",
             },
             {
                 type: "employees",
                 prop: "employees",
                 label: "负责人",
-                width: "5%",
+                width: "9%",
             },
             {
                 type: "taskStartDate",
                 prop: "taskStartDate",
                 label: "开始时间",
-                width: "8%",
+                width: "9%",
             },
             {
                 type: "taskDays",
                 prop: "taskDays",
                 label: "限时天数",
-                width: "8%",
+                width: "6%",
             },
             {
                 type: "taskFinalDate",
                 prop: "taskFinalDate",
                 label: "提交时间",
-                width: "10%",
+                width: "9%",
             },
             {
                 type: "transform",
                 prop: "status",
                 label: "状态",
                 items: taskStatusItems,
-                width: "10%",
+                width: "5%",
             },
             {
                 type: "operation",
                 label: "操作",
-                width: "10%",
+                width: "9%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -1133,6 +1158,66 @@ const view = reactive({
             {
                 prop: "paymentDate",
                 label: "回款时间",
+            },
+            {
+                prop: "task.id",
+                label: "任务id",
+            },
+            {
+                prop: "task.product.name",
+                label: "产品",
+            },
+            {
+                prop: "task.product.type.name",
+                label: "产品类型",
+            },
+            {
+                prop: "money",
+                label: "回款金额",
+            },
+            {
+                prop: "theoreticalPushMoney",
+                label: "理论提成",
+            },
+            {
+                prop: "fine",
+                label: "回款延迟扣除",
+            },
+            {
+                prop: "pushMoney",
+                label: "实际提成",
+            },
+            {
+                prop: "businessMoney",
+                label: "业务费用",
+            },
+        ],
+    },
+    columnPP: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
+            },
+            {
+                prop: "employee.name",
+                label: "创建人",
+            },
+            {
+                prop: "paymentDate",
+                label: "回款时间",
+            },
+            {
+                prop: "money",
+                label: "回款金额",
+            },
+        ],
+    },
+    columnAuto: {
+        headers: [
+            {
+                prop: "createDate",
+                label: "创建时间",
             },
             {
                 prop: "task.id",
@@ -1330,12 +1415,12 @@ const approve = reactive({
                 width: "8%",
             },
             {
-                prop: "product.price",
+                prop: "price",
                 label: "售卖单价",
                 width: "8%",
             },
             {
-                prop: "product.totalPrice",
+                prop: "totalPrice",
                 label: "售卖总价",
                 width: "8%",
             },
@@ -1387,6 +1472,19 @@ const approve = reactive({
                         sortable: false,
                         onClick: (index, row) => approve.openResetTaskDialog(index, row)
                     },
+                    {
+                        isShow: (index, row) => {
+                            if (approve.model.status == 2 && approve.model.isPreDeposit && row.status == 0) {
+                                return true
+                            }
+                            return false
+                        },
+                        label: "驳回",
+                        type: "danger",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => approve.openRejectTaskDialog(index, row)
+                    }
                 ]
             },
         ]
@@ -1469,6 +1567,10 @@ const approve = reactive({
         resetContractTask.model.contractID = row.contractID
         resetContractTask.model.type = row.type
         resetContractTask.dialogVisible = true
+    },
+    openRejectTaskDialog: (index, row) => {
+        rejectContractTask.model.id = row.id
+        rejectContractTask.dialogVisible = true
     }
 })
 
@@ -1753,12 +1855,16 @@ const rejectContractTask = reactive({
     },
     submit: () => {
         rejectContractTask.submitDisabled = true
-        rejectTask(reject.model).then((res) => {
+        rejectTask(rejectContractTask.model).then((res) => {
             if (res.status == 1) {
-                message("删除成功", "success")
-                base.query()
+                message("驳回成功", "success")
+                queryContract(approve.model.id).then((res) => {
+                    if (res.status == 1) {
+                        approve.model = res.data
+                    }
+                })
             } else {
-                message("删除失败", "error")
+                message("驳回失败", "error")
             }
             rejectContractTask.dialogVisible = false
             rejectContractTask.model = {
@@ -1767,6 +1873,32 @@ const rejectContractTask = reactive({
             rejectContractTask.submitDisabled = false
         })
     }
+})
+
+const units = reactive({
+    paymentsSeparation: (payments) => {
+        let arr1 = payments.filter(
+            function (item) {
+                if (item.task.id == 0) {
+                    return item
+                }
+            })
+        let arr2 = payments.filter(
+            function (item) {
+                if (item.task.id > 0) {
+                    return item
+                }
+            })
+
+        if (!arr1) {
+            arr1 = []
+        }
+        if (!arr2) {
+            arr2 = []
+        }
+
+        return [arr1, arr2]
+    },
 })
 
 onBeforeMount(() => {

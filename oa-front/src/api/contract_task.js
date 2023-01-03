@@ -39,3 +39,10 @@ export const rejectTask = (task) => {
         data: task
     })
 }
+
+export const delTask = (id) => {
+    return request({
+        url: '/task/' + id,
+        method: 'DELETE',
+    })
+}

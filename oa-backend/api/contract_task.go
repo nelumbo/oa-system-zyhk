@@ -244,11 +244,18 @@ func ResetTask(c *gin.Context) {
 func AddTask(c *gin.Context) {
 	var task models.Task
 	var contractBak models.Contract
+	var product models.Product
 	_ = c.ShouldBindJSON(&task)
 
-	code = models.GeneralSelect(&contractBak, task.ContractID, nil)
+	_ = models.GeneralSelect(&contractBak, task.ContractID, nil)
+	_ = models.GeneralSelect(&product, task.ProductID, nil)
 
-	if code == msg.SUCCESS && contractBak.IsPreDeposit && contractBak.PreDeposit >= task.TotalPrice {
+	if contractBak.ID != 0 && product.ID != 0 &&
+		contractBak.IsPreDeposit && contractBak.PreDeposit >= task.TotalPrice {
+
+		task.TotalPrice = float64(task.Number) * task.Price
+		task.ProductAttributeID = product.AttributeID
+
 		code = models.InsertTask(&contractBak, &task)
 	}
 
@@ -257,14 +264,31 @@ func AddTask(c *gin.Context) {
 
 // 预存款合同任务驳回接口
 func RejectTask(c *gin.Context) {
+	var task models.Task
+	_ = c.ShouldBindJSON(&task)
+
+	if err != nil {
+		code = msg.ERROR
+	} else {
+		code = models.RejectTask(task.ID)
+	}
+
+	msg.Message(c, code, nil)
+}
+
+func DelTask(c *gin.Context) {
+	var task models.Task
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
 		code = msg.ERROR
 	} else {
-		code = models.RejectTask(id)
-
+		task, code = models.SelectTask(id)
+		if code == msg.SUCCESS && task.Status == magic.TASK_STATUS_REJECT && task.Contract.IsPreDeposit {
+			code = models.DeleteTask(id)
+		} else {
+			code = msg.FAIL
+		}
 	}
-
 	msg.Message(c, code, nil)
 }
