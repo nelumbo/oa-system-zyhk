@@ -29,7 +29,7 @@ func (t *XTime) UnmarshalJSON(data []byte) error {
 	var err error
 	str := string(data)
 	timeStr := strings.Trim(str, "\"")
-	t1, err := time.Parse("2006-01-02 15:04:05", timeStr)
+	t1, err := time.Parse("2006-01-02T15:04:05Z", timeStr)
 	*t = XTime{t1}
 	return err
 }

@@ -23,6 +23,15 @@ export const delContract = (id) => {
     })
 }
 
+//修改合同交货日期
+export const editContractEDD = (contract) => {
+    return request({
+        url: '/contract/edd',
+        method: 'PUT',
+        data: contract
+    })
+}
+
 export const approveContract = (contract) => {
     return request({
         url: '/contract/approve',

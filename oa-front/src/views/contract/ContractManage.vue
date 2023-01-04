@@ -80,6 +80,20 @@
                         :value="item.value" />
                 </el-select>
             </el-col>
+            <el-col :span="5">
+                <el-select v-model="base.model.havingInvoiceNum" placeholder="开票状态" clearable style="width: 100%;">
+                    <el-option v-for="item in HavingInvoiceItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="5" :offset="1">
+                <el-input v-model="base.model.employee.name" placeholder="业务员" clearable maxlength="25" />
+            </el-col>
+            <el-col :span="5">
+                <el-input v-model="base.model.productName" placeholder="产品" clearable maxlength="25" />
+            </el-col>
         </el-row>
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
@@ -294,10 +308,19 @@
                             <el-input v-model="approve.model.contractDate" readonly />
                         </el-form-item>
                     </el-col>
-                    <el-col :span="6">
+                    <el-col :span="6" v-if="!approve.model.status || approve.model.status != 2">
                         <el-form-item label="交货日期">
                             <el-input v-model="approve.model.estimatedDeliveryDate" readonly />
                         </el-form-item>
+                    </el-col>
+                    <el-col :span="5" v-if="approve.model.status && approve.model.status == 2">
+                        <el-form-item label="交货日期">
+                            <el-input v-model="approve.model.estimatedDeliveryDate" readonly />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="1" v-if="approve.model.status && approve.model.status == 2">
+                        <el-button type="primary" @click="approve.openEditEDDDidlog" :disabled="base.submitDisabled"
+                            style="width:100%">修改</el-button>
                     </el-col>
                     <el-col :span="6">
                         <el-form-item label="实际交货日期">
@@ -415,6 +438,22 @@
                 </el-col>
             </el-row>
 
+        </el-dialog>
+
+        <el-dialog v-model="editEDD.dialogVisible" title="日期修改" width="50%" :show-close="false">
+            <el-form :model="editEDD.model" label-width="100px" :rules="rules" ref="editEDDForm">
+                <el-form-item label="交货日期" prop="estimatedDeliveryDate">
+                    <el-date-picker v-model="editEDD.model.estimatedDeliveryDate" type="date" style="width: 100%;" />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="primary" @click="editEDD.submit"
+                            :disabled="editEDD.submitDisabled">提交</el-button>
+                    </div>
+                </span>
+            </template>
         </el-dialog>
 
         <el-dialog v-model="final.dialogVisible" title="预存款合同完成" width="50%" :show-close="false">
@@ -712,9 +751,13 @@
 
 <script setup>
 import { ref, reactive, onBeforeMount, computed } from 'vue'
-import { contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems, invoiceTypeItems, taskTypeItems, taskStatusItems } from '@/utils/magic'
+import {
+    contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems,
+    invoiceTypeItems, taskTypeItems, taskStatusItems,
+    boolItems, HavingInvoiceItems
+} from '@/utils/magic'
 import { queryAllRegion } from "@/api/region"
-import { approveContract, finalContract, resetContract, rejectContract, queryContract, queryContracts } from "@/api/contract"
+import { editContractEDD, approveContract, finalContract, resetContract, rejectContract, queryContract, queryContracts } from "@/api/contract"
 import { queryAllOffice } from "@/api/office"
 import { queryAllEmployee } from "@/api/employee"
 import { distributeTask, resetTask, rejectTask } from "@/api/contract_task"
@@ -724,6 +767,7 @@ import { reg_number } from '@/utils/regex'
 import divTable from '@/components/divTable/index.vue'
 
 const distributeForm = ref(null)
+const editEDDForm = ref(null)
 const resetContractTaskForm = ref(null)
 const rules = reactive({
     type: [
@@ -747,6 +791,9 @@ const rules = reactive({
     shipmentManID: [
         { required: true, message: '请选择', trigger: 'blur' },
     ],
+    estimatedDeliveryDate: [
+        { required: true, message: '请选择交货日期', trigger: 'blur' },
+    ],
 })
 
 const base = reactive({
@@ -762,6 +809,9 @@ const base = reactive({
                 name: "",
             }
         },
+        employee: {
+            name: "",
+        },
         status: null,
         productionStatus: null,
         collectionStatus: null,
@@ -770,6 +820,8 @@ const base = reactive({
         endDate: new Date().getFullYear() + "-12-31",
         isSpecialNum: null,
         isPreDepositNum: null,
+        havingInvoiceNum: null,
+        productName: "",
     },
     column: {
         headers: [
@@ -858,6 +910,47 @@ const base = reactive({
                 ]
             },
         ],
+        cellStyle: ({ row, column, rowIndex, columnIndex }) => {
+            if (columnIndex == 0) {
+                if (row.endDeliveryDate != "") {
+                    var old_date = new Date(row.endDeliveryDate)
+                    if (row.endPaymentDate != "") {
+                        var new_date = new Date(row.endPaymentDate)
+                    } else {
+                        var new_date = new Date()
+                    }
+                    var difftime = (new_date - old_date) / 1000;
+                    if (difftime > (-7 * 24 * 60 * 60) && difftime <= (60 * 24 * 60 * 60)) {
+                        return {
+                            backgroundColor: '#FF8C00',
+                            color: '#000',
+                        }
+                    } else if (difftime > (60 * 24 * 60 * 60)) {
+                        return {
+                            backgroundColor: '#FF4500',
+                            color: '#000',
+                        }
+                    }
+                }
+            } else if (columnIndex == 3) {
+                var old_date = new Date(row.estimatedDeliveryDate)
+                if (row.endDeliveryDate != "") {
+                    var new_date = new Date(row.endDeliveryDate)
+                } else {
+                    var new_date = new Date()
+                }
+                var difftime = (new_date - old_date) / 1000
+                if (row.no == "Bjscistar20230102-AAAZBC003") {
+                    console.log(difftime)
+                }
+                if (difftime >= 1 * 24 * 60 * 60) {
+                    return {
+                        backgroundColor: '#FF4500',
+                        color: '#000'
+                    }
+                }
+            }
+        }
     },
     tableData: [],
     pageData: {
@@ -1474,7 +1567,7 @@ const approve = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (approve.model.status == 2 && approve.model.isPreDeposit && row.status == 0) {
+                            if (approve.model.status == 2 && approve.model.isPreDeposit && row.status > -1) {
                                 return true
                             }
                             return false
@@ -1538,6 +1631,11 @@ const approve = reactive({
             approve.submitDisabled = false
         })
     },
+    openEditEDDDidlog: () => {
+        editEDD.model.id = approve.model.id
+        editEDD.model.estimatedDeliveryDate = ""
+        editEDD.dialogVisible = true
+    },
     openFinalDialog: () => {
         final.dialogVisible = true
     },
@@ -1571,6 +1669,39 @@ const approve = reactive({
     openRejectTaskDialog: (index, row) => {
         rejectContractTask.model.id = row.id
         rejectContractTask.dialogVisible = true
+    }
+})
+
+const editEDD = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    model: {
+        id: null,
+        estimatedDeliveryDate: "",
+    },
+    submit: () => {
+        editEDDForm.value.validate((valid) => {
+            if (valid) {
+                editEDD.submitDisabled = true
+                editContractEDD(editEDD.model).then((res) => {
+                    if (res.status == 1) {
+                        message("编辑成功", "success")
+                        approve.dialogVisible = false
+                        base.query()
+                    } else {
+                        message("编辑失败", "error")
+                    }
+                    editEDD.dialogVisible = false
+                    editEDD.model = {
+                        id: null,
+                        estimatedDeliveryDate: "",
+                    }
+                    editEDD.submitDisabled = false
+                })
+            } else {
+                return false;
+            }
+        })
     }
 })
 

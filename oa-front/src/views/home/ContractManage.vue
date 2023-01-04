@@ -362,7 +362,10 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ref, reactive, onBeforeMount, computed } from 'vue'
-import { contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems, invoiceTypeItems, taskStatusItems } from '@/utils/magic'
+import {
+    contractStatusItems, productionStatusItems, collectionStatusItems,
+    payTypeItems, invoiceTypeItems, taskStatusItems, boolItems,
+} from '@/utils/magic'
 import { queryAllRegion } from "@/api/region"
 import { queryMyContracts } from "@/api/my"
 import { delContract, queryContract } from "@/api/contract"
@@ -517,6 +520,47 @@ const base = reactive({
                 ]
             },
         ],
+        cellStyle: ({ row, column, rowIndex, columnIndex }) => {
+            if (columnIndex == 0) {
+                if (row.endDeliveryDate != "") {
+                    var old_date = new Date(row.endDeliveryDate)
+                    if (row.endPaymentDate != "") {
+                        var new_date = new Date(row.endPaymentDate)
+                    } else {
+                        var new_date = new Date()
+                    }
+                    var difftime = (new_date - old_date) / 1000;
+                    if (difftime > (-7 * 24 * 60 * 60) && difftime <= (60 * 24 * 60 * 60)) {
+                        return {
+                            backgroundColor: '#FF8C00',
+                            color: '#000',
+                        }
+                    } else if (difftime > (60 * 24 * 60 * 60)) {
+                        return {
+                            backgroundColor: '#FF4500',
+                            color: '#000',
+                        }
+                    }
+                }
+            } else if (columnIndex == 3) {
+                var old_date = new Date(row.estimatedDeliveryDate)
+                if (row.endDeliveryDate != "") {
+                    var new_date = new Date(row.endDeliveryDate)
+                } else {
+                    var new_date = new Date()
+                }
+                var difftime = (new_date - old_date) / 1000
+                if (row.no == "Bjscistar20230102-AAAZBC003") {
+                    console.log(difftime)
+                }
+                if (difftime >= 1 * 24 * 60 * 60) {
+                    return {
+                        backgroundColor: '#FF4500',
+                        color: '#000'
+                    }
+                }
+            }
+        }
     },
     tableData: [],
     pageData: {

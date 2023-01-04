@@ -9,16 +9,17 @@ import (
 )
 
 type Predesign struct {
-	ID            int    `gorm:"primary_key" json:"id"`
-	IsDelete      bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
-	EmployeeID    int    `gorm:"type:int;comment:业务员ID;default:(-)" json:"employeeID"`
-	AuditorID     int    `gorm:"type:int;comment:审核员ID;default:(-)" json:"auditorID"`
-	CreateRemark  string `gorm:"type:varchar(300);comment:设计需求" json:"createRemark"`
-	ApproveRemark string `gorm:"type:varchar(300);comment:审核备注" json:"approveRemark"`
-	Status        int    `gorm:"type:int;comment:状态(-1:驳回 1:未审批 2:未完成 3:已完成)" json:"status"`
-	CreateDate    XDate  `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
-	AuditDate     XDate  `gorm:"type:date;comment:审核日期;default:(-)" json:"auditDate"`
-	FinalDate     XDate  `gorm:"type:date;comment:完成日期;default:(-)" json:"finalDate"`
+	ID         int    `gorm:"primary_key" json:"id"`
+	IsDelete   bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
+	EmployeeID int    `gorm:"type:int;comment:业务员ID;default:(-)" json:"employeeID"`
+	AuditorID  int    `gorm:"type:int;comment:审核员ID;default:(-)" json:"auditorID"`
+	Remark     string `gorm:"type:varchar(300);comment:设计需求" json:"remark"`
+	// CreateRemark  string `gorm:"type:varchar(300);comment:设计需求" json:"createRemark"`
+	// ApproveRemark string `gorm:"type:varchar(300);comment:审核备注" json:"approveRemark"`
+	Status     int   `gorm:"type:int;comment:状态(-1:驳回 1:未审批 2:未完成 3:已完成)" json:"status"`
+	CreateDate XDate `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
+	AuditDate  XDate `gorm:"type:date;comment:审核日期;default:(-)" json:"auditDate"`
+	FinalDate  XDate `gorm:"type:date;comment:完成日期;default:(-)" json:"finalDate"`
 
 	PredesignTasks []PredesignTask `json:"predesignTasks"`
 	Employee       Employee        `gorm:"foreignKey:EmployeeID" json:"employee"`
@@ -58,8 +59,8 @@ func UpdatePredesign(predesign *Predesign, maps map[string]interface{}) (code in
 	predesignTask.PredesignID = predesign.ID
 	predesignTask.CreaterID = predesign.AuditorID
 	predesignTask.EmployeeID = predesign.PredesignTask.EmployeeID
-	predesignTask.CreateRemark = predesign.PredesignTask.CreateRemark
 	predesignTask.Days = predesign.PredesignTask.Days
+	predesignTask.CreateRemark = predesign.PredesignTask.CreateRemark
 	predesignTask.CreateDate.Time = time.Now()
 	predesignTask.EndDate.Time = predesignTask.CreateDate.Time.AddDate(0, 0, predesignTask.Days)
 	predesignTask.Status = magic.PREDESIGN_TASK_STATUS_NOT_SUBMIT

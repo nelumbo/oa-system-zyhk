@@ -84,19 +84,19 @@ func ApprovalExpense(c *gin.Context) {
 	_ = c.ShouldBindJSON(&expense)
 	code = models.GeneralSelect(&expenseBak, expense.ID, nil)
 
-	if code == msg.SUCCESS && expenseBak.Status == expense.Status &&
+	if expenseBak.ID != 0 && expenseBak.Status == expense.Status &&
 		expenseBak.Type == expense.Type && expenseBak.Amount == expense.Amount {
 		var maps = make(map[string]interface{})
 		maps["approve_date"] = time.Now()
-		if expense.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_1 {
+		if expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_1 {
 			if expense.IsPass {
 				maps["approver_id"] = c.MustGet("employeeID").(int)
 				maps["status"] = magic.EXPENSE_STATUS_NOT_APPROVAL_2
-				code = models.GeneralUpdate(&models.Expense{}, expense.ID, maps)
+				code = models.GeneralUpdate(&models.Expense{}, expenseBak.ID, maps)
 			} else {
 				maps["approver_id"] = c.MustGet("employeeID").(int)
 				maps["status"] = magic.EXPENSE_STATUS_FAIL
-				code = models.GeneralUpdate(&models.Expense{}, expense.ID, maps)
+				code = models.GeneralUpdate(&models.Expense{}, expenseBak.ID, maps)
 			}
 		} else if expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_2 {
 			if expense.IsPass {
@@ -106,13 +106,13 @@ func ApprovalExpense(c *gin.Context) {
 			} else {
 				maps["finance_id"] = c.MustGet("employeeID").(int)
 				maps["status"] = magic.EXPENSE_STATUS_FAIL
-				code = models.GeneralUpdate(&models.Expense{}, expense.ID, maps)
+				code = models.GeneralUpdate(&models.Expense{}, expenseBak.ID, maps)
 			}
 		} else if expenseBak.Status == magic.EXPENSE_STATUS_NOT_PAYMENT {
 			if expense.IsPass {
 				maps["cashier_id"] = c.MustGet("employeeID").(int)
 				maps["status"] = magic.EXPENSE_STATUS_FINISH
-				code = models.GeneralUpdate(&models.Expense{}, expense.ID, maps)
+				code = models.GeneralUpdate(&models.Expense{}, expenseBak.ID, maps)
 			} else {
 				maps["cashier_id"] = c.MustGet("employeeID").(int)
 				maps["status"] = magic.EXPENSE_STATUS_FAIL

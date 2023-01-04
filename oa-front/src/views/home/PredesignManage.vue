@@ -18,9 +18,9 @@
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
         <el-dialog v-model="add.dialogVisible" title="预设计任务发起" width="50%" :show-close="false">
-            <el-form :model="add.model" label-width="80px" :rules="rules" ref="addForm">
-                <el-form-item label="设计需求" prop="createRemark">
-                    <el-input v-model="add.model.createRemark" type="textarea" :autosize="{ minRows: 9, maxRows: 19 }"
+            <el-form :model="add.model" label-width="100px" :rules="rules" ref="addForm">
+                <el-form-item label="业务员备注" prop="remark">
+                    <el-input v-model="add.model.remark" type="textarea" :autosize="{ minRows: 9, maxRows: 19 }"
                         maxlength="300" />
                 </el-form-item>
             </el-form>
@@ -34,9 +34,9 @@
         </el-dialog>
 
         <el-dialog v-model="edit.dialogVisible" title="预设计任务编辑" width="50%" :show-close="false">
-            <el-form :model="edit.model" label-width="60px" :rules="rules" ref="editForm">
-                <el-form-item label="设计需求" prop="createRemark">
-                    <el-input v-model="edit.model.createRemark" type="textarea" :autosize="{ minRows: 9, maxRows: 19 }"
+            <el-form :model="edit.model" label-width="100px" :rules="rules" ref="editForm">
+                <el-form-item label="业务员备注" prop="remark">
+                    <el-input v-model="edit.model.remark" type="textarea" :autosize="{ minRows: 9, maxRows: 19 }"
                         maxlength="300" />
                 </el-form-item>
             </el-form>
@@ -74,7 +74,7 @@ import divTable from '@/components/divTable/index.vue'
 const addForm = ref(null)
 const editForm = ref(null)
 const rules = reactive({
-    createRemark: [
+    remark: [
         { required: true, message: '请填写设计需求，不超过300个字！', trigger: 'blur' },
     ],
 })
@@ -91,8 +91,8 @@ const base = reactive({
             },
             {
                 type: "textarea",
-                prop: "createRemark",
-                label: "设计需求",
+                prop: "remark",
+                label: "业务员备注",
             },
             {
                 prop: "auditor.name",
@@ -182,7 +182,7 @@ const base = reactive({
     },
     openEditDialog: (index, row) => {
         edit.model.id = row.id
-        edit.model.createRemark = row.createRemark
+        edit.model.remark = row.remark
         edit.dialogVisible = true
     },
     openDelDialog: (index, row) => {
@@ -195,7 +195,7 @@ const add = reactive({
     dialogVisible: false,
     submitDisabled: false,
     model: {
-        createRemark: "",
+        remark: "",
     },
     submit: () => {
         addForm.value.validate((valid) => {
@@ -210,7 +210,7 @@ const add = reactive({
                     }
                     add.dialogVisible = false
                     add.model = {
-                        createRemark: "",
+                        remark: "",
                     }
                     add.submitDisabled = false
                 })
@@ -226,7 +226,7 @@ const edit = reactive({
     submitDisabled: false,
     model: {
         id: null,
-        createRemark: "",
+        remark: "",
     },
     submit: () => {
         editForm.value.validate((valid) => {
@@ -242,7 +242,7 @@ const edit = reactive({
                     edit.dialogVisible = false
                     edit.model = {
                         id: null,
-                        createRemark: "",
+                        remark: "",
                     }
                     edit.submitDisabled = false
                 })

@@ -31,6 +31,7 @@ func Init() {
 		tRouter.POST("my/contracts", api.QueryMyContracts)
 		tRouter.POST("my/contracts/save", api.QueryMySaveContracts)
 		tRouter.POST("my/tasks", api.QueryMyTasks)
+		tRouter.GET("topList", api.TopList)
 
 		tRouter.POST("employee", api.AddEmployee)
 		tRouter.DELETE("employee/:id", api.DelEmployee)
@@ -118,6 +119,7 @@ func Init() {
 		tRouter.POST("contract/save", api.SaveContract)
 		tRouter.POST("contract", api.AddContract)
 		tRouter.DELETE("contract/:id", api.DelContract)
+		tRouter.PUT("contract/edd", api.EditContractEstimatedDeliveryDate)
 		tRouter.PUT("contract/approve", api.ApproveContract)
 		tRouter.PUT("contract/final", api.FinalContract)
 		tRouter.PUT("contract/reset", api.ResetContractCollectionStatus)

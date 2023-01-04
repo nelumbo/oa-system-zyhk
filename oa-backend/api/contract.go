@@ -131,6 +131,15 @@ func ApproveContract(c *gin.Context) {
 	msg.Message(c, code, nil)
 }
 
+func EditContractEstimatedDeliveryDate(c *gin.Context) {
+	var contract models.Contract
+	_ = c.ShouldBindJSON(&contract)
+
+	code = models.GeneralUpdate(&models.Contract{}, contract.ID, map[string]interface{}{"estimated_delivery_date": contract.EstimatedDeliveryDate})
+
+	msg.Message(c, code, nil)
+}
+
 // 预存款合同完成
 func FinalContract(c *gin.Context) {
 	var contract models.Contract

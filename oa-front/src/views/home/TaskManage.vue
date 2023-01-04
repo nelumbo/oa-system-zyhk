@@ -1,17 +1,28 @@
 <template>
     <div>
         <el-row :gutter="20">
-            <el-col :span="6" :offset="5">
+            <el-col :span="5" :offset="1">
                 <el-input v-model="base.model.contract.no" placeholder="合同编号" clearable maxlength="50" />
             </el-col>
-            <el-col :span="6">
+            <el-col :span="5">
                 <el-select v-model="base.model.status" placeholder="任务状态" clearable style="width: 100%;">
                     <el-option v-for="item in taskStatusSelectItems" :key="item.value" :label="item.label"
                         :value="item.value" />
                 </el-select>
             </el-col>
+            <el-col :span="5">
+                <el-input v-model="base.model.productName" placeholder="产品名称" clearable maxlength="25" />
+            </el-col>
+            <el-col :span="5">
+                <el-input v-model="base.model.customerName" placeholder="客户名称" clearable maxlength="25" />
+            </el-col>
             <el-col :span="1">
                 <el-button type="primary" @click="base.query">查询</el-button>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20">
+            <el-col :span="5" :offset="1">
+                <el-date-picker v-model="base.model.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
             </el-col>
         </el-row>
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
@@ -97,17 +108,20 @@ import divTable from '@/components/divTable/index.vue'
 
 const base = reactive({
     model: {
-        status: null,
         contract: {
             no: "",
-        }
+        },
+        status: null,
+        productName: "",
+        endDate: "",
+        customerName: "",
     },
     column: {
         headers: [
             {
                 prop: "contract.no",
                 label: "合同编号",
-                width: "10%",
+                width: "15%",
             },
             {
                 prop: "product.name",
@@ -145,29 +159,23 @@ const base = reactive({
                 width: "8%",
             },
             {
-                type: "employees",
-                prop: "employees",
-                label: "负责人",
-                width: "8%",
-            },
-            {
                 type: "transform",
                 prop: "status",
                 label: "状态",
                 items: taskStatusItems,
-                width: "8%",
+                width: "5%",
             },
             {
                 type: "taskStartDate",
                 prop: "taskStartDate",
                 label: "开始时间",
-                width: "8%",
+                width: "10%",
             },
             {
                 type: "taskDays",
                 prop: "taskDays",
                 label: "限时天数",
-                width: "8%",
+                width: "10%",
             },
             {
                 type: "taskFinalDate",
@@ -178,7 +186,7 @@ const base = reactive({
             {
                 type: "operation",
                 label: "操作",
-                width: "10%",
+                width: "12%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -296,12 +304,6 @@ const view = reactive({
             {
                 prop: "product.unit",
                 label: "单位",
-                width: "5%",
-            },
-            {
-                type: "employees",
-                prop: "employees",
-                label: "负责人",
                 width: "5%",
             },
             {

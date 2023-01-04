@@ -1,10 +1,10 @@
 <template>
-    <!-- <div>
+    <div>
         <el-divider content-position="left">
             <h2>排行榜</h2>
         </el-divider>
         <ranking />
-    </div> -->
+    </div>
     <div style="margin-top: 30px;">
         <el-divider content-position="left">
             <h2>我的合同</h2>

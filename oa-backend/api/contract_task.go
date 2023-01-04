@@ -27,6 +27,7 @@ func DistributeTask(c *gin.Context) {
 
 		var maps = make(map[string]interface{})
 		tn := time.Now()
+		taskBak.AuditDate.Time = tn
 		maps["type"] = task.Type
 		maps["auditor_id"] = c.MustGet("employeeID").(int)
 		maps["audit_date"] = tn
@@ -264,13 +265,20 @@ func AddTask(c *gin.Context) {
 
 // 预存款合同任务驳回接口
 func RejectTask(c *gin.Context) {
-	var task models.Task
+	var task, taskBak models.Task
+	var contractBak models.Contract
 	_ = c.ShouldBindJSON(&task)
 
-	if err != nil {
-		code = msg.ERROR
+	_ = models.GeneralSelect(&taskBak, task.ID, nil)
+	if taskBak.ID != 0 {
+		_ = models.GeneralSelect(&contractBak, taskBak.ContractID, nil)
+		if contractBak.ID != 0 && contractBak.IsPreDeposit && taskBak.Status != magic.TASK_STATUS_REJECT {
+			code = models.RejectTask(taskBak.ID)
+		} else {
+			code = msg.FAIL
+		}
 	} else {
-		code = models.RejectTask(task.ID)
+		code = msg.FAIL
 	}
 
 	msg.Message(c, code, nil)

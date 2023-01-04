@@ -98,46 +98,61 @@ const base = reactive({
             {
                 prop: "createDate",
                 label: "录入日期",
+                width:"10%",
+            },
+            {
+                prop: "employee.name",
+                label: "业务员",
+                width:"8%",
             },
             {
                 prop: "money",
                 label: "金额",
+                width:"7%",
             },
             {
                 type: "textarea",
                 prop: "createRemark",
-                label: "我的备注",
+                label: "业务员备注",
+                width:"15%",
             },
             {
                 prop: "auditor.name",
                 label: "审核",
+                width:"5%",
             },
             {
                 prop: "auditDate",
                 label: "审核日期",
+                width:"10%",
             },
             {
                 prop: "finalce.name",
                 label: "财务",
+                width:"5%",
             },
             {
                 prop: "finalDate",
                 label: "回款日期",
+                width:"10%",
             },
             {
                 type: "textarea",
                 prop: "finalRemark",
                 label: "回款备注",
+                width:"15%",
             },
             {
                 type: "transform",
                 prop: "status",
                 items: bidBondStatusItems,
                 label: "状态",
+                width:"5%",
             },
             {
                 type: "operation",
                 label: "操作",
+                width:"10%",
                 operations: [
                     {
                         isShow: (index, row) => {

@@ -1,5 +1,12 @@
 import request from './base'
 
+export const queryTopList = () => {
+    return request({
+        url: '/topList',
+        method: 'GET',
+    })
+}
+
 export const queryMe = () => {
     return request({
         url: '/me',

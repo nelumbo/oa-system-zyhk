@@ -50,9 +50,9 @@ func SelectBidbonds(bidbondQuery *Bidbond, xForms *XForms) (bidbonds []Bidbond, 
 		maps["Employee.office_id"] = bidbondQuery.Employee.OfficeID
 	}
 
-	tx := db.Where(maps)
+	tx := db.Where(maps).Joins("Employee")
 	if bidbondQuery.Employee.Name != "" {
-		tx = tx.Joins("Employee").Where("Employee.Name LIKE ?", "%"+bidbondQuery.Employee.Name+"%")
+		tx = tx.Where("Employee.Name LIKE ?", "%"+bidbondQuery.Employee.Name+"%")
 	}
 	err = tx.Find(&bidbonds).Count(&xForms.Total).
 		Preload("Employee.Office").Preload("Auditor").Preload("Finalce").

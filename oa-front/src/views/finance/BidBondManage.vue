@@ -12,7 +12,7 @@
                 </el-select>
             </el-col>
             <el-col :span="6">
-                <el-input v-model="base.model.employee.name" placeholder="业务员" />
+                <el-input v-model="base.model.employee.name" placeholder="业务员" clearable :maxlength="25" />
             </el-col>
             <el-col :span="1">
                 <el-button type="primary" @click="base.query">查询</el-button>
@@ -49,7 +49,7 @@
         </el-dialog>
 
         <el-dialog v-model="final.dialogVisible" title="回款" width="50%" :show-close="false">
-            <el-form :model="final.model" label-width="100px" :rules="rules" ref="finalForm">
+            <el-form :model="final.model" label-width="100px">
                 <el-form-item label="办事处">
                     <el-input v-model.trim="final.model.employee.office.name" disabled />
                 </el-form-item>
@@ -63,7 +63,7 @@
                     <el-input v-model.trim="final.model.createRemark" type="textarea" autosize disabled />
                 </el-form-item>
                 <el-divider />
-                <el-form-item label="回款备注" prop="finalRemark">
+                <el-form-item label="回款备注">
                     <el-input v-model="final.model.finalRemark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
                         maxlength="300" />
                 </el-form-item>
@@ -82,20 +82,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onBeforeMount } from 'vue'
+import { reactive, onBeforeMount } from 'vue'
 import { bidBondStatusItems } from '@/utils/magic'
 import { queryAllOffice } from "@/api/office"
 import { approveBidbond, queryBidbonds } from "@/api/bidbond"
 import { message } from '@/components/divMessage/index'
 
 import divTable from '@/components/divTable/index.vue'
-
-const finalForm = ref(null)
-const rules = reactive({
-    finalRemark: [
-        { required: true, message: '请填写备注，不超过300个字！', trigger: 'blur' },
-    ],
-})
 
 const base = reactive({
     offices: [],
@@ -240,11 +233,18 @@ const approve = reactive({
                 name: "",
             }
         },
+        status: null,
         isPass: null,
     },
     submit: () => {
         approve.submitDisabled = true
-        approveBidbond(approve.model).then((res) => {
+        approveBidbond(
+            {
+                "id": approve.model.id,
+                "status": approve.model.status,
+                "isPass": approve.model.isPass
+            }
+        ).then((res) => {
             if (res.status == 1) {
                 message("审核成功", "success")
                 base.query()
@@ -253,7 +253,7 @@ const approve = reactive({
             }
             approve.dialogVisible = false
             approve.model = {
-                id: null,
+                iid: null,
                 money: 0,
                 createRemark: "",
                 employee: {
@@ -262,6 +262,7 @@ const approve = reactive({
                         name: "",
                     }
                 },
+                status: null,
                 isPass: null,
             }
             approve.submitDisabled = false
@@ -291,39 +292,42 @@ const final = reactive({
                 name: "",
             }
         },
+        status: null,
         isPass: null,
     },
     submit: () => {
-        finalForm.value.validate((valid) => {
-            if (valid) {
-                final.submitDisabled = true
-                approveBidbond(final.model).then((res) => {
-                    if (res.status == 1) {
-                        message("回款成功", "success")
-                        base.query()
-                    } else {
-                        message("回款失败", "error")
-                    }
-                    final.dialogVisible = false
-                    final.model = {
-                        id: null,
-                        money: 0,
-                        createRemark: "",
-                        finalRemark: "",
-                        employee: {
-                            name: "",
-                            office: {
-                                name: "",
-                            }
-                        },
-                        isPass: null,
-                    }
-                    final.submitDisabled = false
-                })
-            } else {
-                return false;
+        final.submitDisabled = true
+        approveBidbond(
+            {
+                "id": final.model.id,
+                "status": final.model.status,
+                "finalRemark": final.model.finalRemark,
+                "isPass": final.model.isPass
             }
-        });
+        ).then((res) => {
+            if (res.status == 1) {
+                message("回款成功", "success")
+                base.query()
+            } else {
+                message("回款失败", "error")
+            }
+            final.dialogVisible = false
+            final.model = {
+                id: null,
+                money: 0,
+                createRemark: "",
+                finalRemark: "",
+                employee: {
+                    name: "",
+                    office: {
+                        name: "",
+                    }
+                },
+                status: null,
+                isPass: null,
+            }
+            final.submitDisabled = false
+        })
     },
     pass: () => {
         final.model.isPass = true
@@ -336,6 +340,11 @@ const final = reactive({
 })
 
 onBeforeMount(() => {
+    queryAllOffice().then((res) => {
+        if (res.status == 1) {
+            base.offices = res.data
+        }
+    })
     base.query()
 })
 </script>

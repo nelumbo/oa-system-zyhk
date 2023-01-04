@@ -370,7 +370,15 @@ const approve = reactive({
     }),
     submit: () => {
         approve.submitDisabled = true
-        approveExpense(approve.model).then((res) => {
+        approveExpense(
+            {
+                "id": approve.model.id,
+                "status": approve.model.status,
+                "type": approve.model.type,
+                "amount": approve.model.amount,
+                "isPass": approve.model.isPass,
+            }
+        ).then((res) => {
             if (res.status == 1) {
                 message("审核成功", "success")
                 base.query()

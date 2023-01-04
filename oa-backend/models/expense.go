@@ -38,68 +38,75 @@ type Expense struct {
 }
 
 func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interface{}) (code int) {
-	if expense.Type == magic.EXPENSE_TYPE_CaiLvFei {
-		return GeneralUpdate(&Expense{}, expense.ID, maps)
+
+	var employee Employee
+	db.First(&employee, expenseBak.EmployeeID)
+	if employee.ID == 0 {
+		return msg.FAIL
+	}
+
+	if expenseBak.Type == magic.EXPENSE_TYPE_CaiLvFei {
+		return GeneralUpdate(&Expense{}, expenseBak.ID, maps)
 	} else {
-		if expense.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_2 && expense.IsPass {
-			if expense.Type == magic.EXPENSE_TYPE_BuZhu {
+		if expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_2 && expense.IsPass {
+			if expenseBak.Type == magic.EXPENSE_TYPE_BuZhu {
 				err = db.Transaction(func(tx *gorm.DB) error {
-					if tErr := tx.Exec("UPDATE employee SET money = money - ? WHERE id = ?", expense.Amount, expense.EmployeeID).Error; tErr != nil {
+					if tErr := tx.Exec("UPDATE employee SET money = money - ? WHERE id = ?", expenseBak.Amount, expenseBak.EmployeeID).Error; tErr != nil {
 						return tErr
 					}
-					if tErr := tx.Model(&Expense{ID: expense.ID}).Updates(maps).Error; tErr != nil {
+					if tErr := tx.Model(&Expense{ID: expenseBak.ID}).Updates(maps).Error; tErr != nil {
 						return tErr
 					}
 					return nil
 				})
-			} else if expense.Type == magic.EXPENSE_TYPE_TiChen {
+			} else if expenseBak.Type == magic.EXPENSE_TYPE_TiChen {
 				err = db.Transaction(func(tx *gorm.DB) error {
-					if tErr := tx.Exec("UPDATE office SET money = money - ? WHERE id = ?", expense.Amount, expense.Employee.Office.ID).Error; tErr != nil {
+					if tErr := tx.Exec("UPDATE office SET money = money - ? WHERE id = ?", expenseBak.Amount, employee.OfficeID).Error; tErr != nil {
 						return tErr
 					}
-					if tErr := tx.Model(&Expense{ID: expense.ID}).Updates(maps).Error; tErr != nil {
+					if tErr := tx.Model(&Expense{ID: expenseBak.ID}).Updates(maps).Error; tErr != nil {
 						return tErr
 					}
 					return nil
 				})
-			} else if expense.Type == magic.EXPENSE_TYPE_YeWuFei {
+			} else if expenseBak.Type == magic.EXPENSE_TYPE_YeWuFei {
 				err = db.Transaction(func(tx *gorm.DB) error {
-					if tErr := tx.Exec("UPDATE office SET business_money = business_money - ? WHERE id = ?", expense.Amount, expense.Employee.Office.ID).Error; tErr != nil {
+					if tErr := tx.Exec("UPDATE office SET business_money = business_money - ? WHERE id = ?", expenseBak.Amount, employee.OfficeID).Error; tErr != nil {
 						return tErr
 					}
-					if tErr := tx.Model(&Expense{ID: expense.ID}).Updates(maps).Error; tErr != nil {
+					if tErr := tx.Model(&Expense{ID: expenseBak.ID}).Updates(maps).Error; tErr != nil {
 						return tErr
 					}
 					return nil
 				})
 			}
-		} else if expense.Status == magic.EXPENSE_STATUS_NOT_PAYMENT && !expense.IsPass {
-			if expense.Type == magic.EXPENSE_TYPE_BuZhu {
+		} else if expenseBak.Status == magic.EXPENSE_STATUS_NOT_PAYMENT && !expense.IsPass {
+			if expenseBak.Type == magic.EXPENSE_TYPE_BuZhu {
 				err = db.Transaction(func(tx *gorm.DB) error {
-					if tErr := tx.Exec("UPDATE employee SET money = money + ? WHERE id = ?", expense.Amount, expense.EmployeeID).Error; tErr != nil {
+					if tErr := tx.Exec("UPDATE employee SET money = money + ? WHERE id = ?", expenseBak.Amount, expenseBak.EmployeeID).Error; tErr != nil {
 						return tErr
 					}
-					if tErr := tx.Model(&Expense{ID: expense.ID}).Updates(maps).Error; tErr != nil {
+					if tErr := tx.Model(&Expense{ID: expenseBak.ID}).Updates(maps).Error; tErr != nil {
 						return tErr
 					}
 					return nil
 				})
-			} else if expense.Type == magic.EXPENSE_TYPE_TiChen {
+			} else if expenseBak.Type == magic.EXPENSE_TYPE_TiChen {
 				err = db.Transaction(func(tx *gorm.DB) error {
-					if tErr := tx.Exec("UPDATE office SET money = money + ? WHERE id = ?", expense.Amount, expense.Employee.Office.ID).Error; tErr != nil {
+					if tErr := tx.Exec("UPDATE office SET money = money + ? WHERE id = ?", expenseBak.Amount, employee.OfficeID).Error; tErr != nil {
 						return tErr
 					}
-					if tErr := tx.Model(&Expense{ID: expense.ID}).Updates(maps).Error; tErr != nil {
+					if tErr := tx.Model(&Expense{ID: expenseBak.ID}).Updates(maps).Error; tErr != nil {
 						return tErr
 					}
 					return nil
 				})
-			} else if expense.Type == magic.EXPENSE_TYPE_YeWuFei {
+			} else if expenseBak.Type == magic.EXPENSE_TYPE_YeWuFei {
 				err = db.Transaction(func(tx *gorm.DB) error {
-					if tErr := tx.Exec("UPDATE office SET business_money = business_money + ? WHERE id = ?", expense.Amount, expense.Employee.Office.ID).Error; tErr != nil {
+					if tErr := tx.Exec("UPDATE office SET business_money = business_money + ? WHERE id = ?", expenseBak.Amount, employee.OfficeID).Error; tErr != nil {
 						return tErr
 					}
-					if tErr := tx.Model(&Expense{ID: expense.ID}).Updates(maps).Error; tErr != nil {
+					if tErr := tx.Model(&Expense{ID: expenseBak.ID}).Updates(maps).Error; tErr != nil {
 						return tErr
 					}
 					return nil

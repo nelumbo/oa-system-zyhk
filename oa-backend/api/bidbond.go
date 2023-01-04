@@ -65,7 +65,7 @@ func ApproveBidbond(c *gin.Context) {
 
 	if code == msg.SUCCESS && bidbond.Status == bidbondBak.Status {
 		var maps = make(map[string]interface{})
-		if bidbond.Status == magic.BIDBOND_STATUS_NOT_APPROVAL {
+		if bidbondBak.Status == magic.BIDBOND_STATUS_NOT_APPROVAL {
 			maps["audit_date"] = time.Now()
 			maps["auditor_id"] = c.MustGet("employeeID").(int)
 			if bidbond.IsPass {
@@ -74,7 +74,7 @@ func ApproveBidbond(c *gin.Context) {
 				maps["status"] = magic.BIDBOND_STATUS_FAIL
 			}
 			code = models.GeneralUpdate(&models.Bidbond{}, bidbond.ID, maps)
-		} else if bidbond.Status == magic.BIDBOND_STATUS_NOT_FINAL {
+		} else if bidbondBak.Status == magic.BIDBOND_STATUS_NOT_FINAL {
 			maps["final_date"] = time.Now()
 			maps["finance_id"] = c.MustGet("employeeID").(int)
 			maps["final_remark"] = bidbond.FinalRemark

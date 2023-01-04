@@ -14,11 +14,17 @@ type Office struct {
 	MoneyCold     float64 `gorm:"type:decimal(20,6);comment:办事处今年冻结报销额度(元)" json:"moneyCold"`
 	TaskLoad      float64 `gorm:"type:decimal(20,6);comment:今年目标量(元)" json:"taskLoad"`
 	TargetLoad    float64 `gorm:"type:decimal(20,6);comment:今年完成量(元)" json:"targetLoad"`
+	YWTargetLoad  float64 `gorm:"type:decimal(20,6);comment:原位目标量(元)" json:"ywTargetLoad"`
+	ZYTargetLoad  float64 `gorm:"type:decimal(20,6);comment:直研目标量(元)" json:"zyTargetLoad"`
+	QDTargetLoad  float64 `gorm:"type:decimal(20,6);comment:渠道目标量(元)" json:"qdTargetLoad"`
 	RoleID        int     `gorm:"type:int;comment:角色ID;default:(-)" json:"roleID"`
 	IsRanking     bool    `gorm:"type:boolean;comment:是否进入排行榜" json:"isRanking"`
 	IsSubmit      bool    `gorm:"type:boolean;comment:今年结算是否提交" json:"isSubmit"`
 
 	Role Role `gorm:"foreignKey:RoleID" json:"role"`
+
+	FinalPercentages float64 `gorm:"-" json:"finalPercentages"`
+	NotPayment       float64 `gorm:"-" json:"notPayment"`
 }
 
 func SelectOffices(officeQuery *Office, xForms *XForms) (offices []Office, code int) {
@@ -36,4 +42,10 @@ func SelectOffices(officeQuery *Office, xForms *XForms) (offices []Office, code 
 		return nil, msg.ERROR
 	}
 	return offices, msg.SUCCESS
+}
+
+func SelectNotPaymentForTopList() (offices1 []Office, offices2 []Office) {
+	db.Raw("SELECT office_id id,sum(total_amount - payment_total_amount) money FROM contract WHERE is_delete IS FALSE AND is_pre_deposit IS FALSE AND STATUS > 1 GROUP BY office_id").Scan(&offices1)
+	db.Raw("SELECT office_id id,sum(pre_deposit_record - payment_total_amount) money FROM contract WHERE is_delete IS FALSE AND is_pre_deposit IS TRUE AND STATUS > 1 AND pre_deposit_record > payment_total_amount GROUP BY office_id").Scan(&offices2)
+	return
 }

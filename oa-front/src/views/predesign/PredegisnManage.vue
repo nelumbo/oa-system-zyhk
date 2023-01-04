@@ -18,7 +18,7 @@
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
         <el-dialog v-model="view.dialogVisible" title="查看" width="75%" :show-close="false">
-            <el-form :model="view.model" label-width="80px">
+            <el-form :model="view.model" label-width="100px">
                 <el-form-item label="发起日期">
                     <el-input v-model.trim="view.model.createDate" readonly />
                 </el-form-item>
@@ -28,14 +28,11 @@
                 <el-form-item label="业务员">
                     <el-input v-model.trim="view.model.employee.name" readonly />
                 </el-form-item>
-                <el-form-item label="设计需求">
-                    <el-input v-model.trim="view.model.createRemark" type="textarea" autosize readonly />
+                <el-form-item label="业务员备注">
+                    <el-input v-model.trim="view.model.remark" type="textarea" autosize readonly />
                 </el-form-item>
                 <el-form-item label="审核">
                     <el-input v-model.trim="view.model.auditor.name" readonly />
-                </el-form-item>
-                <el-form-item label="审核备注">
-                    <el-input v-model.trim="view.model.approveRemark" type="textarea" autosize readonly />
                 </el-form-item>
                 <el-form-item label="审核日期">
                     <el-input v-model.trim="view.model.auditDate" readonly />
@@ -62,8 +59,8 @@
                 <el-form-item label="业务员">
                     <el-input v-model.trim="approve.model.employee.name" disabled />
                 </el-form-item>
-                <el-form-item label="设计需求">
-                    <el-input v-model.trim="approve.model.createRemark" type="textarea" autosize disabled />
+                <el-form-item label="业务员备注">
+                    <el-input v-model.trim="approve.model.remark" type="textarea" autosize disabled />
                 </el-form-item>
                 <el-divider></el-divider>
                 <el-form-item label="办事处">
@@ -241,8 +238,7 @@ const view = reactive({
     dialogVisible: false,
     model: {
         createDate: "",
-        createRemark: "",
-        approveRemark: "",
+        remark: "",
         auditDate: "",
         finalDate: "",
         status: "",
@@ -308,7 +304,7 @@ const approve = reactive({
     model: {
         id: null,
         createDate: "",
-        createRemark: "",
+        remark: "",
         employee: {
             name: "",
             office: {
@@ -334,7 +330,18 @@ const approve = reactive({
         approveForm.value.validate((valid) => {
             if (valid) {
                 approve.submitDisabled = true
-                approvePredesign(approve.model).then((res) => {
+                approvePredesign(
+                    {
+                        "id": approve.model.id,
+                        "remark": approve.model.remark,
+                        "isPass": approve.model.isPass,
+                        "predesignTask": {
+                            "employeeID": approve.model.predesignTask.employeeID,
+                            "days": approve.model.predesignTask.days,
+                            "createRemark": approve.model.predesignTask.createRemark,
+                        }
+                    }
+                ).then((res) => {
                     if (res.status == 1) {
                         message("审核成功", "success")
                         base.query()
@@ -345,7 +352,7 @@ const approve = reactive({
                     approve.model = {
                         id: null,
                         createDate: "",
-                        createRemark: "",
+                        remark: "",
                         employee: {
                             name: "",
                             office: {

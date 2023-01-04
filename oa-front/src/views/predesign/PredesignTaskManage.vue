@@ -28,8 +28,8 @@
                 <el-form-item label="预期完成日期">
                     <el-input v-model.trim="view.model.endDate" readonly />
                 </el-form-item>
-                <el-form-item label="设计要求">
-                    <el-input v-model.trim="view.model.createRemark" type="textarea" autosize readonly />
+                <el-form-item label="业务员备注">
+                    <el-input v-model.trim="view.model.remark" type="textarea" autosize readonly />
                 </el-form-item>
                 <el-form-item label="技术员">
                     <el-input v-model.trim="view.model.employee.name" readonly />
@@ -63,7 +63,7 @@
                 <el-form-item label="预期完成日期">
                     <el-input v-model.trim="approve.model.endDate" disabled />
                 </el-form-item>
-                <el-form-item label="设计要求">
+                <el-form-item label="审批备注">
                     <el-input v-model.trim="approve.model.createRemark" type="textarea" autosize disabled />
                 </el-form-item>
                 <el-form-item label="技术员">
@@ -225,7 +225,7 @@ const view = reactive({
         createDate: "",
         days: "",
         endDate: "",
-        createRemark: "",
+        remark: "",
         finalRemark: "",
         finalDate: "",
         approveDate: "",

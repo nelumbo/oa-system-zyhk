@@ -1,78 +1,100 @@
 <template>
-    <divTable :columnObj="columnObj" :tableData="tableData" />
+    <el-row>
+        <el-col :span="4" :offset="6">
+            原位合同总量：{{ base.model.ywTargetLoad }}
+        </el-col>
+        <el-col :span="4">
+            自研合同总量：{{ base.model.zyTargetLoad }}
+        </el-col>
+        <el-col :span="4">
+            渠道合同总量：{{ base.model.qdTargetLoad }}
+        </el-col>
+    </el-row>
+    <el-row style="margin-top: 15px;"></el-row>
+    <divTable :columnObj="base.column" :tableData="base.tableData" :allShow="true" />
 </template>
 
 <script setup>
-import divTable from '../../components/divTable/index.vue'
+import { reactive, onBeforeMount } from 'vue'
+import { queryTopList } from "@/api/my"
 
-const columnObj = {
-    headers: [
-        {
-            prop: "rank",
-            label: "排名",
-            width: "5%",
-        },
-        {
-            prop: "name",
-            label: "名称",
-            width: "15%",
-        },
-        {
-            prop: "wcbfb",
-            label: "完成百分比",
-            width: "20%",
-        },
-        {
-            prop: "wcrwl",
-            label: "完成任务量",
-            width: "20%",
-        },
-        {
-            prop: "mbrwl",
-            label: "目标任务量",
-            width: "20%",
-        },
-        {
-            prop: "syhkl",
-            label: "剩余回款量",
-            width: "20%",
-        },
-    ],
-    rowStyle: ({ row }) => {
-        let style = {}
-        switch (row.rank) {
-            case 1:
-                style = {
-                    backgroundColor: 'green',
+import divTable from '@/components/divTable/index.vue'
+
+const base = reactive({
+    model: {
+        ywTargetLoad: 0,
+        zyTargetLoad: 0,
+        qdTargetLoad: 0,
+    },
+    column: {
+        headers: [
+            {
+                prop: "id",
+                label: "排名",
+            },
+            {
+                prop: "name",
+                label: "名称",
+            },
+            {
+                prop: "finalPercentages",
+                label: "完成百分比",
+            },
+            {
+                prop: "targetLoad",
+                label: "完成量",
+            },
+            {
+                prop: "taskLoad",
+                label: "目标量",
+            },
+            {
+                prop: "notPayment",
+                label: "可回款量",
+            },
+            {
+                prop: "ywTargetLoad",
+                label: "原位合同量",
+            },
+            {
+                prop: "zyTargetLoad",
+                label: "自研合同量",
+            },
+            {
+                prop: "qdTargetLoad",
+                label: "渠道合同量",
+            },
+        ],
+        rowStyle: ({ row }) => {
+            if (row.finalPercentages > 100) {
+                return {
+                    //绿色
+                    backgroundColor: '#32CD32',
                     color: '#000',
                 }
-                break;
-            default:
-                style = {
-                    backgroundColor: 'red',
+            } else {
+                return {
+                    //红色
+                    backgroundColor: '#FF4500',
                     color: '#000'
                 }
-        }
-        return style;
+            }
+            //橙色
+            // #FF8C00
+        },
     },
-}
+    tableData: [],
+    query: () => {
+        queryTopList().then((res) => {
+            if (res.status == 1) {
+                base.model = res.data.office
+                base.tableData = res.data.offices
+            }
+        })
+    },
+})
 
-const tableData = [
-    {
-        rank: 1,
-        name: '北京一区',
-        wcbfb: 50,
-        wcrwl: 10000,
-        mbrwl: 20000,
-        syhkl: 9999
-    },
-    {
-        rank: 2,
-        name: '北京二区',
-        wcbfb: 10,
-        wcrwl: 5000,
-        mbrwl: 50000,
-        syhkl: 8888
-    },
-]
+onBeforeMount(() => {
+    base.query()
+})
 </script>

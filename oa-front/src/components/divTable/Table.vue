@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="data" :row-style="columnObj.rowStyle"
+    <el-table :data="data" :row-style="columnObj.rowStyle" :cell-style="columnObj.cellStyle"
         :highlight-current-row="columnObj.highlightCurrentRow || false">
 
         <el-table-column v-for="(header, hi) in columnObj.headers" :key="hi" :prop="header.prop" :label="header.label"
@@ -20,6 +20,13 @@
                 <span v-if="header.type === 'textarea'"
                     @click="textarea.openTextareaDialog(header.label, scope.row[header.prop])">
                     {{ scope.row[header.prop] }}
+                </span>
+
+                <span v-if="header.type === 'viewIcon'">
+                    <el-icon v-if="scope.row[header.prop] != ''"
+                        @click="textarea.openTextareaDialog(header.label, scope.row[header.prop])">
+                        <View />
+                    </el-icon>
                 </span>
 
                 <!-- 按钮 -->

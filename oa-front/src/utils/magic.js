@@ -62,17 +62,6 @@ export const isSpecialItems = [
     },
 ]
 
-export const boolItems = [
-    {
-        value: 1,
-        label: '是',
-    },
-    {
-        value: 2,
-        label: '否',
-    },
-]
-
 export const isPreDepositItems = [
     {
         value: true,
@@ -276,5 +265,28 @@ export const expenseStatusItems = [
     {
         value: 4,
         label: '完成',
+    },
+]
+
+//special
+export const boolItems = [
+    {
+        value: 1,
+        label: '是',
+    },
+    {
+        value: 2,
+        label: '否',
+    },
+]
+
+export const HavingInvoiceItems = [
+    {
+        value: 1,
+        label: '未开票',
+    },
+    {
+        value: 2,
+        label: '已开票',
     },
 ]

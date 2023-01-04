@@ -1,9 +1,11 @@
 package api
 
 import (
+	"math"
 	"oa-backend/middleware"
 	"oa-backend/models"
 	"oa-backend/utils/msg"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,4 +28,48 @@ func Login(c *gin.Context) {
 		"employee": employee,
 		"token":    token,
 	})
+}
+
+func TopList(c *gin.Context) {
+	//office1:普通合同待回款量
+	//office2:预付款合同待回款量
+	var office models.Office
+	var offices, offices1, offices2 []models.Office
+	code = models.GeneralSelectAll(&offices, nil)
+	offices1, offices2 = models.SelectNotPaymentForTopList()
+
+	for i := range offices {
+
+		office.YWTargetLoad += offices[i].YWTargetLoad
+		office.ZYTargetLoad += offices[i].ZYTargetLoad
+		office.QDTargetLoad += offices[i].QDTargetLoad
+
+		for j := range offices1 {
+			if offices[i].ID == offices1[j].ID {
+				offices[i].NotPayment += offices1[j].Money
+				break
+			}
+		}
+		for k := range offices2 {
+			if offices[i].ID == offices2[k].ID {
+				offices[i].NotPayment += offices2[k].Money
+				break
+			}
+		}
+		if offices[i].TaskLoad == 0 {
+			offices[i].FinalPercentages = 100
+		} else {
+			offices[i].FinalPercentages = round((offices[i].TargetLoad / offices[i].TaskLoad * 100), 2)
+		}
+	}
+	sort.SliceStable(offices, func(i, j int) bool {
+		return offices[i].FinalPercentages > offices[j].FinalPercentages
+	})
+
+	msg.Message(c, code, map[string]interface{}{"office": office, "offices": offices})
+}
+
+func round(f float64, n int) float64 {
+	pow10_n := math.Pow10(n)
+	return math.Trunc((f+0.5/pow10_n)*pow10_n) / pow10_n
 }

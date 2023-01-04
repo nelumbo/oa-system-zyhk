@@ -1,10 +1,13 @@
 package models
 
 import (
+	"errors"
+	"fmt"
 	"oa-backend/utils/magic"
 	"oa-backend/utils/msg"
 	"strconv"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -59,11 +62,13 @@ type Contract struct {
 	Invoices []Invoice `json:"invoices"`
 	Payments []Payment `json:"payments"`
 
-	IsPass          bool   `gorm:"-" json:"isPass"`
-	StartDate       string `gorm:"-" json:"startDate"`
-	EndDate         string `gorm:"-" json:"endDate"`
-	IsSpecialNum    int    `gorm:"-" json:"isSpecialNum"`
-	IsPreDepositNum int    `gorm:"-" json:"isPreDepositNum"`
+	IsPass           bool   `gorm:"-" json:"isPass"`
+	StartDate        string `gorm:"-" json:"startDate"`
+	EndDate          string `gorm:"-" json:"endDate"`
+	IsSpecialNum     int    `gorm:"-" json:"isSpecialNum"`
+	IsPreDepositNum  int    `gorm:"-" json:"isPreDepositNum"`
+	HavingInvoiceNum int    `gorm:"-" json:"havingInvoiceNum"`
+	ProductName      string `gorm:"-" json:"productName"`
 }
 
 type Task struct {
@@ -134,6 +139,10 @@ type Task struct {
 	ShipmentMan      Employee         `gorm:"foreignKey:ShipmentManID" json:"shipmentMan"`
 	Auditor          Employee         `gorm:"foreignKey:AuditorID" json:"auditor"`
 	Payments         []Payment        `json:"payments"`
+
+	CustomerName string `gorm:"-" json:"customerName"`
+	EndDate      string `gorm:"-" json:"endDate"`
+	ProductName  string `gorm:"-" json:"productName"`
 }
 
 type Invoice struct {
@@ -459,6 +468,18 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 		tx = tx.Where("contract.no LIKE ?", "%"+contractQuery.No+"%")
 	}
 
+	if contractQuery.Employee.Name != "" {
+		tx = tx.Joins("Employee").Where("Employee.name LIKE ?", "%"+contractQuery.Employee.Name+"%")
+	}
+
+	if contractQuery.ProductName != "" {
+		tx = tx.Where("contract.id IN (?)", db.Table("task").Select("task.contract_id").
+			Joins("left join product on task.product_id = product.id").
+			Where("task.contract_id is not null").
+			Where("product.name like ?", "%"+contractQuery.ProductName+"%").
+			Group("task.contract_id"))
+	}
+
 	if contractQuery.Customer.CustomerCompany.Name != "" && contractQuery.Customer.Name != "" {
 		tx = tx.Joins("customer").
 			Joins("left join customer_company on customer.customer_company_id = customer_company.id").
@@ -484,6 +505,12 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 		if contractQuery.EndDate != "" {
 			tx = tx.Where("contract.contract_date <= ?", contractQuery.EndDate)
 		}
+	}
+
+	if contractQuery.HavingInvoiceNum == 1 {
+		tx = tx.Where("contract.id NOT IN (?)", db.Table("invoice").Select("contract_id").Where("contract_id is not null").Group("contract_id"))
+	} else if contractQuery.HavingInvoiceNum == 2 {
+		tx = tx.Where("contract.id IN (?)", db.Table("invoice").Select("contract_id").Where("contract_id is not null").Group("contract_id"))
 	}
 
 	err = tx.Find(&contracts).Count(&xForms.Total).
@@ -531,23 +558,24 @@ func InsertTask(contract *Contract, task *Task) (code int) {
 func DistributeTask(task *Task, maps map[string]interface{}) (code int) {
 
 	if task.Contract.IsPreDeposit {
+		var taskBak Task
 		//预存款合同 需要 同时生成一条回款记录
 		err = db.Transaction(func(tx *gorm.DB) error {
 			if tErr := tx.Preload("Contract").
 				Preload("Product.Type").
 				Preload("ProductAttribute").
-				First(task, task.ID).Error; tErr != nil {
+				First(taskBak, task.ID).Error; tErr != nil {
 				return tErr
 			}
 			var payment Payment
-			payment.ContractID = task.ContractID
-			payment.TaskID = task.ID
+			payment.ContractID = taskBak.ContractID
+			payment.TaskID = taskBak.ID
 			payment.CreateDate = task.AuditDate
 			payment.PaymentDate = task.AuditDate
-			payment.Money = task.TotalPrice
+			payment.Money = taskBak.TotalPrice
 
 			//计算提成
-			payment.TheoreticalPushMoney, payment.Fine, payment.PushMoney, payment.BusinessMoney = calculatePercentage(&payment, task)
+			payment.TheoreticalPushMoney, payment.Fine, payment.PushMoney, payment.BusinessMoney = calculatePercentage(&payment, &taskBak)
 			//创建记录
 			if tErr := tx.Create(&payment).Error; tErr != nil {
 				return tErr
@@ -560,19 +588,25 @@ func DistributeTask(task *Task, maps map[string]interface{}) (code int) {
 			tempPushMoney1 := payment.PushMoney * 0.5
 			tempPushMoney2 := payment.PushMoney - tempPushMoney1
 			if task.Product.Type.IsTaskLoad {
-				if tErr := tx.Exec("UPDATE office SET target_load = target_load + ?, money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", payment.Money, tempPushMoney1, tempPushMoney2, payment.BusinessMoney, task.Contract.OfficeID).Error; tErr != nil {
+				if tErr := tx.Exec("UPDATE office SET target_load = target_load + ?, money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", payment.Money, tempPushMoney1, tempPushMoney2, payment.BusinessMoney, taskBak.Contract.OfficeID).Error; tErr != nil {
 					return tErr
 				}
 			} else {
-				if tErr := tx.Exec("UPDATE office SET money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempPushMoney1, tempPushMoney2, payment.BusinessMoney, task.Contract.OfficeID).Error; tErr != nil {
+				if tErr := tx.Exec("UPDATE office SET money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempPushMoney1, tempPushMoney2, payment.BusinessMoney, taskBak.Contract.OfficeID).Error; tErr != nil {
 					return tErr
 				}
 			}
-			if tErr := tx.Model(&Task{}).Where("id = ?", task.ID).Updates(maps).Error; tErr != nil {
+			if tErr := tx.Model(&Task{}).Where("id = ?", taskBak.ID).Updates(maps).Error; tErr != nil {
 				return tErr
 			}
 			return nil
 		})
+
+		if err != nil {
+			code = msg.ERROR
+		} else {
+			code = msg.SUCCESS
+		}
 
 	} else {
 		//普通合同直接修改
@@ -655,10 +689,7 @@ func RejectTask(id int) (code int) {
 
 		var task Task
 
-		if tErr := tx.Preload("Payments").
-			Preload("Product.Type").
-			Where("task.is_delete = ?", false).
-			First(&task, id).Error; tErr != nil {
+		if tErr := tx.Preload("Product.Type").First(&task, id).Error; tErr != nil {
 			return tErr
 		}
 
@@ -671,21 +702,36 @@ func RejectTask(id int) (code int) {
 			return tErr
 		}
 		//任务若已经分配了退报销
-		if task.Status != magic.TASK_STATUS_REJECT && task.Status != magic.TASK_STATUS_NOT_DISTRIBUTE {
-			var tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney float64
-			for k := range task.Payments {
-				if !task.Payments[k].IsDelete {
-					//产品类型是否计算任务量
-					if !task.Product.Type.IsTaskLoad {
-						tempTargetLoad += task.Payments[k].Money
-					}
-					tempMoney += task.Payments[k].PushMoney * 0.5
-					tempMoneyCold += task.Payments[k].PushMoney - task.Payments[k].PushMoney*0.5
-					tempBusinessMoney += task.Payments[k].BusinessMoney
-				}
-			}
-			if tErr := tx.Exec("UPDATE office SET target_load = target_load + ?, money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney, task.Contract.OfficeID).Error; tErr != nil {
+		if task.Status != magic.TASK_STATUS_NOT_DISTRIBUTE {
+			var payment Payment
+
+			if tErr := tx.Where("task_id = ? AND is_delete = ?", task.ID, false).First(&payment).Error; tErr != nil {
 				return tErr
+			}
+
+			if payment.ID != 0 {
+				var tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney float64
+				tempTargetLoad = payment.Money
+				tempMoney = payment.PushMoney
+				tempMoneyCold = payment.PushMoney - payment.PushMoney*0.5
+				tempBusinessMoney = payment.BusinessMoney
+				if task.Product.Type.IsTaskLoad {
+					if tErr := tx.Exec("UPDATE office SET money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempMoneyCold, tempMoneyCold, tempBusinessMoney, task.Contract.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				} else {
+					if tErr := tx.Exec("UPDATE office SET target_load = target_load + ?, money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney, task.Contract.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				}
+
+				if tErr := tx.Model(&Payment{}).Where("id", payment.ID).
+					Updates(map[string]interface{}{"contract_id": nil, "is_delete": true}).Error; tErr != nil {
+					return tErr
+				}
+				//删除支票
+			} else {
+				return errors.New("not find payment")
 			}
 		}
 		return nil
@@ -721,9 +767,28 @@ func SelectMyTasks(taskQuery *Task, employeeID int, xForms *XForms) (tasks []Tas
 		Or("inventory_man_id = ?", employeeID).
 		Or("shipment_man_id = ?", employeeID))
 
+	tx = tx.Joins("Contract")
+
 	if taskQuery.Contract.No != "" {
-		tx = tx.Joins("Contract")
 		tx = tx.Where("Contract.no LIKE ?", "%"+taskQuery.Contract.No+"%")
+	}
+
+	if taskQuery.Status == 0 {
+		tx = tx.Where("task.status > 0")
+	}
+
+	if taskQuery.ProductName != "" {
+		tx = tx.Joins("Product").Where("Product.name LIKE ?", "%"+taskQuery.ProductName+"%")
+	}
+
+	if taskQuery.CustomerName != "" {
+		tx = tx.Joins("left join customer on Contract.customer_id = customer.id").Where("customer.name LIKE ?", "%"+taskQuery.CustomerName+"%")
+	}
+
+	if taskQuery.EndDate != "" {
+		tempTime, _ := time.Parse("2006-01-02T15:04:05Z", taskQuery.EndDate)
+		fmt.Println(tempTime)
+		tx = tx.Where("Contract.estimated_delivery_date <= ?", tempTime)
 	}
 
 	err = tx.Find(&tasks).Count(&xForms.Total).
