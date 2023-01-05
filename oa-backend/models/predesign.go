@@ -14,12 +14,10 @@ type Predesign struct {
 	EmployeeID int    `gorm:"type:int;comment:业务员ID;default:(-)" json:"employeeID"`
 	AuditorID  int    `gorm:"type:int;comment:审核员ID;default:(-)" json:"auditorID"`
 	Remark     string `gorm:"type:varchar(300);comment:设计需求" json:"remark"`
-	// CreateRemark  string `gorm:"type:varchar(300);comment:设计需求" json:"createRemark"`
-	// ApproveRemark string `gorm:"type:varchar(300);comment:审核备注" json:"approveRemark"`
-	Status     int   `gorm:"type:int;comment:状态(-1:驳回 1:未审批 2:未完成 3:已完成)" json:"status"`
-	CreateDate XDate `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
-	AuditDate  XDate `gorm:"type:date;comment:审核日期;default:(-)" json:"auditDate"`
-	FinalDate  XDate `gorm:"type:date;comment:完成日期;default:(-)" json:"finalDate"`
+	Status     int    `gorm:"type:int;comment:状态(-1:驳回 1:未审批 2:未完成 3:已完成)" json:"status"`
+	CreateDate XDate  `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
+	AuditDate  XDate  `gorm:"type:date;comment:审核日期;default:(-)" json:"auditDate"`
+	FinalDate  XDate  `gorm:"type:date;comment:完成日期;default:(-)" json:"finalDate"`
 
 	PredesignTasks []PredesignTask `json:"predesignTasks"`
 	Employee       Employee        `gorm:"foreignKey:EmployeeID" json:"employee"`
@@ -119,27 +117,42 @@ func SelectPredesigns(predesignQuery *Predesign, xForms *XForms) (predesigns []P
 	return predesigns, msg.SUCCESS
 }
 
-func InsertPredesignTask(predesignTaskOld *PredesignTask, maps map[string]interface{}) (code int) {
-	var predesignTask PredesignTask
-	predesignTask.PredesignID = predesignTaskOld.PredesignID
-	predesignTask.CreaterID = predesignTaskOld.AuditorID
-	predesignTask.EmployeeID = predesignTaskOld.EmployeeID
-	predesignTask.CreateRemark = predesignTaskOld.NewCreateRemark
-	predesignTask.Days = predesignTaskOld.NewDays
-	predesignTask.CreateDate.Time = time.Now()
-	predesignTask.EndDate.Time = predesignTask.CreateDate.Time.AddDate(0, 0, predesignTask.Days)
-	predesignTask.Status = magic.PREDESIGN_TASK_STATUS_NOT_SUBMIT
+func ApprovePredesignTask(predesignTaskBak *PredesignTask, maps map[string]interface{}) (code int) {
 
-	err = db.Transaction(func(tx *gorm.DB) error {
-		if tErr := tx.Model(&PredesignTask{ID: predesignTaskOld.ID}).Updates(maps).Error; tErr != nil {
-			return tErr
-		}
-		if tErr := tx.Create(&predesignTask).Error; tErr != nil {
-			return tErr
-		}
-		return nil
-	})
+	if predesignTaskBak.IsPass {
+		err = db.Transaction(func(tx *gorm.DB) error {
+			if tErr := tx.Model(&PredesignTask{ID: predesignTaskBak.ID}).Updates(maps).Error; tErr != nil {
+				return tErr
+			}
+			if tErr := tx.Model(&Predesign{}).
+				Where("id", predesignTaskBak.PredesignID).
+				Updates(map[string]interface{}{"status": magic.PREDESIGN_STATUS_FINAL, "final_date": time.Now()}).
+				Error; tErr != nil {
+				return tErr
+			}
+			return nil
+		})
+	} else {
+		var predesignTask PredesignTask
+		predesignTask.PredesignID = predesignTaskBak.PredesignID
+		predesignTask.CreaterID = predesignTaskBak.AuditorID
+		predesignTask.EmployeeID = predesignTaskBak.EmployeeID
+		predesignTask.CreateRemark = predesignTaskBak.NewCreateRemark
+		predesignTask.Days = predesignTaskBak.NewDays
+		predesignTask.CreateDate.Time = time.Now()
+		predesignTask.EndDate.Time = predesignTask.CreateDate.Time.AddDate(0, 0, predesignTask.Days)
+		predesignTask.Status = magic.PREDESIGN_TASK_STATUS_NOT_SUBMIT
 
+		err = db.Transaction(func(tx *gorm.DB) error {
+			if tErr := tx.Model(&PredesignTask{ID: predesignTaskBak.ID}).Updates(maps).Error; tErr != nil {
+				return tErr
+			}
+			if tErr := tx.Create(&predesignTask).Error; tErr != nil {
+				return tErr
+			}
+			return nil
+		})
+	}
 	if err != nil {
 		return msg.ERROR
 	}

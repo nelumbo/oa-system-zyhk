@@ -32,22 +32,28 @@ func SubmitPredesignTask(c *gin.Context) {
 func ApprovePredesignTask(c *gin.Context) {
 	var predesignTask, predesignTaskbak models.PredesignTask
 	_ = c.ShouldBindJSON(&predesignTask)
-	code = models.GeneralSelect(&predesignTaskbak, predesignTask.ID, nil)
+	_ = models.GeneralSelect(&predesignTaskbak, predesignTask.ID, nil)
 
-	if code == msg.SUCCESS && predesignTaskbak.Status == magic.PREDESIGN_TASK_STATUS_NOT_APPROVAL {
+	if predesignTaskbak.ID != 0 && predesignTaskbak.Status == magic.PREDESIGN_TASK_STATUS_NOT_APPROVAL {
+
+		predesignTaskbak.IsPass = predesignTask.IsPass
+		predesignTaskbak.AuditorID = c.MustGet("employeeID").(int)
+		predesignTaskbak.NewCreateRemark = predesignTask.NewCreateRemark
+		predesignTaskbak.NewDays = predesignTask.NewDays
+
 		var maps = make(map[string]interface{})
 		maps["auditor_id"] = c.MustGet("employeeID").(int)
-		maps["approve_date"] = predesignTask.ApproveDate
+		maps["approve_date"] = time.Now()
 
 		if predesignTask.IsPass {
 			maps["status"] = magic.PREDESIGN_TASK_STATUS_FINAL
-			code = models.GeneralUpdate(&models.PredesignTask{}, predesignTask.ID, maps)
 		} else {
 			maps["status"] = magic.PREDESIGN_TASK_STATUS_FAIL
-			predesignTask.PredesignID = predesignTaskbak.PredesignID
-			predesignTask.AuditorID = c.MustGet("employeeID").(int)
-			code = models.InsertPredesignTask(&predesignTask, maps)
+
 		}
+
+		code = models.ApprovePredesignTask(&predesignTaskbak, maps)
+
 	} else {
 		code = msg.FAIL
 	}

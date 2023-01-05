@@ -20,6 +20,7 @@ type Supplier struct {
 	Email       string `gorm:"type:varchar(50);comment:邮箱" json:"email"`
 	Description string `gorm:"type:varchar(300);comment:主营产品概述" json:"description"`
 	Remark      string `gorm:"type:varchar(300);comment:备注" json:"remark"`
+	InvoiceType string `gorm:"type:varchar(50);comment:开票种类" json:"invoiceType"`
 }
 
 type Product struct {
@@ -29,10 +30,12 @@ type Product struct {
 	ID            int    `gorm:"primary_key" json:"id"`
 	IsDelete      bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	Name          string `gorm:"type:varchar(50);comment:名称;not null" json:"name"`
+	Version       string `gorm:"type:varchar(50);comment:型号;not null" json:"version"`
 	Brand         string `gorm:"type:varchar(50);comment:品牌" json:"brand"`
 	Specification string `gorm:"type:varchar(100);comment:规格" json:"specification"`
 	Number        int    `gorm:"type:int;comment:可售数量(库存数量-订单锁定但未出库的数量)" json:"number"`
 	NumberCount   int    `gorm:"type:int;comment:库存数量" json:"numberCount"`
+	CallNumber    int    `gorm:"type:int;comment:报警数量" json:"callNumber"`
 	Unit          string `gorm:"type:varchar(50);comment:单位" json:"unit"`
 	DeliveryCycle string `gorm:"type:varchar(50);comment:供货周期" json:"deliveryCycle"`
 	Remark        string `gorm:"type:varchar(300);comment:备注" json:"remark"`

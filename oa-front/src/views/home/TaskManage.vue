@@ -93,18 +93,92 @@
                 </span>
             </template>
         </el-dialog>
+
+        <el-dialog v-model="add.dialogVisible" title="采购" width="75%" :show-close="false">
+            <el-form :model="add.model" label-width="100px">
+                <el-row :gutter="20">
+                    <el-col :span="6" :offset="2">
+                        <el-input v-model="add.model.name" placeholder="名称" clearable maxlength="25" />
+                    </el-col>
+                    <el-col :span="6">
+                        <el-input v-model="add.model.version" placeholder="型号" clearable maxlength="25" />
+                    </el-col>
+                    <el-col :span="6">
+                        <el-input v-model="add.model.specification" placeholder="规格" clearable maxlength="25" />
+                    </el-col>
+                    <el-col :span="1">
+                        <el-button type="primary" @click="add.query">查询</el-button>
+                    </el-col>
+                </el-row>
+            </el-form>
+            <divTable :columnObj="add.column" :tableData="add.tableData" :pageData="add.pageData"
+                :handleSizeChange="add.handleSizeChange" :handleCurrentChange="add.handleCurrentChange" />
+        </el-dialog>
+
+        <el-dialog v-model="addDLC.dialogVisible" title="添加" width="50%" :show-close="false">
+            <el-divider content-position="left">
+                <h2>产品信息</h2>
+            </el-divider>
+            <el-form :model="addDLC.product" label-width="100px">
+                <el-form-item label="名称">
+                    <el-input v-model.trim="addDLC.product.name" disabled />
+                </el-form-item>
+                <el-form-item label="型号">
+                    <el-input v-model.trim="addDLC.product.version" disabled />
+                </el-form-item>
+                <el-form-item label="规格">
+                    <el-input v-model.trim="addDLC.product.specification" disabled />
+                </el-form-item>
+                <el-form-item label="供应商">
+                    <el-row>
+                        <el-col :span="24" v-for="supplier in addDLC.product.suppliers" :key="supplier.id">
+                            {{ supplier.name }}
+                        </el-col>
+                    </el-row>
+                </el-form-item>
+                <el-form-item label="库存数量">
+                    <el-input v-model.trim="addDLC.product.numberCount" disabled />
+                </el-form-item>
+            </el-form>
+            <el-divider content-position="left" style="margin-top: 30px;">
+                <h2>填充信息</h2>
+            </el-divider>
+            <el-form :model="addDLC.model" label-width="100px" :rules="rules" ref="addForm">
+                <el-form-item label="需求数量" prop="number">
+                    <el-input-number v-model="addDLC.model.number" :controls="false" :min="1" :max="99999" />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="primary" @click="addDLC.submit"
+                            :disabled="addDLC.submitDisabled">提交</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
 <script setup>
-import { reactive, onBeforeMount } from 'vue'
+import { ref, reactive, onBeforeMount } from 'vue'
 import { taskStatusItems, taskStatusSelectItems } from '@/utils/magic'
 import { queryMyTasks } from "@/api/my"
 import { queryContract } from "@/api/contract"
 import { nextTask } from "@/api/contract_task"
+import { queryProducts } from "@/api/product"
+import { addPurchasing } from "@/api/purchasing"
 import { message } from '@/components/divMessage/index'
+import { reg_number } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
+
+const addForm = ref(null)
+const rules = reactive({
+    number: [
+        { required: true, pattern: reg_number, message: '请输入大于零的有效数字', trigger: 'blur' },
+    ],
+})
 
 const base = reactive({
     model: {
@@ -129,11 +203,6 @@ const base = reactive({
                 width: "5%",
             },
             {
-                prop: "totalPrice",
-                label: "总价",
-                width: "5%",
-            },
-            {
                 prop: "number",
                 label: "数量",
                 width: "5%",
@@ -149,21 +218,16 @@ const base = reactive({
                 width: "5%",
             },
             {
-                prop: "totalPrice",
-                label: "总金额",
-                width: "5%",
-            },
-            {
                 prop: "contract.estimatedDeliveryDate",
                 label: "合同交货时间",
-                width: "8%",
+                width: "10%",
             },
             {
                 type: "transform",
                 prop: "status",
                 label: "状态",
                 items: taskStatusItems,
-                width: "5%",
+                width: "10%",
             },
             {
                 type: "taskStartDate",
@@ -186,7 +250,7 @@ const base = reactive({
             {
                 type: "operation",
                 label: "操作",
-                width: "12%",
+                width: "15%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -209,6 +273,17 @@ const base = reactive({
                         sortable: false,
                         onClick: (index, row) => base.openNextDialog(index, row)
                     },
+                    {
+                        isShow: (index, row) => {
+                            if (row.status > 1 && row.status < 6)
+                                return true
+                        },
+                        label: "采购",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openAddDialog(index, row)
+                    }
                 ]
             },
         ],
@@ -253,6 +328,11 @@ const base = reactive({
         next.model.id = row.id
         next.dialogVisible = true
     },
+    openAddDialog: (index, row) => {
+        add.task = row
+        add.query()
+        add.dialogVisible = true
+    }
 })
 
 const view = reactive({
@@ -340,6 +420,181 @@ const next = reactive({
             }
             next.submitDisabled = false
         })
+    }
+})
+
+const add = reactive({
+    dialogVisible: false,
+    task: {
+        "id": null,
+        "contractID": null,
+    },
+    model: {
+        name: "",
+        version: "",
+        specification: "",
+    },
+    column: {
+        headers: [
+            {
+                prop: "type.name",
+                label: "类型",
+                width: "5%",
+            },
+            {
+                prop: "name",
+                label: "名称",
+                width: "10%",
+            },
+            {
+                prop: "version",
+                label: "型号",
+                width: "8%",
+            },
+            {
+                prop: "brand",
+                label: "品牌",
+                width: "5%",
+            },
+            {
+                prop: "specification",
+                label: "规格",
+                width: "10%",
+            },
+            {
+                prop: "numberCount",
+                label: "库存数量",
+                width: "10%",
+            },
+            {
+                prop: "number",
+                label: "可售数量",
+                width: "10%",
+            },
+            {
+                prop: "unit",
+                label: "单位",
+                width: "5%",
+            },
+            {
+                prop: "attribute.standardPrice",
+                label: "标准售价(元)",
+                width: "10%",
+            },
+            {
+                prop: "attribute.standardPriceUSD",
+                label: "标准售价(美元)",
+                width: "10%",
+            },
+            {
+                type: "boolean",
+                prop: "isFree",
+                label: "小零配件",
+                width: "7%",
+            },
+            {
+                type: "operation",
+                label: "操作",
+                width: "10%",
+                operations: [
+                    {
+                        isShow: (index, row) => {
+                            return true
+                        },
+                        label: "添加",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => add.openAddDLCDialog(index, row)
+                    }
+                ]
+            },
+        ],
+    },
+    tableData: [],
+    pageData: {
+        total: 0,
+        pageSize: 10,
+        pageNo: 1
+    },
+    query: () => {
+        queryProducts(add.model, add.pageData).then((res) => {
+            if (res.status == 1) {
+                add.tableData = res.data.data
+                add.pageData.total = res.data.total
+                add.pageData.pageSize = res.data.pageSize
+                add.pageData.pageNo = res.data.pageNo
+            } else {
+                message("查询失败", "error")
+            }
+        })
+    },
+    handleSizeChange: (e) => {
+        add.pageData.pageSize = e
+        add.pageData.pageNo = 1
+        add.query()
+    },
+    handleCurrentChange: (e) => {
+        add.pageData.pageNo = e
+        add.query()
+    },
+    openAddDLCDialog: (index, row) => {
+        addDLC.product = row
+        addDLC.model.contractID = add.task.contractID
+        addDLC.model.taskID = add.task.id
+        addDLC.model.productID = row.id
+        addDLC.dialogVisible = true
+    }
+})
+
+const addDLC = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    product: {
+        name: "",
+        version: "",
+        specification: "",
+        suppliers: [],
+        numberCount: 0,
+        number: 0,
+    },
+    model: {
+        contractID: null,
+        taskID: null,
+        productID: null,
+        number: 1,
+    },
+    submit: () => {
+        addForm.value.validate((valid) => {
+            if (valid) {
+                addDLC.submitDisabled = true
+                addPurchasing(addDLC.model).then((res) => {
+                    if (res.status == 1) {
+                        message("添加成功", "success")
+                    } else {
+                        message("添加失败", "error")
+                    }
+                    addDLC.dialogVisible = false
+                    addDLC.product = {
+                        name: "",
+                        version: "",
+                        specification: "",
+                        suppliers: [],
+                        numberCount: 0,
+                        number: 0,
+                    }
+                    addDLC.model = {
+                        contractID: null,
+                        taskID: null,
+                        productID: null,
+                        number: 1,
+                    }
+                    addDLC.submitDisabled = false
+                })
+            } else {
+                return false;
+            }
+        });
     }
 })
 

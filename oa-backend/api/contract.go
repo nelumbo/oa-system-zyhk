@@ -114,7 +114,7 @@ func DelContract(c *gin.Context) {
 
 func ApproveContract(c *gin.Context) {
 	var contract, contractBak models.Contract
-	err = c.ShouldBindJSON(&contract)
+	_ = c.ShouldBindJSON(&contract)
 
 	_ = models.GeneralSelect(&contractBak, contract.ID, nil)
 

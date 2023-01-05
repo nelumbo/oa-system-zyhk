@@ -51,6 +51,9 @@
                     <el-input v-model="add.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
                         maxlength="300" />
                 </el-form-item>
+                <el-form-item label="开票种类">
+                    <el-input v-model.trim="add.model.invoiceType" maxlength="50" />
+                </el-form-item>
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
@@ -273,6 +276,7 @@ const add = reactive({
         email: "",
         description: "",
         remark: "",
+        invoiceType: "",
     },
     submit: () => {
         addForm.value.validate((valid) => {

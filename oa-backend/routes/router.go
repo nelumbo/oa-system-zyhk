@@ -141,6 +141,13 @@ func Init() {
 		tRouter.POST("invoice", api.AddInvoice)
 		tRouter.DELETE("invoice/:id", api.DelInvoice)
 		tRouter.PUT("invoice", api.EditInvoice)
+
+		tRouter.POST("purchasing", api.AddPurchasing)
+		tRouter.PUT("purchasing/approve", api.ApprovePurchasing)
+		tRouter.PUT("purchasing/product/final", api.FinalPurchasingProductStatus)
+		tRouter.PUT("purchasing/pay/final", api.FinalPurchasingPayStatus)
+		tRouter.PUT("purchasing/invoice/final", api.FinalPurchasingInvoiceStatus)
+		tRouter.PUT("purchasing/final", api.FinalPurchasing)
 	}
 
 	_ = r.Run(config.SystemConfig.Server.Port)

@@ -49,7 +49,7 @@
         </el-dialog>
 
         <el-dialog v-model="approve.dialogVisible" title="审核" width="50%" :show-close="false">
-            <el-form :model="approve.model" label-width="80px" :rules="rules" ref="approveForm">
+            <el-form :model="approve.model" label-width="100px" :rules="rules" ref="approveForm">
                 <el-form-item label="发起日期">
                     <el-input v-model.trim="approve.model.createDate" disabled />
                 </el-form-item>
@@ -230,6 +230,7 @@ const base = reactive({
         })
         approve.model = row
         approve.model.predesignTask.employeeID = null
+        approve.model.predesignTask.createRemark = row.remark
         approve.dialogVisible = true
     }
 })

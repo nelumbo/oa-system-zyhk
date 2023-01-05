@@ -33,6 +33,9 @@
                 <el-form-item label="名称" prop="name">
                     <el-input v-model.trim="add.model.name" maxlength="50" />
                 </el-form-item>
+                <el-form-item label="型号">
+                    <el-input v-model.trim="add.model.version" maxlength="50" />
+                </el-form-item>
                 <el-form-item label="品牌">
                     <el-input v-model.trim="add.model.brand" maxlength="50" />
                 </el-form-item>
@@ -68,6 +71,9 @@
                 </el-form-item>
                 <el-form-item label="库存单位" prop="unit">
                     <el-input v-model.trim="add.model.unit" maxlength="50" />
+                </el-form-item>
+                <el-form-item label="库存报警数量" prop="callNumber">
+                    <el-input-number v-model="add.model.callNumber" :controls="false" :min="0" :max="99999" />
                 </el-form-item>
                 <el-form-item label="供货周期">
                     <el-input v-model.trim="add.model.deliveryCycle" maxlength="50" />
@@ -127,6 +133,9 @@
                 <el-form-item label="名称">
                     <el-input v-model.trim="view.model.name" disabled />
                 </el-form-item>
+                <el-form-item label="型号">
+                    <el-input v-model.trim="view.model.version" disabled />
+                </el-form-item>
                 <el-form-item label="品牌">
                     <el-input v-model.trim="view.model.brand" disabled />
                 </el-form-item>
@@ -152,11 +161,14 @@
                 <el-form-item label="标准售价(美元)">
                     <el-input v-model.trim="view.model.attribute.standardPriceUSD" disabled />
                 </el-form-item>
-                <el-form-item label="库存数量" prop="numberCount">
+                <el-form-item label="库存数量">
                     <el-input v-model.trim="view.model.numberCount" disabled />
                 </el-form-item>
-                <el-form-item label="库存单位" prop="unit">
+                <el-form-item label="库存单位">
                     <el-input v-model.trim="view.model.unit" disabled />
+                </el-form-item>
+                <el-form-item label="库存报警数量">
+                    <el-input v-model.trim="view.model.callNumber" disabled />
                 </el-form-item>
                 <el-form-item label="供货周期">
                     <el-input v-model.trim="view.model.deliveryCycle" disabled />
@@ -186,6 +198,9 @@
                 <el-form-item label="名称" prop="name">
                     <el-input v-model.trim="edit.model.name" maxlength="50" />
                 </el-form-item>
+                <el-form-item label="型号">
+                    <el-input v-model.trim="edit.model.version" maxlength="50" />
+                </el-form-item>
                 <el-form-item label="品牌">
                     <el-input v-model.trim="edit.model.brand" maxlength="50" />
                 </el-form-item>
@@ -194,6 +209,9 @@
                 </el-form-item>
                 <el-form-item label="库存单位" prop="unit">
                     <el-input v-model.trim="edit.model.unit" maxlength="50" />
+                </el-form-item>
+                <el-form-item label="库存报警数量" prop="callNumber">
+                    <el-input-number v-model="edit.model.callNumber" :controls="false" :min="0" :max="99999" />
                 </el-form-item>
                 <el-form-item label="供应商">
                     <el-col :span="24">
@@ -326,6 +344,9 @@ const rules = reactive({
     numberCount: [
         { required: true, pattern: reg_number, message: '请输入有效数字', trigger: 'blur' }
     ],
+    callNumber: [
+        { required: true, pattern: reg_number, message: '请输入有效数字', trigger: 'blur' }
+    ],
     unit: [
         { required: true, message: '请输入库存单位', trigger: 'blur' },
     ],
@@ -349,6 +370,11 @@ const base = reactive({
                 prop: "name",
                 label: "名称",
                 width: "10%",
+            },
+            {
+                prop: "version",
+                label: "型号",
+                width: "5%",
             },
             {
                 prop: "brand",
@@ -394,7 +420,7 @@ const base = reactive({
             {
                 type: "operation",
                 label: "操作",
-                width: "25%",
+                width: "20%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -497,10 +523,12 @@ const add = reactive({
     submitDisabled: false,
     model: {
         name: "",
+        version: "",
         brand: "",
         specification: "",
         number: 0,
         numberCount: 0,
+        callNumber: 0,
         unit: "",
         deliveryCycle: "",
         remark: "",
@@ -578,6 +606,7 @@ const view = reactive({
             name: ""
         },
         name: "",
+        version: "",
         brand: "",
         specification: "",
         suppliers: [],
@@ -590,6 +619,7 @@ const view = reactive({
         number: 0,
         numberCount: 0,
         unit: "",
+        callNumber: 0,
         deliveryCycle: "",
         remark: "",
         isFree: false,
@@ -607,6 +637,7 @@ const edit = reactive({
             name: ""
         },
         name: "",
+        version: "",
         brand: "",
         specification: "",
         suppliers: [],
@@ -619,6 +650,7 @@ const edit = reactive({
         number: 0,
         numberCount: 0,
         unit: "",
+        callNumber: 0,
         deliveryCycle: "",
         remark: "",
         isFree: false

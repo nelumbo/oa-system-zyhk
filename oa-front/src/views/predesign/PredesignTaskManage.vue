@@ -28,8 +28,8 @@
                 <el-form-item label="预期完成日期">
                     <el-input v-model.trim="view.model.endDate" readonly />
                 </el-form-item>
-                <el-form-item label="业务员备注">
-                    <el-input v-model.trim="view.model.remark" type="textarea" autosize readonly />
+                <el-form-item label="设计需求">
+                    <el-input v-model.trim="view.model.createRemark" type="textarea" autosize readonly />
                 </el-form-item>
                 <el-form-item label="技术员">
                     <el-input v-model.trim="view.model.employee.name" readonly />
@@ -63,7 +63,7 @@
                 <el-form-item label="预期完成日期">
                     <el-input v-model.trim="approve.model.endDate" disabled />
                 </el-form-item>
-                <el-form-item label="审批备注">
+                <el-form-item label="设计需求">
                     <el-input v-model.trim="approve.model.createRemark" type="textarea" autosize disabled />
                 </el-form-item>
                 <el-form-item label="技术员">
@@ -215,6 +215,7 @@ const base = reactive({
     },
     openApproveDialog: (index, row) => {
         approve.model = row
+        approve.model.newCreateRemark = row.createRemark
         approve.dialogVisible = true
     }
 })
@@ -271,7 +272,14 @@ const approve = reactive({
         approveForm.value.validate((valid) => {
             if (valid) {
                 approve.submitDisabled = true
-                approvePredesignTask(approve.model).then((res) => {
+                approvePredesignTask(
+                    {
+                        "id": approve.model.id,
+                        "newDays": approve.model.newDays,
+                        "newCreateRemark": approve.model.newCreateRemark,
+                        "isPass": approve.model.isPass,
+                    }
+                ).then((res) => {
                     if (res.status == 1) {
                         message("审核成功", "success")
                         base.query()
