@@ -97,3 +97,11 @@ export const queryMyTasks = (model, pageData) => {
         }
     })
 }
+
+export const queryMySavePurchasings = (model) => {
+    return request({
+        url: '/my/purchasings/save',
+        method: 'POST',
+        data: model
+    })
+}

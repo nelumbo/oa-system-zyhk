@@ -1,6 +1,7 @@
 package models
 
 import (
+	"oa-backend/utils/magic"
 	"oa-backend/utils/msg"
 
 	"gorm.io/gorm"
@@ -9,8 +10,8 @@ import (
 type Purchasing struct {
 	ID                 int     `gorm:"primary_key" json:"id"`
 	IsDelete           bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
-	ContractID         int     `gorm:"type:int;comment:合同ID" json:"contractID"`
-	TaskID             int     `gorm:"type:int;comment:任务ID" json:"taskID"`
+	ContractID         int     `gorm:"type:int;comment:合同ID;default:(-)" json:"contractID"`
+	TaskID             int     `gorm:"type:int;comment:任务ID;default:(-)" json:"taskID"`
 	EmployeeID         int     `gorm:"type:int;comment:创建人ID;default:(-)" json:"employeeID"`
 	No                 string  `gorm:"type:varchar(100);comment:合同编号" json:"no"`
 	Type               int     `gorm:"type:int;comment:类型(1:合同附属 2:备货装置任务 3:库存配件任务)" json:"type"`
@@ -22,7 +23,7 @@ type Purchasing struct {
 	TotalPrice         float64 `gorm:"type:decimal(20,6);comment:总价" json:"totalPrice"`
 	Status             int     `gorm:"type:int;comment:状态(-1:驳回 0:暂存 1:待采购确认 2:待审批 3:未完成 4:已完成)" json:"status"`
 	ProductStatus      int     `gorm:"type:int;comment:产品状态(1:待收货 2:已收货)" json:"productStatus"`
-	PayStatus          int     `gorm:"type:int;comment:付款状态(1:待付款 2:已付款)" json:"collectionStatus"`
+	PayStatus          int     `gorm:"type:int;comment:付款状态(1:待付款 2:已付款)" json:"payStatus"`
 	InvoiceStatus      int     `gorm:"type:int;comment:发票状态(1:发票未收到 2:发票已收到)" json:"invoiceStatus"`
 	AuditorID          int     `gorm:"type:int;comment:审核员ID;default:(-)" json:"auditorID"`
 	PurchaseManID      int     `gorm:"type:int;comment:采购负责人ID;default:(-)" json:"purchaseManID"`
@@ -38,14 +39,26 @@ type Purchasing struct {
 	PayCreateDate XDate `gorm:"type:date;comment:财务提交日期;default:(-)" json:"payCreateDate"`
 	InvoiceDate   XDate `gorm:"type:date;comment:发票到达日期;default:(-)" json:"invoiceDate"`
 
+	Employee Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
+	Product  Product  `gorm:"foreignKey:ProductID" json:"product"`
+
 	IsPass bool `gorm:"-" json:"isPass"`
 }
 
-func InsertPurchasing(purchasing *Purchasing, maps map[string]interface{}) (code int) {
+func SubmitPurchasing(purchasing *Purchasing, maps map[string]interface{}) (code int) {
 
 	err = db.Model(&Purchasing{}).
-		Where("contractID = ? AND taskID = ? AND employeeID = ?", purchasing.ContractID, purchasing.TaskID, purchasing.EmployeeID).
+		Where("contract_id = ? AND task_id = ? AND employee_id = ? AND status = ?", purchasing.ContractID, purchasing.TaskID, purchasing.EmployeeID, magic.PURCHASING_STATUS_SAVE).
 		Updates(maps).Error
+
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
+}
+
+func DeletePurchasing(Purchasing *Purchasing) (code int) {
+	err = db.Model(&Purchasing).Where("id = ?", Purchasing.ID).Updates(map[string]interface{}{"employee_id": nil, "contract_id": nil, "task_id": nil, "is_delete": true}).Error
 	if err != nil {
 		return msg.ERROR
 	}
@@ -71,4 +84,50 @@ func ApprovePurchasing(purchasing *Purchasing, maps map[string]interface{}) (cod
 		return msg.ERROR
 	}
 	return msg.SUCCESS
+}
+
+func SelectPurchasings(purchasingQuery *Purchasing, xForms *XForms) (purchasings []Purchasing, code int) {
+
+	var maps = make(map[string]interface{})
+	maps["purchasing.is_delete"] = false
+	if purchasingQuery.ContractID != 0 {
+		maps["purchasing.contract_id"] = purchasingQuery.ContractID
+	}
+	if purchasingQuery.EmployeeID != 0 {
+		maps["purchasing.employee_id"] = purchasingQuery.EmployeeID
+	}
+	if purchasingQuery.Status != 0 {
+		maps["purchasing.status"] = purchasingQuery.Status
+	}
+	if purchasingQuery.Type != 0 {
+		maps["purchasing.type"] = purchasingQuery.Type
+	}
+
+	err = db.Where(maps).Find(&purchasings).Count(&xForms.Total).
+		Preload("Product").Preload("Employee").
+		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
+		Find(&purchasings).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, msg.ERROR
+	}
+	return purchasings, msg.SUCCESS
+}
+
+func SelectAllSavePurchasings(contractID int, taskID int, employeeID int) (purchasings []Purchasing, code int) {
+	var maps = make(map[string]interface{})
+	maps["is_delete"] = false
+	maps["contract_id"] = contractID
+	maps["task_id"] = taskID
+	maps["employee_id"] = employeeID
+	maps["status"] = magic.PURCHASING_STATUS_SAVE
+
+	err = db.Where(maps).
+		Preload("Product").
+		Find(&purchasings).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, msg.ERROR
+	}
+	return purchasings, msg.SUCCESS
 }

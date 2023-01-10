@@ -64,6 +64,12 @@
       </el-icon>
       <span>产品管理</span>
     </el-menu-item>
+    <el-menu-item index="/purchasing">
+      <el-icon>
+        <ShoppingTrolley />
+      </el-icon>
+      <span>采购管理</span>
+    </el-menu-item>
     <el-menu-item index="/finance">
       <el-icon>
         <Ticket />

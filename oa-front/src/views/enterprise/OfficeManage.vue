@@ -109,7 +109,7 @@ import { ref, reactive, onBeforeMount } from 'vue'
 import { addOffice, editOffice, queryOffices } from "@/api/office"
 import { queryAllRole } from '@/api/role'
 import { message, messageForCRUD } from '@/components/divMessage/index'
-import { reg_money } from '@/utils/regex'
+import { reg_number,reg_money } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
 

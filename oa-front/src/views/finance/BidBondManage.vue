@@ -253,7 +253,7 @@ const approve = reactive({
             }
             approve.dialogVisible = false
             approve.model = {
-                iid: null,
+                id: null,
                 money: 0,
                 createRemark: "",
                 employee: {

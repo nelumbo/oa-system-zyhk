@@ -86,3 +86,13 @@ func QueryMyTasks(c *gin.Context) {
 	xForms.Data, code = models.SelectMyTasks(&taskQuery, c.MustGet("employeeID").(int), &xForms)
 	msg.Message(c, code, xForms)
 }
+
+func QueryMySavePurchasings(c *gin.Context) {
+	var purchasing models.Purchasing
+	var purchasings []models.Purchasing
+	_ = c.ShouldBindJSON(&purchasing)
+
+	purchasings, code = models.SelectAllSavePurchasings(purchasing.ContractID, purchasing.TaskID, c.MustGet("employeeID").(int))
+
+	msg.Message(c, code, purchasings)
+}

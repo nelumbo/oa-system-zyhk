@@ -290,3 +290,52 @@ export const HavingInvoiceItems = [
         label: '已开票',
     },
 ]
+
+export const PurchasingStatusItems = [
+    {
+        value: -1,
+        label: '驳回',
+    },
+    {
+        value: 1,
+        label: '待采购确认',
+    },
+    {
+        value: 2,
+        label: '待审批',
+    },
+    {
+        value: 3,
+        label: '未完成',
+    },
+    {
+        value: 4,
+        label: '已完成',
+    },
+]
+
+export const PurchasingTypeItems = [
+    {
+        value: 1,
+        label: '定制装置任务单',
+    },
+    {
+        value: 2,
+        label: '公司备货装置任务单',
+    },
+    {
+        value: 3,
+        label: '库存配件任务',
+    },
+]
+
+export const PurchasingTypeSelectItems = [
+    {
+        value: 2,
+        label: '公司备货',
+    },
+    {
+        value: 3,
+        label: '库存配件备货',
+    },
+] 

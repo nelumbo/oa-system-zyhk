@@ -95,6 +95,9 @@
         </el-dialog>
 
         <el-dialog v-model="add.dialogVisible" title="采购" width="75%" :show-close="false">
+            <el-divider content-position="left">
+                <h2>产品库</h2>
+            </el-divider>
             <el-form :model="add.model" label-width="100px">
                 <el-row :gutter="20">
                     <el-col :span="6" :offset="2">
@@ -113,6 +116,17 @@
             </el-form>
             <divTable :columnObj="add.column" :tableData="add.tableData" :pageData="add.pageData"
                 :handleSizeChange="add.handleSizeChange" :handleCurrentChange="add.handleCurrentChange" />
+            <el-divider content-position="left" style="margin-top: 30px;">
+                <h2>需求清单</h2>
+            </el-divider>
+            <divTable :columnObj="add.columnP" :tableData="add.purchasings" :allShow="true" />
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="primary" @click="add.submit" :disabled="add.submitDisabled">提交</el-button>
+                    </div>
+                </span>
+            </template>
         </el-dialog>
 
         <el-dialog v-model="addDLC.dialogVisible" title="添加" width="50%" :show-close="false">
@@ -141,7 +155,7 @@
                 </el-form-item>
             </el-form>
             <el-divider content-position="left" style="margin-top: 30px;">
-                <h2>填充信息</h2>
+                <h2>采购信息</h2>
             </el-divider>
             <el-form :model="addDLC.model" label-width="100px" :rules="rules" ref="addForm">
                 <el-form-item label="需求数量" prop="number">
@@ -157,17 +171,28 @@
                 </span>
             </template>
         </el-dialog>
+
+        <el-dialog v-model="del.dialogVisible" title="删除" width="50%" :show-close="false">
+            <h1>是否确定删除该条采购？</h1>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="danger" @click="del.submit" :disabled="del.submitDisabled">确定</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
 <script setup>
 import { ref, reactive, onBeforeMount } from 'vue'
 import { taskStatusItems, taskStatusSelectItems } from '@/utils/magic'
-import { queryMyTasks } from "@/api/my"
+import { queryMyTasks, queryMySavePurchasings } from "@/api/my"
 import { queryContract } from "@/api/contract"
 import { nextTask } from "@/api/contract_task"
 import { queryProducts } from "@/api/product"
-import { addPurchasing } from "@/api/purchasing"
+import { savePurchasing, submitPurchasing, delPurchasing } from "@/api/purchasing"
 import { message } from '@/components/divMessage/index'
 import { reg_number } from '@/utils/regex'
 
@@ -331,6 +356,7 @@ const base = reactive({
     openAddDialog: (index, row) => {
         add.task = row
         add.query()
+        add.queryPurchasings()
         add.dialogVisible = true
     }
 })
@@ -424,6 +450,7 @@ const next = reactive({
 })
 
 const add = reactive({
+    submitDisabled: false,
     dialogVisible: false,
     task: {
         "id": null,
@@ -517,6 +544,47 @@ const add = reactive({
         pageSize: 10,
         pageNo: 1
     },
+    columnP: {
+        headers: [
+            {
+                prop: "product.name",
+                label: "名称",
+            },
+            {
+                prop: "product.version",
+                label: "型号",
+            },
+            {
+                prop: "product.specification",
+                label: "规格",
+            },
+            {
+                prop: "number",
+                label: "数量",
+            },
+            {
+                prop: "product.unit",
+                label: "单位",
+            },
+            {
+                type: "operation",
+                label: "操作",
+                operations: [
+                    {
+                        isShow: (index, row) => {
+                            return true
+                        },
+                        label: "删除",
+                        type: "danger",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => add.openDelDialog(index, row)
+                    }
+                ]
+            },
+        ],
+    },
+    purchasings: [],
     query: () => {
         queryProducts(add.model, add.pageData).then((res) => {
             if (res.status == 1) {
@@ -526,6 +594,34 @@ const add = reactive({
                 add.pageData.pageNo = res.data.pageNo
             } else {
                 message("查询失败", "error")
+            }
+        })
+    },
+    submit: () => {
+        add.submitDisabled = true
+        submitPurchasing({ "contractID": add.task.contractID, "taskID": add.task.id }).then((res) => {
+            if (res.status == 1) {
+                message("提交成功", "success")
+            } else {
+                message("提交失败", "error")
+            }
+            add.dialogVisible = false
+            add.task = {
+                "id": null,
+                "contractID": null,
+            }
+            add.model = {
+                name: "",
+                version: "",
+                specification: "",
+            }
+            add.submitDisabled = false
+        })
+    },
+    queryPurchasings: () => {
+        queryMySavePurchasings({ "contractID": add.task.contractID, "taskID": add.task.id }).then((res) => {
+            if (res.status == 1) {
+                add.purchasings = res.data
             }
         })
     },
@@ -544,6 +640,10 @@ const add = reactive({
         addDLC.model.taskID = add.task.id
         addDLC.model.productID = row.id
         addDLC.dialogVisible = true
+    },
+    openDelDialog: (index, row) => {
+        del.model.id = row.id
+        del.dialogVisible = true
     }
 })
 
@@ -568,9 +668,10 @@ const addDLC = reactive({
         addForm.value.validate((valid) => {
             if (valid) {
                 addDLC.submitDisabled = true
-                addPurchasing(addDLC.model).then((res) => {
+                savePurchasing(addDLC.model).then((res) => {
                     if (res.status == 1) {
                         message("添加成功", "success")
+                        add.queryPurchasings()
                     } else {
                         message("添加失败", "error")
                     }
@@ -595,6 +696,30 @@ const addDLC = reactive({
                 return false;
             }
         });
+    }
+})
+
+const del = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    model: {
+        id: null,
+    },
+    submit: () => {
+        del.submitDisabled = true
+        delPurchasing(del.model.id).then((res) => {
+            if (res.status == 1) {
+                message("删除成功", "success")
+                add.queryPurchasings()
+            } else {
+                message("删除失败", "error")
+            }
+            del.dialogVisible = false
+            del.model = {
+                id: 0,
+            }
+            del.submitDisabled = false
+        })
     }
 })
 

@@ -1,10 +1,33 @@
 import request from './base'
 
+export const savePurchasing = (purchasing) => {
+    return request({
+        url: '/purchasing/save',
+        method: 'POST',
+        data: purchasing
+    })
+}
+
+export const submitPurchasing = (purchasing) => {
+    return request({
+        url: '/purchasing/submit',
+        method: 'PUT',
+        data: purchasing
+    })
+}
+
 export const addPurchasing = (purchasing) => {
     return request({
         url: '/purchasing',
         method: 'POST',
         data: purchasing
+    })
+}
+
+export const delPurchasing = (id) => {
+    return request({
+        url: '/purchasing/' + id,
+        method: 'DELETE',
     })
 }
 
@@ -45,5 +68,17 @@ export const finalPurchasing = (purchasing) => {
         url: '/purchasing/final',
         method: 'PUT',
         data: purchasing
+    })
+}
+
+export const queryPurchasings = (model, pageData) => {
+    return request({
+        url: '/purchasings',
+        method: 'POST',
+        data: model,
+        params: {
+            "pageSize": pageData.pageSize,
+            "pageNo": pageData.pageNo,
+        }
     })
 }

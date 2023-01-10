@@ -31,6 +31,7 @@ func Init() {
 		tRouter.POST("my/contracts", api.QueryMyContracts)
 		tRouter.POST("my/contracts/save", api.QueryMySaveContracts)
 		tRouter.POST("my/tasks", api.QueryMyTasks)
+		tRouter.POST("my/purchasings/save", api.QueryMySavePurchasings)
 		tRouter.GET("topList", api.TopList)
 
 		tRouter.POST("employee", api.AddEmployee)
@@ -142,12 +143,16 @@ func Init() {
 		tRouter.DELETE("invoice/:id", api.DelInvoice)
 		tRouter.PUT("invoice", api.EditInvoice)
 
+		tRouter.POST("purchasing/save", api.SavePurchasing)
+		tRouter.PUT("purchasing/submit", api.SubmitPurchasing)
 		tRouter.POST("purchasing", api.AddPurchasing)
+		tRouter.DELETE("purchasing/:id", api.DelPurchasing)
 		tRouter.PUT("purchasing/approve", api.ApprovePurchasing)
 		tRouter.PUT("purchasing/product/final", api.FinalPurchasingProductStatus)
 		tRouter.PUT("purchasing/pay/final", api.FinalPurchasingPayStatus)
 		tRouter.PUT("purchasing/invoice/final", api.FinalPurchasingInvoiceStatus)
 		tRouter.PUT("purchasing/final", api.FinalPurchasing)
+		tRouter.POST("purchasings", api.QueryPurchasings)
 	}
 
 	_ = r.Run(config.SystemConfig.Server.Port)
