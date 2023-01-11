@@ -1,26 +1,26 @@
 <template>
-  <el-menu class="menu" active-text-color="#ffd04b" background-color="#545c64" :default-active="$route.path" text-color="#fff"
-    :collapse="viewType().isMobbile" router>
+  <el-menu class="menu" active-text-color="#ffd04b" background-color="#545c64" :default-active="$route.path"
+    text-color="#fff" :collapse="viewType().isMobbile" router>
     <el-sub-menu index="1">
       <template #title>
         <el-icon>
-          <ElementPlus/>
+          <ElementPlus />
         </el-icon>
-        <span class="title">{{user().my.name}}</span>
+        <span class="title">{{ user().my.name }}</span>
       </template>
       <el-menu-item-group>
         <el-menu-item index="1-1">
           <template #title>
             <el-icon>
-              <Setting/>
+              <Setting />
             </el-icon>
             <span>设置</span>
           </template>
         </el-menu-item>
-        <el-menu-item index="1-2">
+        <el-menu-item index="1-2" @click="exit">
           <template #title>
             <el-icon>
-              <Close/>
+              <Close />
             </el-icon>
             <span>退出</span>
           </template>
@@ -94,6 +94,12 @@
 <script setup>
 import { viewType } from '@/pinia/modules/viewType'
 import { user } from '@/pinia/modules/user'
+
+function exit() {
+  localStorage.removeItem("token");
+  window.location.href = '/login'
+}
+
 </script>
 
 <style>
@@ -101,10 +107,9 @@ import { user } from '@/pinia/modules/user'
   border-right-width: 0
 }
 
-.title{
+.title {
   font-size: 30px;
   font-weight: normal;
   margin: 20px 0 0;
 }
-
 </style>

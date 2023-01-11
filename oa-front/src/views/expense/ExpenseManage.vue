@@ -29,7 +29,7 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="add.dialogVisible" title="发起报销" width="50%" :show-close="false">
+        <el-dialog v-model="add.dialogVisible" title="发起" width="50%" :show-close="false">
             <el-form :model="add.model" label-width="80px" :rules="rules" ref="addForm">
                 <el-form-item label="报销类型" prop="type">
                     <el-select v-model="add.model.type" placeholder="请选择你的报销类型">
@@ -54,7 +54,7 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="del.dialogVisible" title="报销删除" width="50%" :show-close="false">
+        <el-dialog v-model="del.dialogVisible" title="删除" width="50%" :show-close="false">
             <h1>是否确定删除该条申请记录？</h1>
             <template #footer>
                 <span class="dialog-footer">

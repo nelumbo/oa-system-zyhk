@@ -54,7 +54,6 @@ func AddPurchasing(c *gin.Context) {
 		purchasingBak.Type = magic.PURCHASING_TYPE_TASK
 	}
 	purchasingBak.ProductID = productBak.ID
-	purchasingBak.ProductAttributeID = productBak.AttributeID
 	purchasingBak.Price = purchasing.Price
 	purchasingBak.Number = purchasing.RealNumber
 	purchasingBak.RealNumber = purchasing.RealNumber
@@ -164,7 +163,7 @@ func FinalPurchasingInvoiceStatus(c *gin.Context) {
 	if purchasingBak.Status == magic.PURCHASING_STATUS_NO_FINAL &&
 		purchasingBak.InvoiceStatus == magic.PURCHASING_INVOICE_STATUS_NO_FINAL {
 		var maps = make(map[string]interface{})
-		maps["invocie_man_id"] = c.MustGet("employeeID").(int)
+		maps["invoice_man_id"] = c.MustGet("employeeID").(int)
 		maps["invoice_date"] = time.Now()
 		maps["invoice_status"] = magic.PURCHASING_INVOICE_STATUS_FINAL
 		code = models.GeneralUpdate(&models.Purchasing{}, purchasingBak.ID, maps)
@@ -184,9 +183,7 @@ func FinalPurchasing(c *gin.Context) {
 		purchasingBak.ProductStatus == magic.PURCHASING_PRODUCT_STATUS_FINAL &&
 		purchasingBak.PayStatus == magic.PURCHASING_PAY_STATUS_FINAL &&
 		purchasingBak.InvoiceStatus == magic.PURCHASING_INVOICE_STATUS_FINAL {
-		var maps = make(map[string]interface{})
-		maps["status"] = magic.PURCHASING_STATUS_FINAL
-		code = models.GeneralUpdate(&models.Purchasing{}, purchasingBak.ID, maps)
+		code = models.FinalPurchasing(&purchasingBak)
 	} else {
 		code = msg.FAIL
 	}

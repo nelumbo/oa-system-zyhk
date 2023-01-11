@@ -101,6 +101,11 @@
                     <div v-if="scope.row.type == 3 && scope.row.status > 4">装配：{{ scope.row.assemblyFinalDate }}</div>
                     <div v-if="scope.row.status > 5">物流：{{ scope.row.shipmentFinalDate }}</div>
                 </span>
+
+
+                <span v-if="header.type === 'purchasingStatus'">
+                    {{ purchasingStatusToText(scope.row) }}
+                </span>
             </template>
         </el-table-column>
     </el-table>
@@ -113,7 +118,7 @@
   
 <script setup>
 import { reactive } from 'vue'
-import { contractStatusItems, productionStatusItems, collectionStatusItems } from '@/utils/magic'
+import { contractStatusItems, productionStatusItems, collectionStatusItems, PurchasingStatusItems } from '@/utils/magic'
 const props = defineProps({
     columnObj: {
         type: Object,
@@ -160,6 +165,30 @@ function contractStatusToText(row) {
         );
     } else {
         return statusToText(contractStatusItems, row.status);
+    }
+}
+
+function purchasingStatusToText(row) {
+    if (row.status == 3) {
+        let s1, s2, s3 = ""
+        if (row.productStatus == 2) {
+            s1 = "已收货"
+        } else {
+            s1 = "待收货"
+        }
+        if (row.payStatus == 2) {
+            s2 = "已付款"
+        } else {
+            s2 = "待付款"
+        }
+        if (row.invoiceStatus == 2) {
+            s3 = "发票已收到"
+        } else {
+            s3 = "发票未收到"
+        }
+        return s1 + " | " + s2 + " | " + s3
+    } else {
+        return statusToText(PurchasingStatusItems, row.status);
     }
 }
 </script>

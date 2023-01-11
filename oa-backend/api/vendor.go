@@ -12,7 +12,13 @@ func AddVendor(c *gin.Context) {
 	var vendor models.Vendor
 	_ = c.ShouldBindJSON(&vendor)
 
-	code = models.GeneralInsert(&vendor)
+	vendorCre := models.Vendor{
+		ID:       vendor.ID,
+		IsDelete: false,
+		Name:     vendor.Name,
+	}
+
+	code = models.GeneralInsert(&vendorCre)
 	msg.Message(c, code, nil)
 }
 

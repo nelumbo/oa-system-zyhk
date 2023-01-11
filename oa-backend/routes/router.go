@@ -46,7 +46,8 @@ func Init() {
 
 		tRouter.POST("office", api.AddOffice)
 		tRouter.DELETE("office/:id", api.DelOffice)
-		tRouter.PUT("office", api.EditOffice)
+		tRouter.PUT("office/base", api.EditOfficeBase)
+		tRouter.PUT("office/money", api.EditOfficeMoney)
 		tRouter.POST("offices", api.QueryOffices)
 		tRouter.GET("offices", api.QueryAllOffice)
 
@@ -96,7 +97,6 @@ func Init() {
 
 		tRouter.POST("expense", api.AddExpense)
 		tRouter.DELETE("expense/:id", api.DelExpense)
-		tRouter.PUT("expense", api.EditExpense)
 		tRouter.PUT("expense/approve", api.ApprovalExpense)
 		tRouter.POST("expenses", api.QueryExpenses)
 

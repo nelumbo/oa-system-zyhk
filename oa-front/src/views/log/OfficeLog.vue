@@ -110,7 +110,7 @@ function query() {
 </script>
 
 <style>
-.el-row {
+/* .el-row {
     margin-bottom: 20px;
-}
+} */
 </style>

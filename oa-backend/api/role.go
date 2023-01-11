@@ -13,7 +13,14 @@ func AddRole(c *gin.Context) {
 	var role models.Role
 	_ = c.ShouldBindJSON(&role)
 
-	code = models.GeneralInsert(&role)
+	roleCre := models.Role{
+		ID:          role.ID,
+		IsDelete:    false,
+		Name:        role.Name,
+		Permissions: role.Permissions,
+	}
+
+	code = models.GeneralInsert(&roleCre)
 	msg.Message(c, code, nil)
 }
 

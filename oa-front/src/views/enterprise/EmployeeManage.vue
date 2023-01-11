@@ -22,7 +22,7 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="add.dialogVisible" title="员工添加" width="50%" :show-close="false">
+        <el-dialog v-model="add.dialogVisible" title="添加" width="50%" :show-close="false">
             <el-form :model="add.model" label-width="150px" :rules="rules" ref="addForm">
                 <el-form-item label="办事处" prop="officeID">
                     <el-select v-model="add.model.officeID" clearable>
@@ -75,7 +75,7 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="view.dialogVisible" title="员工查看" width="50%" :show-close="false">
+        <el-dialog v-model="view.dialogVisible" title="查看" width="50%" :show-close="false">
             <el-form :model="view.model" label-width="150px">
                 <el-form-item label="办事处">
                     <el-input v-model="view.model.office.name" disabled />
@@ -114,7 +114,7 @@
             </el-form>
         </el-dialog>
 
-        <el-dialog v-model="edit.baseDialogVisible" title="员工基础信息编辑" width="50%" :show-close="false">
+        <el-dialog v-model="edit.baseDialogVisible" title="基础编辑" width="50%" :show-close="false">
             <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
                 <el-form-item label="姓名" prop="name">
                     <el-input v-model.trim="edit.model.name" maxlength="50" />
@@ -128,28 +128,6 @@
                 <el-form-item label="邮箱" prop="email">
                     <el-input v-model.trim="edit.model.email" maxlength="50" />
                 </el-form-item>
-                <el-form-item label="办事处">
-                    <el-input v-model="edit.model.office.name" disabled />
-                </el-form-item>
-                <el-form-item label="编号">
-                    <el-input v-model="edit.model.number" disabled />
-                </el-form-item>
-                <el-form-item label="初始补助额度">
-                    <el-input v-model.trim="edit.model.money" disabled />
-                </el-form-item>
-                <el-form-item label="每月总部补助额度">
-                    <el-input v-model.trim="edit.model.credit" disabled />
-                </el-form-item>
-                <el-form-item label="每月办事处补助额度">
-                    <el-input v-model.trim="edit.model.officeCredit" disabled />
-                </el-form-item>
-                <el-form-item label="职位">
-                    <el-row style="width:80%">
-                        <el-col :span="6" v-for="role in edit.model.roles" :key="role.id">
-                            {{ role.name }}
-                        </el-col>
-                    </el-row>
-                </el-form-item>
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
@@ -161,26 +139,8 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="edit.expenseDialogVisivle" title="员工财务信息编辑" width="50%" :show-close="false">
+        <el-dialog v-model="edit.expenseDialogVisivle" title="财务编辑" width="50%" :show-close="false">
             <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
-                <el-form-item label="办事处">
-                    <el-input v-model="edit.model.office.name" disabled />
-                </el-form-item>
-                <el-form-item label="姓名">
-                    <el-input v-model="edit.model.name" disabled />
-                </el-form-item>
-                <el-form-item label="编号">
-                    <el-input v-model="edit.model.number" disabled />
-                </el-form-item>
-                <el-form-item label="手机号">
-                    <el-input v-model="edit.model.phone" disabled />
-                </el-form-item>
-                <el-form-item label="微信号">
-                    <el-input v-model="edit.model.wechatID" disabled />
-                </el-form-item>
-                <el-form-item label="邮箱">
-                    <el-input v-model="edit.model.email" disabled />
-                </el-form-item>
                 <el-form-item label="初始补助额度" prop="money">
                     <el-input-number v-model="edit.model.money" :controls="false" :min="-9999999" />
                 </el-form-item>
@@ -189,13 +149,6 @@
                 </el-form-item>
                 <el-form-item label="每月办事处补助额度" prop="officeCredit">
                     <el-input-number v-model="edit.model.officeCredit" :controls="false" :min="-9999999" />
-                </el-form-item>
-                <el-form-item label="职位">
-                    <el-row style="width:80%">
-                        <el-col :span="6" v-for="role in edit.model.roles" :key="role.id">
-                            {{ role.name }}
-                        </el-col>
-                    </el-row>
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -208,29 +161,8 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="edit.officeDialogVisivle" title="员工人事信息编辑" width="50%" :show-close="false">
+        <el-dialog v-model="edit.officeDialogVisivle" title="人事编辑" width="50%" :show-close="false">
             <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
-                <el-form-item label="姓名">
-                    <el-input v-model="edit.model.name" disabled />
-                </el-form-item>
-                <el-form-item label="手机号">
-                    <el-input v-model="edit.model.phone" disabled />
-                </el-form-item>
-                <el-form-item label="微信号">
-                    <el-input v-model="edit.model.wechatID" disabled />
-                </el-form-item>
-                <el-form-item label="邮箱">
-                    <el-input v-model="edit.model.email" disabled />
-                </el-form-item>
-                <el-form-item label="初始补助额度">
-                    <el-input v-model.trim="edit.model.money" disabled />
-                </el-form-item>
-                <el-form-item label="每月总部补助额度">
-                    <el-input v-model.trim="edit.model.credit" disabled />
-                </el-form-item>
-                <el-form-item label="每月办事处补助额度">
-                    <el-input v-model.trim="edit.model.officeCredit" disabled />
-                </el-form-item>
                 <el-form-item label="办事处" prop="officeID">
                     <el-select v-model="edit.model.officeID" clearable>
                         <el-option v-for="office in base.offices" :key="office.id" :label="office.name"
@@ -263,7 +195,7 @@
         </el-dialog>
 
         <el-dialog v-model="reset.dialogVisible" title="重置密码" width="50%" :show-close="false">
-            <h1>是否确定重置【{{ reset.model.name }}】的密码为【手机号】？</h1>
+            <h1>是否确定重置【{{ reset.model.name }}】的密码？</h1>
             <template #footer>
                 <span class="dialog-footer">
                     <div style="text-align: center;">
@@ -273,7 +205,7 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="del.dialogVisible" title="员工停用" width="50%" :show-close="false">
+        <el-dialog v-model="del.dialogVisible" title="停用" width="50%" :show-close="false">
             <h1>是否确定停用【{{ del.model.name }}】？</h1>
             <template #footer>
                 <span class="dialog-footer">
@@ -291,10 +223,10 @@ import { ref, reactive, onBeforeMount } from 'vue'
 import { addEmployee, delEmployee, editEmployeeBase, editEmployeeExpense, editEmployeeOffice, queryEmployee, queryEmployees, resetPwd } from "@/api/employee";
 import { queryAllRole } from "@/api/role";
 import { queryAllOffice } from "@/api/office";
-import { message, messageForCRUD } from '@/components/divMessage/index'
+import { message } from '@/components/divMessage/index'
 import { reg_money } from '@/utils/regex'
 
-import divTable from '../../components/divTable/index.vue'
+import divTable from '@/components/divTable/index.vue'
 
 const addForm = ref(null)
 const editForm = ref(null)
@@ -329,8 +261,8 @@ const base = reactive({
     column: {
         headers: [
             {
-                prop: "name",
-                label: "姓名",
+                prop: "number",
+                label: "编号",
                 width: "15%",
             },
             {
@@ -339,14 +271,14 @@ const base = reactive({
                 width: "15%",
             },
             {
-                prop: "number",
-                label: "编号",
-                width: "10%",
+                prop: "name",
+                label: "姓名",
+                width: "15%",
             },
             {
                 prop: "phone",
                 label: "电话",
-                width: "20%",
+                width: "15%",
             },
             {
                 type: "operation",
@@ -526,10 +458,10 @@ const add = reactive({
                 add.submitDisabled = true
                 addEmployee(add.model).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(add.model.name, "添加成功", "success")
+                        message("添加成功", "success")
                         base.query()
                     } else {
-                        messageForCRUD(add.model.name, "添加失败", "error")
+                        message("添加失败", "error")
                     }
                     add.dialogVisible = false
                     add.model = {
@@ -597,12 +529,20 @@ const edit = reactive({
         editForm.value.validate((valid) => {
             if (valid) {
                 edit.submitDisabled = true
-                editEmployeeBase(edit.model).then((res) => {
+                editEmployeeBase(
+                    {
+                        "id": edit.model.id,
+                        "name": edit.model.name,
+                        "phone": edit.model.phone,
+                        "wechatID": edit.model.wechatID,
+                        "email": edit.model.email,
+                    }
+                ).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(edit.model.name, "编辑成功", "success")
+                        message("编辑成功", "success")
                         base.query()
                     } else {
-                        messageForCRUD(edit.model.name, "编辑失败", "error")
+                        message("编辑失败", "error")
                     }
                     edit.baseDialogVisible = false
                     edit.model = {
@@ -632,12 +572,18 @@ const edit = reactive({
         editForm.value.validate((valid) => {
             if (valid) {
                 edit.submitDisabled = true
-                editEmployeeExpense(edit.model).then((res) => {
+                editEmployeeExpense(
+                    {
+                        "id": edit.model.id,
+                        "money": edit.model.money,
+                        "credit": edit.model.credit,
+                        "officeCredit": edit.model.officeCredit,
+                    }
+                ).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(edit.model.name, "编辑成功", "success")
-                        // base.query()
+                        message("编辑成功", "success")
                     } else {
-                        messageForCRUD(edit.model.name, "编辑失败", "error")
+                        message("编辑失败", "error")
                     }
                     edit.expenseDialogVisivle = false
                     edit.model = {
@@ -667,12 +613,19 @@ const edit = reactive({
         editForm.value.validate((valid) => {
             if (valid) {
                 edit.submitDisabled = true
-                editEmployeeOffice(edit.model).then((res) => {
+                editEmployeeOffice(
+                    {
+                        "id": edit.model.id,
+                        "officeID": edit.model.officeID,
+                        "number": edit.model.number,
+                        "roles": edit.model.roles
+                    }
+                ).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(edit.model.name, "编辑成功", "success")
+                        message("编辑成功", "success")
                         base.query()
                     } else {
-                        messageForCRUD(edit.model.name, "编辑失败", "error")
+                        message("编辑失败", "error")
                     }
                     edit.officeDialogVisivle = false
                     edit.model = {
@@ -711,9 +664,9 @@ const reset = reactive({
         reset.submitDisabled = true
         resetPwd(reset.model.id).then((res) => {
             if (res.status == 1) {
-                messageForCRUD(reset.model.name, "重置密码成功", "success")
+                message("重置成功", "success")
             } else {
-                messageForCRUD(reset.model.name, "重置密码失败", "error")
+                message("重置失败", "error")
             }
             reset.dialogVisible = false
             reset.model = {}
@@ -733,10 +686,10 @@ const del = reactive({
         del.submitDisabled = true
         delEmployee(del.model.id).then((res) => {
             if (res.status == 1) {
-                messageForCRUD(del.model.name, "停用成功", "success")
+                message("停用成功", "success")
                 base.query()
             } else {
-                messageForCRUD(del.model.name, "停用失败", "error")
+                message("停用失败", "error")
             }
             del.dialogVisible = false
             del.model = {

@@ -13,7 +13,25 @@ func AddOffice(c *gin.Context) {
 	var office models.Office
 	_ = c.ShouldBindJSON(&office)
 
-	code = models.GeneralInsert(&office)
+	officeCre := models.Office{
+		ID:            office.ID,
+		IsDelete:      false,
+		Name:          office.Name,
+		Number:        office.Number,
+		TaskLoad:      office.TaskLoad,
+		RoleID:        office.RoleID,
+		IsRanking:     office.IsRanking,
+		BusinessMoney: 0,
+		Money:         0,
+		MoneyCold:     0,
+		TargetLoad:    0,
+		YWTargetLoad:  0,
+		ZYTargetLoad:  0,
+		QDTargetLoad:  0,
+		IsSubmit:      false,
+	}
+
+	code = models.GeneralInsert(&officeCre)
 	msg.Message(c, code, nil)
 }
 
@@ -47,6 +65,35 @@ func EditOffice(c *gin.Context) {
 	maps["is_ranking"] = office.IsRanking
 
 	code = models.GeneralUpdate(&models.Office{}, office.ID, maps)
+	msg.Message(c, code, nil)
+}
+
+func EditOfficeBase(c *gin.Context) {
+	var office models.Office
+	_ = c.ShouldBindJSON(&office)
+	var maps = make(map[string]interface{})
+	maps["name"] = office.Name
+	maps["number"] = office.Number
+	maps["task_load"] = office.TaskLoad
+	if office.RoleID == 0 {
+		maps["role_id"] = nil
+	} else {
+		maps["role_id"] = office.RoleID
+	}
+	maps["is_ranking"] = office.IsRanking
+	code = models.GeneralUpdate(&models.Office{}, office.ID, maps)
+	msg.Message(c, code, nil)
+}
+
+func EditOfficeMoney(c *gin.Context) {
+	var office models.Office
+	_ = c.ShouldBindJSON(&office)
+	var maps = make(map[string]interface{})
+	maps["business_money"] = office.BusinessMoney
+	maps["money"] = office.Money
+	maps["money_cold"] = office.MoneyCold
+	maps["target_load"] = office.TargetLoad
+	code = models.UpdateOffice(&office, maps)
 	msg.Message(c, code, nil)
 }
 

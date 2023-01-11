@@ -27,21 +27,22 @@ type Product struct {
 	// UID  string `gorm:"type:varchar(32);comment:唯一标识" json:"UID"`
 	// SupplierUID string `gorm:"type:varchar(32);comment:供应商UID;default:(-)" json:"supplierUID"`
 
-	ID            int    `gorm:"primary_key" json:"id"`
-	IsDelete      bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
-	Name          string `gorm:"type:varchar(50);comment:名称;not null" json:"name"`
-	Version       string `gorm:"type:varchar(50);comment:型号;not null" json:"version"`
-	Brand         string `gorm:"type:varchar(50);comment:品牌" json:"brand"`
-	Specification string `gorm:"type:varchar(100);comment:规格" json:"specification"`
-	Number        int    `gorm:"type:int;comment:可售数量(库存数量-订单锁定但未出库的数量)" json:"number"`
-	NumberCount   int    `gorm:"type:int;comment:库存数量" json:"numberCount"`
-	CallNumber    int    `gorm:"type:int;comment:报警数量" json:"callNumber"`
-	Unit          string `gorm:"type:varchar(50);comment:单位" json:"unit"`
-	DeliveryCycle string `gorm:"type:varchar(50);comment:供货周期" json:"deliveryCycle"`
-	Remark        string `gorm:"type:varchar(300);comment:备注" json:"remark"`
-	IsFree        bool   `gorm:"type:boolean;comment:是否为小零配件" json:"isFree"`
-	TypeID        int    `gorm:"type:int;comment:类型ID;default:(-)" json:"typeID"`
-	AttributeID   int    `gorm:"type:int;comment:属性ID;default:(-)" json:"attributeID"`
+	ID            int     `gorm:"primary_key" json:"id"`
+	IsDelete      bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
+	Name          string  `gorm:"type:varchar(50);comment:名称;not null" json:"name"`
+	Version       string  `gorm:"type:varchar(50);comment:型号;not null" json:"version"`
+	Brand         string  `gorm:"type:varchar(50);comment:品牌" json:"brand"`
+	Specification string  `gorm:"type:varchar(100);comment:规格" json:"specification"`
+	Number        int     `gorm:"type:int;comment:可售数量(库存数量-订单锁定但未出库的数量)" json:"number"`
+	NumberCount   int     `gorm:"type:int;comment:库存数量" json:"numberCount"`
+	CallNumber    int     `gorm:"type:int;comment:报警数量" json:"callNumber"`
+	Unit          string  `gorm:"type:varchar(50);comment:单位" json:"unit"`
+	DeliveryCycle string  `gorm:"type:varchar(50);comment:供货周期" json:"deliveryCycle"`
+	Remark        string  `gorm:"type:varchar(300);comment:备注" json:"remark"`
+	IsFree        bool    `gorm:"type:boolean;comment:是否为小零配件" json:"isFree"`
+	TypeID        int     `gorm:"type:int;comment:类型ID;default:(-)" json:"typeID"`
+	PurchasePrice float64 `gorm:"type:decimal(20,6);comment:采购价格(元)" json:"purchasePrice"`
+	AttributeID   int     `gorm:"type:int;comment:属性ID;default:(-)" json:"attributeID"`
 
 	Type      ProductType      `gorm:"foreignKey:TypeID" json:"type"`
 	Attribute ProductAttribute `gorm:"foreignKey:AttributeID" json:"attribute"`
@@ -53,8 +54,6 @@ type ProductAttribute struct {
 
 	ID               int     `gorm:"primary_key" json:"id"`
 	IsDelete         bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
-	PurchasePrice    float64 `gorm:"type:decimal(20,6);comment:采购价格(元)" json:"purchasePrice"`
-	PurchasePriceUSD float64 `gorm:"type:decimal(20,6);comment:采购价格(美元)" json:"purchasePriceUSD"`
 	StandardPrice    float64 `gorm:"type:decimal(20,6);comment:标准价格(元)" json:"standardPrice"`
 	StandardPriceUSD float64 `gorm:"type:decimal(20,6);comment:标准价格(美元)" json:"standardPriceUSD"`
 }
@@ -149,13 +148,9 @@ func UpdateProductAttribute(product *Product) (code int) {
 	var productBak Product
 	productBak, code = SelectProduct(product.ID)
 	if code == msg.SUCCESS {
-		if productBak.Attribute.PurchasePrice != product.Attribute.PurchasePrice ||
-			productBak.Attribute.PurchasePriceUSD != product.Attribute.PurchasePriceUSD ||
-			productBak.Attribute.StandardPrice != product.Attribute.StandardPrice ||
+		if productBak.Attribute.StandardPrice != product.Attribute.StandardPrice ||
 			productBak.Attribute.StandardPriceUSD != product.Attribute.StandardPriceUSD {
 			var productAttribute ProductAttribute
-			productAttribute.PurchasePrice = product.Attribute.PurchasePrice
-			productAttribute.PurchasePriceUSD = product.Attribute.PurchasePriceUSD
 			productAttribute.StandardPrice = product.Attribute.StandardPrice
 			productAttribute.StandardPriceUSD = product.Attribute.StandardPriceUSD
 

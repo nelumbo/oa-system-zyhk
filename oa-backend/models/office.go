@@ -1,6 +1,10 @@
 package models
 
-import "oa-backend/utils/msg"
+import (
+	"oa-backend/utils/msg"
+
+	"gorm.io/gorm"
+)
 
 type Office struct {
 	// UID           string  `gorm:"type:varchar(32);comment:唯一标识" json:"UID"`
@@ -25,6 +29,21 @@ type Office struct {
 
 	FinalPercentages float64 `gorm:"-" json:"finalPercentages"`
 	NotPayment       float64 `gorm:"-" json:"notPayment"`
+}
+
+func UpdateOffice(office *Office, maps map[string]interface{}) (code int) {
+	err = db.Transaction(func(tx *gorm.DB) error {
+
+		if tErr := tx.Model(&Office{}).Where("id", office.ID).Updates(maps).Error; tErr != nil {
+			return tErr
+		}
+		//TODO日志
+		return nil
+	})
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
 }
 
 func SelectOffices(officeQuery *Office, xForms *XForms) (offices []Office, code int) {

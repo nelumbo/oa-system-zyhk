@@ -14,30 +14,27 @@ import (
 func AddExpense(c *gin.Context) {
 	var expense models.Expense
 	_ = c.ShouldBindJSON(&expense)
-	expense.EmployeeID = c.MustGet("employeeID").(int)
-	expense.CreateDate.Time = time.Now()
 
-	licence := true
-
-	if expense.Type == magic.EXPENSE_TYPE_BuZhu {
-		var employee models.Employee
-		employee, code = models.SelectEmployee(expense.EmployeeID)
-		if code != msg.SUCCESS || employee.Money < expense.Amount {
-			licence = false
-			code = msg.FAIL
+	var employee models.Employee
+	employee, code = models.SelectEmployee(c.MustGet("employeeID").(int))
+	if code != msg.SUCCESS ||
+		(expense.Type == magic.EXPENSE_TYPE_BuZhu && employee.Money < expense.Amount) ||
+		(expense.Type == magic.EXPENSE_TYPE_TiChen && employee.Office.Money < expense.Amount) {
+		code = msg.FAIL
+	} else {
+		expenseCre := models.Expense{
+			ID:         expense.ID,
+			IsDelete:   false,
+			EmployeeID: c.MustGet("employeeID").(int),
+			Type:       expense.Type,
+			Text:       expense.Text,
+			Amount:     expense.Amount,
+			Status:     magic.EXPENSE_STATUS_NOT_APPROVAL_1,
+			CreateDate: models.XDate{
+				Time: time.Now(),
+			},
 		}
-	} else if expense.Type == magic.EXPENSE_TYPE_TiChen {
-		var employee models.Employee
-		employee, code = models.SelectEmployee(expense.EmployeeID)
-		if code != msg.SUCCESS || employee.Office.Money < expense.Amount {
-			licence = false
-			code = msg.FAIL
-		}
-	}
-
-	if licence {
-		expense.Status = magic.EXPENSE_STATUS_NOT_APPROVAL_1
-		code = models.GeneralInsert(&expense)
+		code = models.GeneralInsert(&expenseCre)
 	}
 
 	msg.Message(c, code, nil)
@@ -54,25 +51,6 @@ func DelExpense(c *gin.Context) {
 		} else {
 			code = msg.FAIL
 		}
-	} else {
-		code = msg.ERROR
-	}
-	msg.Message(c, code, nil)
-}
-
-func EditExpense(c *gin.Context) {
-	var expense, expenseBak models.Expense
-	_ = c.ShouldBindJSON(&expense)
-	code = models.GeneralSelect(&expenseBak, expense.ID, nil)
-
-	if code == msg.SUCCESS && expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_1 &&
-		expenseBak.EmployeeID == c.MustGet("employeeID").(int) {
-		var maps = make(map[string]interface{})
-		maps["create_date"] = time.Now()
-		maps["type"] = expense.Type
-		maps["amount"] = expense.Amount
-		maps["text"] = expense.Text
-		code = models.GeneralUpdate(&models.Expense{}, expense.ID, maps)
 	} else {
 		code = msg.ERROR
 	}

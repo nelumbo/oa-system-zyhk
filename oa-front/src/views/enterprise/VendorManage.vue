@@ -14,7 +14,7 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="add.dialogVisible" title="合同签订单位添加" width="50%" :show-close="false">
+        <el-dialog v-model="add.dialogVisible" title="添加" width="50%" :show-close="false">
             <el-form :model="add.model" label-width="60px" :rules="rules" ref="addForm">
                 <el-form-item label="名称" prop="name">
                     <el-input v-model.trim="add.model.name" maxlength="50" />
@@ -29,7 +29,7 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="edit.dialogVisible" title="合同签订单位编辑" width="50%" :show-close="false">
+        <el-dialog v-model="edit.dialogVisible" title="编辑" width="50%" :show-close="false">
             <el-form :model="edit.model" label-width="100px" :rules="rules" ref="editForm">
                 <el-form-item label="名称" prop="name">
                     <el-input v-model.trim="edit.model.name" maxlength="50" />
@@ -49,9 +49,9 @@
 <script setup>
 import { ref, reactive, onBeforeMount } from 'vue'
 import { addVendor, editVendor, queryVendors } from "@/api/vendor";
-import { message, messageForCRUD } from '@/components/divMessage/index'
+import { message } from '@/components/divMessage/index'
 
-import divTable from '../../components/divTable/index.vue'
+import divTable from '@/components/divTable/index.vue'
 
 const addForm = ref(null)
 const editForm = ref(null)
@@ -141,10 +141,10 @@ const add = reactive({
                 add.submitDisabled = true
                 addVendor(add.model).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(add.model.name, "添加成功", "success")
+                        message("添加成功", "success")
                         base.query()
                     } else {
-                        messageForCRUD(add.model.name, "添加失败", "error")
+                        message("添加失败", "error")
                     }
                     add.dialogVisible = false
                     add.model = {
@@ -172,10 +172,10 @@ const edit = reactive({
                 edit.submitDisabled = true
                 editVendor(edit.model).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(edit.model.name, "编辑成功", "success")
+                        message("编辑成功", "success")
                         base.query()
                     } else {
-                        messageForCRUD(edit.model.name, "编辑失败", "error")
+                        message("编辑失败", "error")
                     }
                     edit.dialogVisible = false
                     edit.model = {

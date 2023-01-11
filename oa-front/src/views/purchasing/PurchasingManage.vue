@@ -46,7 +46,7 @@
     <el-dialog v-model="addDLC.dialogVisible" title="添加" width="50%" :show-close="false">
         <el-form :model="addDLC.model" label-width="100px" :rules="rules" ref="addForm">
             <el-form-item label="类型" prop="type">
-                <el-select v-model="addDLC.model.type" placeholder="请选择你的报销类型">
+                <el-select v-model="addDLC.model.type" placeholder="请选择你的采购类型">
                     <el-option v-for="purchasing in PurchasingTypeSelectItems" :label="purchasing.label"
                         :value="purchasing.value" />
                 </el-select>
@@ -129,7 +129,7 @@
 <script setup>
 import { ref, reactive, onBeforeMount } from 'vue'
 import { message } from '@/components/divMessage/index'
-import { PurchasingTypeItems, PurchasingTypeSelectItems, PurchasingStatusItems } from '@/utils/magic'
+import { PurchasingTypeSelectItems } from '@/utils/magic'
 import { addPurchasing, approvePurchasing, finalPurchasingProduct, finalPurchasing, queryPurchasings } from "@/api/purchasing"
 import { queryProducts } from "@/api/product"
 import { reg_number, reg_money } from '@/utils/regex'
@@ -162,56 +162,68 @@ const base = reactive({
             {
                 prop: "no",
                 label: "编号",
+                width: "10%"
             },
             {
                 prop: "createDate",
                 label: "发起时间",
+                width: "10%"
             },
             {
                 prop: "employee.name",
                 label: "发起人",
+                width: "5%"
             },
             {
                 prop: "product.name",
                 label: "名称",
+                width: "8%"
             },
             {
                 prop: "product.version",
                 label: "型号",
+                width: "7%"
             },
             {
                 prop: "product.specification",
                 label: "规格",
+                width: "10%"
             },
             {
                 prop: "number",
                 label: "需求数量",
+                width: "5%"
             },
             {
                 prop: "realNumber",
                 label: "实际数量",
+                width: "5%"
             },
             {
                 prop: "product.unit",
                 label: "单位",
+                width: "5%"
             },
             {
                 prop: "price",
                 label: "单价",
+                width: "5%"
             },
             {
                 prop: "totalPrice",
                 label: "总价",
+                width: "5%"
             },
             {
-                type: "transform",
+                type: "purchasingStatus",
                 prop: "status",
-                items: PurchasingStatusItems,
                 label: "状态",
+                width: "15%"
             },
             {
                 type: "operation",
                 label: "操作",
+                width: "10%",
                 operations: [
                     {
                         isShow: (index, row) => {

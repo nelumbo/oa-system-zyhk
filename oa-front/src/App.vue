@@ -16,4 +16,8 @@ body,
   margin: 0;
   padding: 0;
 }
+
+.el-row {
+  margin-bottom: 10px;
+}
 </style>

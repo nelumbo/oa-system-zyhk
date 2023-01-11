@@ -15,9 +15,17 @@ export const delOffice = (id) => {
     })
 }
 
-export const editOffice = (office) => {
+export const editOfficeBase = (office) => {
     return request({
-        url: '/office',
+        url: '/office/base',
+        method: 'PUT',
+        data: office
+    })
+}
+
+export const editOfficeMoney = (office) => {
+    return request({
+        url: '/office/money',
         method: 'PUT',
         data: office
     })

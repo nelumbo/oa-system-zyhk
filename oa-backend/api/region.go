@@ -12,7 +12,13 @@ func AddRegion(c *gin.Context) {
 	var region models.Region
 	_ = c.ShouldBindJSON(&region)
 
-	code = models.GeneralInsert(&region)
+	regionCre := models.Region{
+		ID:       region.ID,
+		IsDelete: false,
+		Name:     region.Name,
+	}
+
+	code = models.GeneralInsert(&regionCre)
 	msg.Message(c, code, nil)
 }
 

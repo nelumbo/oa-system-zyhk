@@ -20,8 +20,25 @@ func AddEmployee(c *gin.Context) {
 		//默认密码等于编号+手机号
 		employee.Password = employee.Number + employee.Phone
 		employee.Password, err = pwd.Scrypt(employee.Password)
+
 		if err == nil {
-			code = models.GeneralInsert(&employee)
+			employeeCre := models.Employee{
+				ID:            employee.ID,
+				IsDelete:      false,
+				Phone:         employee.Phone,
+				Name:          employee.Name,
+				Password:      employee.Password,
+				WechatID:      employee.WechatID,
+				Email:         employee.Email,
+				OfficeID:      employee.OfficeID,
+				Number:        employee.Number,
+				ContractCount: 0,
+				Money:         employee.Money,
+				Credit:        employee.Credit,
+				OfficeCredit:  employee.Credit,
+				Roles:         employee.Roles,
+			}
+			code = models.GeneralInsert(&employeeCre)
 		} else {
 			code = msg.ERROR
 		}
@@ -68,6 +85,7 @@ func EditEmployeeExpense(c *gin.Context) {
 	maps["office_credit"] = employee.OfficeCredit
 
 	code = models.GeneralUpdate(&models.Employee{}, employee.ID, maps)
+	//TODO日志
 	msg.Message(c, code, nil)
 }
 
