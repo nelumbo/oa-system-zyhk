@@ -92,6 +92,7 @@ func Init() {
 		tRouter.POST("product", api.AddProduct)
 		tRouter.PUT("product/base", api.EditProductBase)
 		tRouter.PUT("product/attribute", api.EditProductAttribute)
+		tRouter.PUT("product/number", api.EditProductNumber)
 		tRouter.GET("product/:id", api.QueryProduct)
 		tRouter.POST("products", api.QueryProducts)
 

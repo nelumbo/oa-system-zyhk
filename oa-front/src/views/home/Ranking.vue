@@ -1,5 +1,5 @@
 <template>
-    <el-row>
+    <!-- <el-row>
         <el-col :span="4" :offset="6">
             原位合同总量：{{ base.model.ywTargetLoad }}
         </el-col>
@@ -9,7 +9,7 @@
         <el-col :span="4">
             渠道合同总量：{{ base.model.qdTargetLoad }}
         </el-col>
-    </el-row>
+    </el-row> -->
     <el-row style="margin-top: 15px;"></el-row>
     <divTable :columnObj="base.column" :tableData="base.tableData" :allShow="true" />
 </template>

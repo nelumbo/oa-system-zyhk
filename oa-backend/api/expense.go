@@ -41,16 +41,13 @@ func AddExpense(c *gin.Context) {
 }
 
 func DelExpense(c *gin.Context) {
-	var expenseBak models.Expense
 	id, err := strconv.Atoi(c.Param("id"))
-	if err == nil {
-		code = models.GeneralSelect(&expenseBak, id, nil)
-		if code == msg.SUCCESS && expenseBak.EmployeeID == c.MustGet("employeeID").(int) &&
-			(expenseBak.Status == magic.EXPENSE_STATUS_FAIL || expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_1) {
-			code = models.GeneralDelete(&models.Expense{}, id)
-		} else {
-			code = msg.FAIL
-		}
+	var expenseBak models.Expense
+	code = models.GeneralSelect(&expenseBak, id, nil)
+	if err == nil && code == msg.SUCCESS &&
+		expenseBak.EmployeeID == c.MustGet("employeeID").(int) &&
+		(expenseBak.Status == magic.EXPENSE_STATUS_FAIL || expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_1) {
+		code = models.GeneralDelete(&models.Expense{}, id)
 	} else {
 		code = msg.ERROR
 	}

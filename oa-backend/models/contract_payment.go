@@ -118,10 +118,15 @@ func specialPercentage(payment *Payment, task *Task) (theoreticalPushMoney float
 }
 
 func timeDelayOfArrival(endDeliveryDate XDate, paymentDate XDate) (tdoa int) {
+
+	if endDeliveryDate.Time.IsZero() {
+		return 0
+	}
+
 	t1x := endDeliveryDate.Unix()
 	t2x := paymentDate.Unix()
 
-	if t1x >= t2x {
+	if t1x >= t2x || t1x == 0 {
 		return 0
 	}
 

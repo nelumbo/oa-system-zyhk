@@ -1,120 +1,116 @@
 <template>
-    <div>
-        <el-row :gutter="20">
-            <el-col :span="5" :offset="1">
-                <el-select v-model="base.model.type" placeholder="报销类型" clearable style="width: 100%;">
-                    <el-option v-for="item in expenseTypeItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-select v-model="base.model.status" placeholder="状态" clearable style="width: 100%;">
-                    <el-option v-for="item in expenseStatusItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-select v-model="base.model.employee.officeID" placeholder="办事处" clearable style="width: 100%;">
-                    <el-option v-for="item in base.offices" :key="item.id" :label="item.name" :value="item.id" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-input v-model="base.model.employee.name" placeholder="员工" clearable maxlength="25" />
-            </el-col>
+    <el-row :gutter="20">
+        <el-col :span="5" :offset="1">
+            <el-select v-model="base.model.type" placeholder="报销类型" clearable style="width: 100%;">
+                <el-option v-for="item in expenseTypeItems" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+        </el-col>
+        <el-col :span="5">
+            <el-select v-model="base.model.status" placeholder="状态" clearable style="width: 100%;">
+                <el-option v-for="item in expenseStatusItems" :key="item.value" :label="item.label"
+                    :value="item.value" />
+            </el-select>
+        </el-col>
+        <el-col :span="5">
+            <el-select v-model="base.model.employee.officeID" placeholder="办事处" clearable style="width: 100%;">
+                <el-option v-for="item in base.offices" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+        </el-col>
+        <el-col :span="5">
+            <el-input v-model="base.model.employee.name" placeholder="员工" clearable maxlength="25" />
+        </el-col>
 
-            <el-col :span="1">
-                <el-button type="primary" @click="base.query">查询</el-button>
-            </el-col>
-        </el-row>
-        <el-row :gutter="20" style="margin-top: 5px;">
-            <el-col :span="5" :offset="1">
-                <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
-            </el-col>
-            <el-col :span="5">
-                <el-date-picker v-model="base.model.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
-            </el-col>
-        </el-row>
-        <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
-            :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
+        <el-col :span="1">
+            <el-button type="primary" @click="base.query">查询</el-button>
+        </el-col>
+    </el-row>
+    <el-row :gutter="20" style="margin-top: 5px;">
+        <el-col :span="5" :offset="1">
+            <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
+        </el-col>
+        <el-col :span="5">
+            <el-date-picker v-model="base.model.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
+        </el-col>
+    </el-row>
+    <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
+        :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="view.dialogVisible" title="查看" width="50%" :show-close="false">
-            <el-form :model="view.model" label-width="140px">
-                <el-form-item label="报销状态">
-                    <el-input v-model.trim="view.statusString" readonly />
-                </el-form-item>
-                <el-form-item label="报销类型">
-                    <el-input v-model.trim="view.typeString" readonly />
-                </el-form-item>
-                <el-form-item label="发起时间">
-                    <el-input v-model.trim="view.model.createDate" readonly />
-                </el-form-item>
-                <el-form-item label="办事处">
-                    <el-input v-model.trim="view.model.employee.office.name" readonly />
-                </el-form-item>
-                <el-form-item label="员工">
-                    <el-input v-model.trim="view.model.employee.name" readonly />
-                </el-form-item>
-                <el-form-item label="金额">
-                    <el-input v-model.trim="view.model.amount" readonly />
-                </el-form-item>
-                <el-form-item label="申请理由">
-                    <el-input v-model.trim="view.model.text" type="textarea" autosize readonly />
-                </el-form-item>
-                <el-form-item label="审核时间">
-                    <el-input v-model.trim="view.model.approveDate" readonly />
-                </el-form-item>
-            </el-form>
-        </el-dialog>
+    <el-dialog v-model="view.dialogVisible" title="查看" width="50%" :show-close="false">
+        <el-form :model="view.model" label-width="140px">
+            <el-form-item label="报销状态">
+                <el-input v-model.trim="view.statusString" readonly />
+            </el-form-item>
+            <el-form-item label="报销类型">
+                <el-input v-model.trim="view.typeString" readonly />
+            </el-form-item>
+            <el-form-item label="发起时间">
+                <el-input v-model.trim="view.model.createDate" readonly />
+            </el-form-item>
+            <el-form-item label="办事处">
+                <el-input v-model.trim="view.model.employee.office.name" readonly />
+            </el-form-item>
+            <el-form-item label="员工">
+                <el-input v-model.trim="view.model.employee.name" readonly />
+            </el-form-item>
+            <el-form-item label="金额">
+                <el-input v-model.trim="view.model.amount" readonly />
+            </el-form-item>
+            <el-form-item label="申请理由">
+                <el-input v-model.trim="view.model.text" type="textarea" autosize readonly />
+            </el-form-item>
+            <el-form-item label="审核时间">
+                <el-input v-model.trim="view.model.approveDate" readonly />
+            </el-form-item>
+        </el-form>
+    </el-dialog>
 
-        <el-dialog v-model="approve.dialogVisible" title="审核" width="50%" :show-close="false">
-            <el-form :model="approve.model" label-width="140px">
-                <el-form-item label="员工补助金额">
-                    <el-input v-model.trim="approve.model.employee.money" readonly />
-                </el-form-item>
-                <el-form-item label="办事处提成金额">
-                    <el-input v-model.trim="approve.model.employee.office.money" readonly />
-                </el-form-item>
-                <el-form-item label="办事处业务费金额">
-                    <el-input v-model.trim="approve.model.employee.office.businessMoney" readonly />
-                </el-form-item>
-                <el-divider />
-                <el-form-item label="报销状态">
-                    <el-input v-model.trim="approve.statusString" readonly />
-                </el-form-item>
-                <el-form-item label="报销类型">
-                    <el-input v-model.trim="approve.typeString" readonly />
-                </el-form-item>
-                <el-form-item label="发起时间">
-                    <el-input v-model.trim="approve.model.createDate" readonly />
-                </el-form-item>
-                <el-form-item label="办事处">
-                    <el-input v-model.trim="approve.model.employee.office.name" readonly />
-                </el-form-item>
-                <el-form-item label="员工">
-                    <el-input v-model.trim="approve.model.employee.name" readonly />
-                </el-form-item>
-                <el-form-item label="金额">
-                    <el-input v-model.trim="approve.model.amount" readonly />
-                </el-form-item>
-                <el-form-item label="申请理由">
-                    <el-input v-model.trim="approve.model.text" type="textarea" autosize readonly />
-                </el-form-item>
-                <el-form-item label="审核时间">
-                    <el-input v-model.trim="approve.model.approveDate" readonly />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="primary" @click="approve.pass" :disabled="approve.submitDisabled"
-                            style="margin-right: 250px;">通过</el-button>
-                        <el-button type="danger" @click="approve.reject"
-                            :disabled="approve.submitDisabled">拒绝</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
-    </div>
+    <el-dialog v-model="approve.dialogVisible" title="审核" width="50%" :show-close="false">
+        <el-form :model="approve.model" label-width="140px">
+            <el-form-item label="员工补助金额">
+                <el-input v-model.trim="approve.model.employee.money" readonly />
+            </el-form-item>
+            <el-form-item label="办事处提成金额">
+                <el-input v-model.trim="approve.model.employee.office.money" readonly />
+            </el-form-item>
+            <el-form-item label="办事处业务费金额">
+                <el-input v-model.trim="approve.model.employee.office.businessMoney" readonly />
+            </el-form-item>
+            <el-divider />
+            <el-form-item label="报销状态">
+                <el-input v-model.trim="approve.statusString" readonly />
+            </el-form-item>
+            <el-form-item label="报销类型">
+                <el-input v-model.trim="approve.typeString" readonly />
+            </el-form-item>
+            <el-form-item label="发起时间">
+                <el-input v-model.trim="approve.model.createDate" readonly />
+            </el-form-item>
+            <el-form-item label="办事处">
+                <el-input v-model.trim="approve.model.employee.office.name" readonly />
+            </el-form-item>
+            <el-form-item label="员工">
+                <el-input v-model.trim="approve.model.employee.name" readonly />
+            </el-form-item>
+            <el-form-item label="金额">
+                <el-input v-model.trim="approve.model.amount" readonly />
+            </el-form-item>
+            <el-form-item label="申请理由">
+                <el-input v-model.trim="approve.model.text" type="textarea" autosize readonly />
+            </el-form-item>
+            <el-form-item label="审核时间">
+                <el-input v-model.trim="approve.model.approveDate" readonly />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="approve.pass" :disabled="approve.submitDisabled"
+                        style="margin-right: 250px;">通过</el-button>
+                    <el-button type="danger" @click="approve.reject" :disabled="approve.submitDisabled">拒绝</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>

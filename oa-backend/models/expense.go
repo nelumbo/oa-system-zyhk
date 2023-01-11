@@ -39,6 +39,8 @@ type Expense struct {
 
 func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interface{}) (code int) {
 
+	//TODO日志
+
 	var employee Employee
 	db.First(&employee, expenseBak.EmployeeID)
 	if employee.ID == 0 {

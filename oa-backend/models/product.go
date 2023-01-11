@@ -72,7 +72,6 @@ type ProductType struct {
 	BusinessMoneyPercentagesUp float64 `gorm:"type:decimal(20,6);comment:业务费用上涨百分比" json:"businessMoneyPercentagesUp"`
 	Type                       int     `gorm:"type:int;comment:类型(1:原味 2:渠道 3:自研)" json:"type"`
 	IsTaskLoad                 bool    `gorm:"type:boolean;comment:是否计算任务量" json:"isTaskLoad"`
-	IsDirectOut                bool    `gorm:"type:boolean;comment:是否可以直接出库" json:"isDirectOut"`
 }
 
 func SelectSuppliers(supplierQuery *Supplier, xForms *XForms) (suppliers []Supplier, code int) {
@@ -122,11 +121,13 @@ func UpdateProduct(product *Product) (code int) {
 	maps["type_id"] = product.TypeID
 	maps["name"] = product.Name
 	maps["brand"] = product.Brand
+	maps["version"] = product.Version
 	maps["specification"] = product.Specification
 	maps["unit"] = product.Unit
 	maps["delivery_cycle"] = product.DeliveryCycle
 	maps["remark"] = product.Remark
 	maps["is_free"] = product.IsFree
+	maps["call_number"] = product.CallNumber
 
 	err = db.Transaction(func(tx *gorm.DB) error {
 		if tErr := tx.Model(&Product{ID: product.ID}).Updates(maps).Error; tErr != nil {
@@ -148,28 +149,50 @@ func UpdateProductAttribute(product *Product) (code int) {
 	var productBak Product
 	productBak, code = SelectProduct(product.ID)
 	if code == msg.SUCCESS {
-		if productBak.Attribute.StandardPrice != product.Attribute.StandardPrice ||
-			productBak.Attribute.StandardPriceUSD != product.Attribute.StandardPriceUSD {
-			var productAttribute ProductAttribute
-			productAttribute.StandardPrice = product.Attribute.StandardPrice
-			productAttribute.StandardPriceUSD = product.Attribute.StandardPriceUSD
+		err = db.Transaction(func(tx *gorm.DB) error {
 
-			err = db.Transaction(func(tx *gorm.DB) error {
+			if productBak.Attribute.StandardPrice != product.Attribute.StandardPrice ||
+				productBak.Attribute.StandardPriceUSD != product.Attribute.StandardPriceUSD {
+				var productAttribute ProductAttribute
+				productAttribute.StandardPrice = product.Attribute.StandardPrice
+				productAttribute.StandardPriceUSD = product.Attribute.StandardPriceUSD
 				if tErr := tx.Create(&productAttribute).Error; tErr != nil {
 					return tErr
 				}
-				if tErr := tx.Model(&Product{ID: product.ID}).Update("attribute_id", productAttribute.ID).Error; tErr != nil {
+				if tErr := tx.Model(&Product{}).Where("id", product.ID).Updates(map[string]interface{}{"purchase_price": product.PurchasePrice, "attribute_id": productAttribute.ID}).Error; tErr != nil {
 					return tErr
 				}
-				return nil
-			})
-			if err != nil {
-				return msg.ERROR
+			} else {
+				if tErr := tx.Model(&Product{}).Where("id", product.ID).Update("purchase_price", product.PurchasePrice).Error; tErr != nil {
+					return tErr
+				}
 			}
-			return msg.SUCCESS
+			return nil
+		})
+		if err != nil {
+			code = msg.ERROR
 		}
+		code = msg.SUCCESS
+	} else {
+		code = msg.ERROR
 	}
-	return code
+	return
+}
+
+func UpdateProductNumber(product *Product) (code int) {
+	//TODO日志
+	err = db.Transaction(func(tx *gorm.DB) error {
+
+		if tErr := tx.Model(&Product{}).Where("id", product.ID).Updates(map[string]interface{}{"number": product.Number, "number_count": product.NumberCount}).Error; tErr != nil {
+			return tErr
+		}
+
+		return nil
+	})
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
 }
 
 func SelectProduct(id int) (product Product, code int) {

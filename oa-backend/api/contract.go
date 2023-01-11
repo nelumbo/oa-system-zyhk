@@ -17,13 +17,34 @@ func SaveContract(c *gin.Context) {
 	_ = c.ShouldBindJSON(&contract)
 
 	if contract.ID == 0 {
-		contract.EmployeeID = c.MustGet("employeeID").(int)
-		contract.Status = magic.CONTRACT_STATUS_SAVE
-		contract.CreateDate.Time = time.Now()
-		contract.TotalAmount = 0
-		contract.Tasks = nil
 
-		code = models.GeneralInsert(&contract)
+		contractCre := models.Contract{
+			ID:                    contract.ID,
+			IsDelete:              false,
+			RegionID:              contract.RegionID,
+			EmployeeID:            c.MustGet("employeeID").(int),
+			CustomerID:            contract.CustomerID,
+			ContractDate:          contract.ContractDate,
+			VendorID:              contract.VendorID,
+			EstimatedDeliveryDate: contract.EstimatedDeliveryDate,
+			InvoiceType:           contract.InvoiceType,
+			InvoiceContent:        contract.InvoiceContent,
+			PaymentContent:        contract.PaymentContent,
+			IsSpecial:             contract.IsSpecial,
+			IsPreDeposit:          contract.IsPreDeposit,
+			PreDeposit:            0,
+			PreDepositRecord:      contract.PreDepositRecord,
+			PayType:               contract.PayType,
+			TotalAmount:           0,
+			PaymentTotalAmount:    0,
+			Remark:                contract.Remark,
+			ProductionStatus:      0,
+			CollectionStatus:      0,
+			Status:                magic.CONTRACT_STATUS_SAVE,
+			CreateDate:            models.XDate{Time: time.Now()},
+		}
+
+		code = models.GeneralInsert(&contractCre)
 	} else {
 		var contractBak models.Contract
 		_ = models.GeneralSelect(&contractBak, contract.ID, nil)
@@ -31,16 +52,16 @@ func SaveContract(c *gin.Context) {
 			var maps = make(map[string]interface{})
 			maps["region_id"] = contract.RegionID
 			maps["customer_id"] = contract.CustomerID
-			maps["vendor_id"] = contract.VendorID
 			maps["contract_date"] = contract.ContractDate
+			maps["vendor_id"] = contract.VendorID
 			maps["estimated_delivery_date"] = contract.ContractDate
-			maps["pay_type"] = contract.PayType
-			maps["is_pre_deposit"] = contract.IsPreDeposit
-			maps["pre_deposit_record"] = contract.PreDepositRecord
-			maps["is_special"] = contract.IsSpecial
 			maps["invoice_type"] = contract.InvoiceType
 			maps["invoice_content"] = contract.InvoiceContent
 			maps["payment_content"] = contract.PaymentContent
+			maps["is_special"] = contract.IsSpecial
+			maps["is_pre_deposit"] = contract.IsPreDeposit
+			maps["pre_deposit_record"] = contract.PreDepositRecord
+			maps["pay_type"] = contract.PayType
 			maps["remark"] = contract.Remark
 			code = models.GeneralUpdate(&models.Contract{}, contractBak.ID, maps)
 		} else {
@@ -52,15 +73,13 @@ func SaveContract(c *gin.Context) {
 }
 
 func AddContract(c *gin.Context) {
-	var contract, contractBak models.Contract
-	var employee models.Employee
+	var contract models.Contract
+	var employeeBak models.Employee
 	_ = c.ShouldBindJSON(&contract)
 
-	code = models.GeneralSelect(&employee, c.MustGet("employeeID").(int), nil)
+	code = models.GeneralSelect(&employeeBak, c.MustGet("employeeID").(int), nil)
 
 	if code == msg.SUCCESS {
-		contract.OfficeID = employee.OfficeID
-		contract.Status = magic.CONTRACT_STATUS_NOT_APPROVAL
 
 		if contract.IsPreDeposit {
 			contract.Tasks = nil
@@ -70,22 +89,39 @@ func AddContract(c *gin.Context) {
 				_ = models.GeneralSelect(&product, contract.Tasks[i].ProductID, nil)
 				contract.TotalAmount += contract.Tasks[i].TotalPrice
 				contract.Tasks[i].ProductAttributeID = product.AttributeID
+				contract.Tasks[i].Product = models.Product{}
 			}
 		}
 
-		if contract.ID != 0 {
-			_ = models.GeneralSelect(&contractBak, contract.ID, nil)
-			if contractBak.ID == contract.ID && contractBak.EmployeeID == c.MustGet("employeeID").(int) {
-				code = models.InsertContract(&contract)
-			} else {
-				code = msg.FAIL
-			}
-		} else {
-			contract.EmployeeID = c.MustGet("employeeID").(int)
-			contract.CreateDate.Time = time.Now()
-
-			code = models.InsertContract(&contract)
+		contractCre := models.Contract{
+			ID:                    contract.ID,
+			IsDelete:              false,
+			RegionID:              contract.RegionID,
+			OfficeID:              employeeBak.OfficeID,
+			EmployeeID:            c.MustGet("employeeID").(int),
+			CustomerID:            contract.CustomerID,
+			ContractDate:          contract.ContractDate,
+			VendorID:              contract.VendorID,
+			EstimatedDeliveryDate: contract.EstimatedDeliveryDate,
+			InvoiceType:           contract.InvoiceType,
+			InvoiceContent:        contract.InvoiceContent,
+			PaymentContent:        contract.PaymentContent,
+			IsSpecial:             contract.IsSpecial,
+			IsPreDeposit:          contract.IsPreDeposit,
+			PreDeposit:            0,
+			PreDepositRecord:      contract.PreDepositRecord,
+			PayType:               contract.PayType,
+			TotalAmount:           contract.TotalAmount,
+			PaymentTotalAmount:    0,
+			Remark:                contract.Remark,
+			ProductionStatus:      0,
+			CollectionStatus:      0,
+			Status:                magic.CONTRACT_STATUS_NOT_APPROVAL,
+			CreateDate:            models.XDate{Time: time.Now()},
+			Tasks:                 contract.Tasks,
 		}
+
+		code = models.InsertContract(&contractCre)
 	} else {
 		code = msg.FAIL
 	}
@@ -120,6 +156,7 @@ func ApproveContract(c *gin.Context) {
 
 	if contractBak.Status == magic.CONTRACT_STATUS_NOT_APPROVAL {
 		contractBak.IsPass = contract.IsPass
+		contractBak.Tasks = contract.Tasks
 		var maps = make(map[string]interface{})
 		maps["auditor_id"] = c.MustGet("employeeID").(int)
 		maps["audit_date"] = time.Now()
@@ -140,7 +177,7 @@ func EditContractEstimatedDeliveryDate(c *gin.Context) {
 	msg.Message(c, code, nil)
 }
 
-// 预存款合同完成
+// 合同完成
 func FinalContract(c *gin.Context) {
 	var contract models.Contract
 	_ = c.ShouldBindJSON(&contract)

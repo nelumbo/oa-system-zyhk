@@ -29,6 +29,7 @@ func EditSupplier(c *gin.Context) {
 	maps["email"] = supplier.Email
 	maps["description"] = supplier.Description
 	maps["remark"] = supplier.Remark
+	maps["invoice_type"] = supplier.InvoiceType
 
 	code = models.GeneralUpdate(&models.Supplier{}, supplier.ID, maps)
 	msg.Message(c, code, nil)

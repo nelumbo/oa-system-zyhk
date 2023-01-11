@@ -24,6 +24,14 @@ export const editProductAttribute = (product) => {
     })
 }
 
+export const editProductNumber = (product) => {
+    return request({
+        url: '/product/number',
+        method: 'PUT',
+        data: product
+    })
+}
+
 export const queryProduct = (id) => {
     return request({
         url: '/product/' + id,

@@ -33,16 +33,12 @@ func Login(c *gin.Context) {
 func TopList(c *gin.Context) {
 	//office1:普通合同待回款量
 	//office2:预付款合同待回款量
-	var office models.Office
 	var offices, offices1, offices2 []models.Office
+	var productTypes []models.ProductType
 	code = models.GeneralSelectAll(&offices, nil)
-	offices1, offices2 = models.SelectNotPaymentForTopList()
+	offices1, offices2, productTypes = models.SelectNotPaymentForTopList()
 
 	for i := range offices {
-
-		office.YWTargetLoad += offices[i].YWTargetLoad
-		office.ZYTargetLoad += offices[i].ZYTargetLoad
-		office.QDTargetLoad += offices[i].QDTargetLoad
 
 		for j := range offices1 {
 			if offices[i].ID == offices1[j].ID {
@@ -66,7 +62,7 @@ func TopList(c *gin.Context) {
 		return offices[i].FinalPercentages > offices[j].FinalPercentages
 	})
 
-	msg.Message(c, code, map[string]interface{}{"office": office, "offices": offices})
+	msg.Message(c, code, map[string]interface{}{"offices": offices, "productTypes": productTypes})
 }
 
 func round(f float64, n int) float64 {

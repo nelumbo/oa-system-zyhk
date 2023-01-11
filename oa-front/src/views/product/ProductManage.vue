@@ -1,317 +1,321 @@
 <template>
-    <div>
+    <el-row :gutter="20">
+        <el-col :span="6" :offset="2">
+            <el-select v-model="base.model.typeID" placeholder="类型" clearable style="width: 100%;">
+                <el-option v-for="item in base.productTypes" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+        </el-col>
+        <el-col :span="6">
+            <el-input v-model="base.model.name" placeholder="产品名称" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="6">
+            <el-input v-model="base.model.specification" placeholder="规格" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="1">
+            <el-button type="primary" @click="base.query">查询</el-button>
+        </el-col>
+        <el-col :span="1">
+            <el-button type="success" @click="base.openAddDialog">添加</el-button>
+        </el-col>
+    </el-row>
+    <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
+        :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
+
+    <el-dialog v-model="add.dialogVisible" title="添加" width="50%" :show-close="false">
+        <el-form :model="add.model" label-width="120px" :rules="rules" ref="addForm">
+            <el-form-item label="类型" prop="typeID">
+                <el-select v-model="add.model.typeID" clearable>
+                    <el-option v-for="productType in base.productTypes" :key="productType.id" :label="productType.name"
+                        :value="productType.id" />
+                </el-select>
+            </el-form-item>
+            <el-form-item label="名称" prop="name">
+                <el-input v-model.trim="add.model.name" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="型号">
+                <el-input v-model.trim="add.model.version" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="品牌">
+                <el-input v-model.trim="add.model.brand" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="规格">
+                <el-input v-model.trim="add.model.specification" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="供应商">
+                <el-col :span="24">
+                    <el-button type="success" @click="base.openAddDLCDialog">选择供应商</el-button>
+                </el-col>
+                <el-col :span="24" v-for="supplier in add.model.suppliers" :key="supplier.id">
+                    {{ supplier.name }}
+                </el-col>
+            </el-form-item>
+            <el-form-item label="采购价格" prop="purchasePrice">
+                <el-input-number v-model="add.model.purchasePrice" :controls="false" :min="0" :max="9999999999" />
+            </el-form-item>
+            <el-form-item label="标准价格(元)" prop="attribute.standardPrice">
+                <el-input-number v-model="add.model.attribute.standardPrice" :controls="false" :min="0"
+                    :max="9999999999" />
+            </el-form-item>
+            <el-form-item label="标准价格(美元)" prop="attribute.standardPriceUSD">
+                <el-input-number v-model="add.model.attribute.standardPriceUSD" :controls="false" :min="0"
+                    :max="9999999999" />
+            </el-form-item>
+            <el-form-item label="库存数量" prop="numberCount">
+                <el-input-number v-model="add.model.numberCount" :controls="false" :min="-10000" :max="99999" />
+            </el-form-item>
+            <el-form-item label="库存单位" prop="unit">
+                <el-input v-model.trim="add.model.unit" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="库存报警数量" prop="callNumber">
+                <el-input-number v-model="add.model.callNumber" :controls="false" :min="0" :max="99999" />
+            </el-form-item>
+            <el-form-item label="供货周期">
+                <el-input v-model.trim="add.model.deliveryCycle" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="备注">
+                <el-input v-model="add.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                    maxlength="300" />
+            </el-form-item>
+            <el-form-item label="小零配件">
+                <el-radio-group v-model="add.model.isFree">
+                    <el-radio :label="true">是</el-radio>
+                    <el-radio :label="false">否</el-radio>
+                </el-radio-group>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="add.submit" :disabled="add.submitDisabled">提交</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
+
+    <el-dialog v-model="addDLC.dialogVisible" title="供应商选择" width="50%" :show-close="false">
         <el-row :gutter="20">
             <el-col :span="6" :offset="2">
-                <el-select v-model="base.model.typeID" placeholder="类型" clearable style="width: 100%;">
-                    <el-option v-for="item in base.productTypes" :key="item.id" :label="item.name" :value="item.id" />
-                </el-select>
+                <el-input v-model="addDLC.model.name" placeholder="供应商名称" clearable maxlength="25" />
             </el-col>
             <el-col :span="6">
-                <el-input v-model="base.model.name" placeholder="产品名称" clearable maxlength="25" />
+                <el-input v-model="addDLC.model.linkman" placeholder="联系人" clearable maxlength="25" />
             </el-col>
             <el-col :span="6">
-                <el-input v-model="base.model.specification" placeholder="规格" clearable maxlength="25" />
+                <el-input v-model="addDLC.model.phone" placeholder="联系电话" clearable maxlength="25" />
             </el-col>
             <el-col :span="1">
-                <el-button type="primary" @click="base.query">查询</el-button>
-            </el-col>
-            <el-col :span="1">
-                <el-button type="success" @click="base.openAddDialog">添加</el-button>
+                <el-button type="primary" @click="addDLC.query">查询</el-button>
             </el-col>
         </el-row>
-        <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
-            :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
+        <divSelectTable :queryObj="addDLC.model" :queryFunc="querySuppliers" :arrayObj="add.model.suppliers"
+            :headers="addDLC.headers" ref="supplierSelect"></divSelectTable>
+        <el-row>
+            <el-col :span="24">
+                <h3>已选择：</h3>
+            </el-col>
+            <el-col :span="22" :offset="2" v-for="supplier in add.model.suppliers" :key="supplier.id">
+                {{ supplier.name }}
+            </el-col>
+        </el-row>
+    </el-dialog>
 
-        <el-dialog v-model="add.dialogVisible" title="产品添加" width="50%" :show-close="false">
-            <el-form :model="add.model" label-width="120px" :rules="rules" ref="addForm">
-                <el-form-item label="类型" prop="typeID">
-                    <el-select v-model="add.model.typeID" clearable>
-                        <el-option v-for="productType in base.productTypes" :key="productType.id"
-                            :label="productType.name" :value="productType.id" />
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="名称" prop="name">
-                    <el-input v-model.trim="add.model.name" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="型号">
-                    <el-input v-model.trim="add.model.version" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="品牌">
-                    <el-input v-model.trim="add.model.brand" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="规格">
-                    <el-input v-model.trim="add.model.specification" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="供应商">
-                    <el-col :span="24">
-                        <el-button type="success" @click="base.openAddDLCDialog">选择供应商</el-button>
-                    </el-col>
-                    <el-col :span="24" v-for="supplier in add.model.suppliers" :key="supplier.id">
+    <el-dialog v-model="view.dialogVisible" title="查看" width="50%" :show-close="false">
+        <el-form :model="view.model" label-width="150px">
+            <el-form-item label="类型">
+                <el-input v-model.trim="view.model.type.name" disabled />
+            </el-form-item>
+            <el-form-item label="名称">
+                <el-input v-model.trim="view.model.name" disabled />
+            </el-form-item>
+            <el-form-item label="型号">
+                <el-input v-model.trim="view.model.version" disabled />
+            </el-form-item>
+            <el-form-item label="品牌">
+                <el-input v-model.trim="view.model.brand" disabled />
+            </el-form-item>
+            <el-form-item label="规格">
+                <el-input v-model.trim="view.model.specification" disabled />
+            </el-form-item>
+            <el-form-item label="供应商">
+                <el-row>
+                    <el-col :span="24" v-for="supplier in view.model.suppliers" :key="supplier.id">
                         {{ supplier.name }}
                     </el-col>
-                </el-form-item>
-                <el-form-item label="采购价格(元)" prop="attribute.purchasePrice">
-                    <el-input-number v-model="add.model.attribute.purchasePrice" :controls="false" :min="0"
-                        :max="9999999999" />
-                </el-form-item>
-                <el-form-item label="采购价格(美元)" prop="attribute.purchasePriceUSD">
-                    <el-input-number v-model="add.model.attribute.purchasePriceUSD" :controls="false" :min="0"
-                        :max="9999999999" />
-                </el-form-item>
-                <el-form-item label="标准价格(元)" prop="attribute.standardPrice">
-                    <el-input-number v-model="add.model.attribute.standardPrice" :controls="false" :min="0"
-                        :max="9999999999" />
-                </el-form-item>
-                <el-form-item label="标准价格(美元)" prop="attribute.standardPriceUSD">
-                    <el-input-number v-model="add.model.attribute.standardPriceUSD" :controls="false" :min="0"
-                        :max="9999999999" />
-                </el-form-item>
-                <el-form-item label="库存数量" prop="numberCount">
-                    <el-input-number v-model="add.model.numberCount" :controls="false" :min="-10000" :max="99999" />
-                </el-form-item>
-                <el-form-item label="库存单位" prop="unit">
-                    <el-input v-model.trim="add.model.unit" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="库存报警数量" prop="callNumber">
-                    <el-input-number v-model="add.model.callNumber" :controls="false" :min="0" :max="99999" />
-                </el-form-item>
-                <el-form-item label="供货周期">
-                    <el-input v-model.trim="add.model.deliveryCycle" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="备注">
-                    <el-input v-model="add.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                        maxlength="300" />
-                </el-form-item>
-                <el-form-item label="小零配件">
-                    <el-radio-group v-model="add.model.isFree">
-                        <el-radio :label="true">是</el-radio>
-                        <el-radio :label="false">否</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="primary" @click="add.submit" :disabled="add.submitDisabled">提交</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
+                </el-row>
+            </el-form-item>
+            <el-form-item label="采购价格">
+                <el-input v-model.trim="view.model.purchasePrice" disabled />
+            </el-form-item>
+            <el-form-item label="标准售价(元)">
+                <el-input v-model.trim="view.model.attribute.standardPrice" disabled />
+            </el-form-item>
+            <el-form-item label="标准售价(美元)">
+                <el-input v-model.trim="view.model.attribute.standardPriceUSD" disabled />
+            </el-form-item>
+            <el-form-item label="可售数量">
+                <el-input v-model.trim="view.model.number" disabled />
+            </el-form-item>
+            <el-form-item label="库存数量">
+                <el-input v-model.trim="view.model.numberCount" disabled />
+            </el-form-item>
+            <el-form-item label="库存单位">
+                <el-input v-model.trim="view.model.unit" disabled />
+            </el-form-item>
+            <el-form-item label="库存报警数量">
+                <el-input v-model.trim="view.model.callNumber" disabled />
+            </el-form-item>
+            <el-form-item label="供货周期">
+                <el-input v-model.trim="view.model.deliveryCycle" disabled />
+            </el-form-item>
+            <el-form-item label="备注">
+                <el-input v-model="view.model.remark" type="textarea" :autosize=true disabled />
+            </el-form-item>
+            <el-form-item label="小零配件">
+                <div v-if="view.model.isFree">
+                    是
+                </div>
+                <div v-if="!view.model.isFree">
+                    否
+                </div>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
 
-        <el-dialog v-model="addDLC.dialogVisible" title="供应商选择" width="50%" :show-close="false">
-            <el-row :gutter="20">
-                <el-col :span="6" :offset="2">
-                    <el-input v-model="addDLC.model.name" placeholder="供应商名称" clearable maxlength="25" />
-                </el-col>
-                <el-col :span="6">
-                    <el-input v-model="addDLC.model.linkman" placeholder="联系人" clearable maxlength="25" />
-                </el-col>
-                <el-col :span="6">
-                    <el-input v-model="addDLC.model.phone" placeholder="联系电话" clearable maxlength="25" />
-                </el-col>
-                <el-col :span="1">
-                    <el-button type="primary" @click="addDLC.query">查询</el-button>
-                </el-col>
-            </el-row>
-            <divSelectTable :queryObj="addDLC.model" :queryFunc="querySuppliers" :arrayObj="add.model.suppliers"
-                :headers="addDLC.headers" ref="supplierSelect"></divSelectTable>
-            <el-row>
+    <el-dialog v-model="edit.baseDialogVisible" title="基础信息编辑" width="50%" :show-close="false">
+        <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
+            <el-form-item label="类型" prop="typeID">
+                <el-select v-model="edit.model.typeID" clearable>
+                    <el-option v-for="productType in base.productTypes" :key="productType.id" :label="productType.name"
+                        :value="productType.id" />
+                </el-select>
+            </el-form-item>
+            <el-form-item label="名称" prop="name">
+                <el-input v-model.trim="edit.model.name" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="型号">
+                <el-input v-model.trim="edit.model.version" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="品牌">
+                <el-input v-model.trim="edit.model.brand" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="规格">
+                <el-input v-model.trim="edit.model.specification" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="库存单位" prop="unit">
+                <el-input v-model.trim="edit.model.unit" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="库存报警数量" prop="callNumber">
+                <el-input-number v-model="edit.model.callNumber" :controls="false" :min="0" :max="99999" />
+            </el-form-item>
+            <el-form-item label="供应商">
                 <el-col :span="24">
-                    <h3>已选择：</h3>
+                    <el-button type="success" @click="base.openEditDLCDialog">选择供应商</el-button>
                 </el-col>
-                <el-col :span="22" :offset="2" v-for="supplier in add.model.suppliers" :key="supplier.id">
+                <el-col :span="24" v-for="supplier in edit.model.suppliers" :key="supplier.id">
                     {{ supplier.name }}
                 </el-col>
-            </el-row>
-        </el-dialog>
+            </el-form-item>
+            <el-form-item label="供货周期">
+                <el-input v-model.trim="edit.model.deliveryCycle" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="备注">
+                <el-input v-model="edit.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                    maxlength="300" />
+            </el-form-item>
+            <el-form-item label="小零配件">
+                <el-radio-group v-model="edit.model.isFree">
+                    <el-radio :label="true">是</el-radio>
+                    <el-radio :label="false">否</el-radio>
+                </el-radio-group>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="edit.submitBase" :disabled="edit.submitDisabled">提交</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 
-        <el-dialog v-model="view.dialogVisible" title="产品查看" width="50%" :show-close="false">
-            <el-form :model="view.model" label-width="150px">
-                <el-form-item label="类型">
-                    <el-input v-model.trim="view.model.type.name" disabled />
-                </el-form-item>
-                <el-form-item label="名称">
-                    <el-input v-model.trim="view.model.name" disabled />
-                </el-form-item>
-                <el-form-item label="型号">
-                    <el-input v-model.trim="view.model.version" disabled />
-                </el-form-item>
-                <el-form-item label="品牌">
-                    <el-input v-model.trim="view.model.brand" disabled />
-                </el-form-item>
-                <el-form-item label="规格">
-                    <el-input v-model.trim="view.model.specification" disabled />
-                </el-form-item>
-                <el-form-item label="供应商">
-                    <el-row>
-                        <el-col :span="24" v-for="supplier in view.model.suppliers" :key="supplier.id">
-                            {{ supplier.name }}
-                        </el-col>
-                    </el-row>
-                </el-form-item>
-                <el-form-item label="采购价格(元)">
-                    <el-input v-model.trim="view.model.attribute.purchasePrice" disabled />
-                </el-form-item>
-                <el-form-item label="采购价格(美元)">
-                    <el-input v-model.trim="view.model.attribute.purchasePriceUSD" disabled />
-                </el-form-item>
-                <el-form-item label="标准售价(元)">
-                    <el-input v-model.trim="view.model.attribute.standardPrice" disabled />
-                </el-form-item>
-                <el-form-item label="标准售价(美元)">
-                    <el-input v-model.trim="view.model.attribute.standardPriceUSD" disabled />
-                </el-form-item>
-                <el-form-item label="库存数量">
-                    <el-input v-model.trim="view.model.numberCount" disabled />
-                </el-form-item>
-                <el-form-item label="库存单位">
-                    <el-input v-model.trim="view.model.unit" disabled />
-                </el-form-item>
-                <el-form-item label="库存报警数量">
-                    <el-input v-model.trim="view.model.callNumber" disabled />
-                </el-form-item>
-                <el-form-item label="供货周期">
-                    <el-input v-model.trim="view.model.deliveryCycle" disabled />
-                </el-form-item>
-                <el-form-item label="备注">
-                    <el-input v-model="view.model.remark" type="textarea" :autosize=true disabled />
-                </el-form-item>
-                <el-form-item label="小零配件">
-                    <div v-if="view.model.isFree">
-                        是
-                    </div>
-                    <div v-if="!view.model.isFree">
-                        否
-                    </div>
-                </el-form-item>
-            </el-form>
-        </el-dialog>
+    <el-dialog v-model="editDLC.dialogVisible" title="供应商选择" width="50%" :show-close="false">
+        <el-row :gutter="20">
+            <el-col :span="6" :offset="2">
+                <el-input v-model="editDLC.model.name" placeholder="供应商名称" clearable maxlength="25" />
+            </el-col>
+            <el-col :span="6">
+                <el-input v-model="editDLC.model.linkman" placeholder="联系人" clearable maxlength="25" />
+            </el-col>
+            <el-col :span="6">
+                <el-input v-model="editDLC.model.phone" placeholder="联系电话" clearable maxlength="25" />
+            </el-col>
+            <el-col :span="1">
+                <el-button type="primary" @click="editDLC.query">查询</el-button>
+            </el-col>
+        </el-row>
+        <divSelectTable :queryObj="editDLC.model" :queryFunc="querySuppliers" :arrayObj="edit.model.suppliers"
+            :headers="editDLC.headers" ref="supplierSelect"></divSelectTable>
+        <el-row>
+            <el-col :span="24">
+                <h3>已选择：</h3>
+            </el-col>
+            <el-col :span="22" :offset="2" v-for="supplier in editDLC.model.suppliers" :key="supplier.id">
+                {{ supplier.name }}
+            </el-col>
+        </el-row>
+    </el-dialog>
 
-        <el-dialog v-model="edit.baseDialogVisible" title="产品基础信息编辑" width="50%" :show-close="false">
-            <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
-                <el-form-item label="类型" prop="typeID">
-                    <el-select v-model="edit.model.typeID" clearable>
-                        <el-option v-for="productType in base.productTypes" :key="productType.id"
-                            :label="productType.name" :value="productType.id" />
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="名称" prop="name">
-                    <el-input v-model.trim="edit.model.name" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="型号">
-                    <el-input v-model.trim="edit.model.version" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="品牌">
-                    <el-input v-model.trim="edit.model.brand" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="规格">
-                    <el-input v-model.trim="edit.model.specification" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="库存单位" prop="unit">
-                    <el-input v-model.trim="edit.model.unit" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="库存报警数量" prop="callNumber">
-                    <el-input-number v-model="edit.model.callNumber" :controls="false" :min="0" :max="99999" />
-                </el-form-item>
-                <el-form-item label="供应商">
-                    <el-col :span="24">
-                        <el-button type="success" @click="base.openEditDLCDialog">选择供应商</el-button>
-                    </el-col>
-                    <el-col :span="24" v-for="supplier in edit.model.suppliers" :key="supplier.id">
-                        {{ supplier.name }}
-                    </el-col>
-                </el-form-item>
-                <el-form-item label="供货周期">
-                    <el-input v-model.trim="edit.model.deliveryCycle" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="备注">
-                    <el-input v-model="edit.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                        maxlength="300" />
-                </el-form-item>
-                <el-form-item label="小零配件">
-                    <el-radio-group v-model="edit.model.isFree">
-                        <el-radio :label="true">是</el-radio>
-                        <el-radio :label="false">否</el-radio>
-                    </el-radio-group>
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="primary" @click="edit.submitBase"
-                            :disabled="edit.submitDisabled">提交</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
+    <el-dialog v-model="edit.moneyDialogVisivle" title="价格信息编辑" width="50%" :show-close="false">
+        <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
+            <el-form-item label="名称">
+                <el-input v-model.trim="edit.model.name" disabled />
+            </el-form-item>
+            <el-form-item label="采购价格" prop="purchasePrice">
+                <el-input-number v-model="edit.model.purchasePrice" :controls="false" :min="0" :max="9999999999" />
+            </el-form-item>
+            <el-form-item label="标准价格(元)" prop="attribute.standardPrice">
+                <el-input-number v-model="edit.model.attribute.standardPrice" :controls="false" :min="0"
+                    :max="9999999999" />
+            </el-form-item>
+            <el-form-item label="标准价格(美元)" prop="attribute.standardPriceUSD">
+                <el-input-number v-model="edit.model.attribute.standardPriceUSD" :controls="false" :min="0"
+                    :max="9999999999" />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="edit.submitMoney" :disabled="edit.submitDisabled">提交</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 
-        <el-dialog v-model="editDLC.dialogVisible" title="供应商选择" width="50%" :show-close="false">
-            <el-row :gutter="20">
-                <el-col :span="6" :offset="2">
-                    <el-input v-model="editDLC.model.name" placeholder="供应商名称" clearable maxlength="25" />
-                </el-col>
-                <el-col :span="6">
-                    <el-input v-model="editDLC.model.linkman" placeholder="联系人" clearable maxlength="25" />
-                </el-col>
-                <el-col :span="6">
-                    <el-input v-model="editDLC.model.phone" placeholder="联系电话" clearable maxlength="25" />
-                </el-col>
-                <el-col :span="1">
-                    <el-button type="primary" @click="editDLC.query">查询</el-button>
-                </el-col>
-            </el-row>
-            <divSelectTable :queryObj="editDLC.model" :queryFunc="querySuppliers" :arrayObj="edit.model.suppliers"
-                :headers="editDLC.headers" ref="supplierSelect"></divSelectTable>
-            <el-row>
-                <el-col :span="24">
-                    <h3>已选择：</h3>
-                </el-col>
-                <el-col :span="22" :offset="2" v-for="supplier in editDLC.model.suppliers" :key="supplier.id">
-                    {{ supplier.name }}
-                </el-col>
-            </el-row>
-        </el-dialog>
-
-        <el-dialog v-model="edit.moneyDialogVisivle" title="产品价格信息编辑" width="50%" :show-close="false">
-            <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
-                <el-form-item label="名称">
-                    <el-input v-model.trim="edit.model.name" disabled />
-                </el-form-item>
-                <el-form-item label="采购价格(元)" prop="attribute.purchasePrice">
-                    <el-input-number v-model="edit.model.attribute.purchasePrice" :controls="false" :min="0"
-                        :max="9999999999" />
-                </el-form-item>
-                <el-form-item label="采购价格(美元)" prop="attribute.purchasePriceUSD">
-                    <el-input-number v-model="edit.model.attribute.purchasePriceUSD" :controls="false" :min="0"
-                        :max="9999999999" />
-                </el-form-item>
-                <el-form-item label="标准价格(元)" prop="attribute.standardPrice">
-                    <el-input-number v-model="edit.model.attribute.standardPrice" :controls="false" :min="0"
-                        :max="9999999999" />
-                </el-form-item>
-                <el-form-item label="标准价格(美元)" prop="attribute.standardPriceUSD">
-                    <el-input-number v-model="edit.model.attribute.standardPriceUSD" :controls="false" :min="0"
-                        :max="9999999999" />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="primary" @click="edit.submitMoney"
-                            :disabled="edit.submitDisabled">提交</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
-    </div>
+    <el-dialog v-model="edit.numberDialogVisivle" title="数量编辑" width="50%" :show-close="false">
+        <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
+            <el-form-item label="库存数量" prop="numberCount">
+                <el-input-number v-model="edit.model.numberCount" :controls="false" :min="-10000" :max="99999" />
+            </el-form-item>
+            <el-form-item label="可售数量" prop="number">
+                <el-input-number v-model="edit.model.number" :controls="false" :min="-10000" :max="99999" />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="edit.submitNumber" :disabled="edit.submitDisabled">提交</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
 import { ref, reactive, onBeforeMount } from 'vue'
-import { addProduct, editProductBase, editProductAttribute, queryProduct, queryProducts } from "@/api/product"
+import { addProduct, editProductBase, editProductAttribute, editProductNumber, queryProduct, queryProducts } from "@/api/product"
 import { querySuppliers } from "@/api/supplier"
 import { queryAllProductType } from "@/api/product_type"
-import { message, messageForCRUD } from '@/components/divMessage/index'
+import { message } from '@/components/divMessage/index'
 import { reg_money, reg_number } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
@@ -327,13 +331,10 @@ const rules = reactive({
     name: [
         { required: true, message: '请输入产品名称', trigger: 'blur' },
     ],
+    purchasePrice: [
+        { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
+    ],
     attribute: {
-        purchasePrice: [
-            { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
-        ],
-        purchasePriceUSD: [
-            { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
-        ],
         standardPrice: [
             { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
         ],
@@ -369,32 +370,32 @@ const base = reactive({
             {
                 prop: "name",
                 label: "名称",
-                width: "10%",
+                width: "8%",
             },
             {
                 prop: "version",
                 label: "型号",
-                width: "5%",
+                width: "6%",
             },
             {
                 prop: "brand",
                 label: "品牌",
-                width: "5%",
+                width: "6%",
             },
             {
                 prop: "specification",
                 label: "规格",
-                width: "10%",
+                width: "8%",
             },
             {
                 prop: "numberCount",
                 label: "库存数量",
-                width: "8%",
+                width: "6%",
             },
             {
                 prop: "number",
                 label: "可售数量",
-                width: "8%",
+                width: "6%",
             },
             {
                 prop: "unit",
@@ -409,18 +410,18 @@ const base = reactive({
             {
                 prop: "attribute.standardPriceUSD",
                 label: "标准售价(美元)",
-                width: "8%",
+                width: "10%",
             },
             {
                 type: "boolean",
                 prop: "isFree",
                 label: "小零配件",
-                width: "8%",
+                width: "6%",
             },
             {
                 type: "operation",
                 label: "操作",
-                width: "20%",
+                width: "26%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -451,6 +452,16 @@ const base = reactive({
                         align: "center",
                         sortable: false,
                         onClick: (index, row) => base.openEditMoneyDialog(index, row)
+                    },
+                    {
+                        isShow: (index, row) => {
+                            return true
+                        },
+                        label: "数量编辑",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openEditNumberDialog(index, row)
                     },
                 ]
             },
@@ -516,6 +527,14 @@ const base = reactive({
         })
         edit.moneyDialogVisivle = true
     },
+    openEditNumberDialog: (index, row) => {
+        queryProduct(row.id).then((res) => {
+            if (res.status == 1) {
+                edit.model = res.data
+            }
+        })
+        edit.numberDialogVisivle = true
+    }
 })
 
 const add = reactive({
@@ -533,9 +552,8 @@ const add = reactive({
         deliveryCycle: "",
         remark: "",
         typeID: null,
+        purchasePrice: 0,
         attribute: {
-            purchasePrice: 0,
-            purchasePriceUSD: 0,
             standardPrice: 0,
             standardPriceUSD: 0,
         },
@@ -548,10 +566,10 @@ const add = reactive({
                 add.submitDisabled = true
                 addProduct(add.model).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(add.model.name, "添加成功", "success")
+                        message("添加成功", "success")
                         base.query()
                     } else {
-                        messageForCRUD(add.model.name, "添加失败", "error")
+                        message("添加失败", "error")
                     }
                     add.dialogVisible = false
                     add.model = {
@@ -564,9 +582,8 @@ const add = reactive({
                         deliveryCycle: "",
                         remark: "",
                         typeID: null,
+                        purchasePrice: 0,
                         attribute: {
-                            purchasePrice: 0,
-                            purchasePriceUSD: 0,
                             standardPrice: 0,
                             standardPriceUSD: 0,
                         },
@@ -610,9 +627,8 @@ const view = reactive({
         brand: "",
         specification: "",
         suppliers: [],
+        purchasePrice: 0,
         attribute: {
-            purchasePrice: 0,
-            purchasePriceUSD: 0,
             standardPrice: 0,
             standardPriceUSD: 0,
         },
@@ -629,6 +645,7 @@ const view = reactive({
 const edit = reactive({
     baseDialogVisible: false,
     moneyDialogVisivle: false,
+    numberDialogVisivle: false,
     submitDisabled: false,
     model: {
         id: null,
@@ -641,9 +658,8 @@ const edit = reactive({
         brand: "",
         specification: "",
         suppliers: [],
+        purchasePrice: 0,
         attribute: {
-            purchasePrice: 0,
-            purchasePriceUSD: 0,
             standardPrice: 0,
             standardPriceUSD: 0,
         },
@@ -661,10 +677,10 @@ const edit = reactive({
                 edit.submitDisabled = true
                 editProductBase(edit.model).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(edit.model.name, "编辑成功", "success")
+                        message("编辑成功", "success")
                         base.query()
                     } else {
-                        messageForCRUD(edit.model.name, "编辑失败", "error")
+                        message("编辑失败", "error")
                     }
                     edit.baseDialogVisible = false
                     edit.model = {
@@ -677,9 +693,8 @@ const edit = reactive({
                         brand: "",
                         specification: "",
                         suppliers: [],
+                        purchasePrice: 0,
                         attribute: {
-                            purchasePrice: 0,
-                            purchasePriceUSD: 0,
                             standardPrice: 0,
                             standardPriceUSD: 0,
                         },
@@ -702,10 +717,10 @@ const edit = reactive({
                 edit.submitDisabled = true
                 editProductAttribute(edit.model).then((res) => {
                     if (res.status == 1) {
-                        messageForCRUD(edit.model.name, "编辑成功", "success")
+                        message("编辑成功", "success")
                         base.query()
                     } else {
-                        messageForCRUD(edit.model.name, "编辑失败", "error")
+                        message("编辑失败", "error")
                     }
                     edit.moneyDialogVisivle = false
                     edit.model = {
@@ -718,9 +733,48 @@ const edit = reactive({
                         brand: "",
                         specification: "",
                         suppliers: [],
+                        purchasePrice: 0,
                         attribute: {
-                            purchasePrice: 0,
-                            purchasePriceUSD: 0,
+                            standardPrice: 0,
+                            standardPriceUSD: 0,
+                        },
+                        number: 0,
+                        numberCount: 0,
+                        unit: "",
+                        deliveryCycle: "",
+                        remark: "",
+                    }
+                    edit.submitDisabled = false
+                })
+            } else {
+                return false;
+            }
+        })
+    },
+    submitNumber: () => {
+        editForm.value.validate((valid) => {
+            if (valid) {
+                edit.submitDisabled = true
+                editProductNumber(edit.model).then((res) => {
+                    if (res.status == 1) {
+                        message("编辑成功", "success")
+                        base.query()
+                    } else {
+                        message("编辑失败", "error")
+                    }
+                    edit.numberDialogVisivle = false
+                    edit.model = {
+                        id: null,
+                        typeID: null,
+                        type: {
+                            name: ""
+                        },
+                        name: "",
+                        brand: "",
+                        specification: "",
+                        suppliers: [],
+                        purchasePrice: 0,
+                        attribute: {
                             standardPrice: 0,
                             standardPriceUSD: 0,
                         },

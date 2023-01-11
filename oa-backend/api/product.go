@@ -13,7 +13,33 @@ func AddProduct(c *gin.Context) {
 	var product models.Product
 	_ = c.ShouldBindJSON(&product)
 
-	code = models.InsertProduct(&product)
+	productCre := models.Product{
+		ID:            product.ID,
+		IsDelete:      false,
+		Name:          product.Name,
+		Version:       product.Version,
+		Brand:         product.Brand,
+		Specification: product.Specification,
+		Number:        product.NumberCount,
+		NumberCount:   product.NumberCount,
+		CallNumber:    product.CallNumber,
+		Unit:          product.Unit,
+		DeliveryCycle: product.DeliveryCycle,
+		Remark:        product.Remark,
+		IsFree:        product.IsFree,
+		TypeID:        product.TypeID,
+		PurchasePrice: product.PurchasePrice,
+		Suppliers:     product.Suppliers,
+
+		Attribute: models.ProductAttribute{
+			ID:               product.Attribute.ID,
+			IsDelete:         false,
+			StandardPrice:    product.Attribute.StandardPrice,
+			StandardPriceUSD: product.Attribute.StandardPriceUSD,
+		},
+	}
+
+	code = models.InsertProduct(&productCre)
 	msg.Message(c, code, nil)
 }
 
@@ -30,6 +56,14 @@ func EditProductAttribute(c *gin.Context) {
 	_ = c.ShouldBindJSON(&product)
 
 	code = models.UpdateProductAttribute(&product)
+	msg.Message(c, code, nil)
+}
+
+func EditProductNumber(c *gin.Context) {
+	var product models.Product
+	_ = c.ShouldBindJSON(&product)
+
+	code = models.UpdateProductNumber(&product)
 	msg.Message(c, code, nil)
 }
 

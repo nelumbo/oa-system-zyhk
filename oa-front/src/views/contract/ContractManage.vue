@@ -410,6 +410,8 @@
             <divTable :columnObj="approve.column" :tableData="approve.model.tasks" :pageData="approve.pageData"
                 :showAll="true" v-if="approve.model.tasks" />
 
+
+
             <el-row style="margin-top: 30px;" v-if="approve.model.status == 1">
                 <el-col :span="2" :offset="7">
                     <el-button type="success" @click="approve.pass" :disabled="base.submitDisabled"
@@ -424,8 +426,8 @@
             <el-row style="margin-top: 30px;" v-if="approve.model.status == 2 || approve.model.status == 3">
                 <el-col :span="2" :offset="4">
                     <el-button type="danger" @click="approve.openFinalDialog"
-                        :disabled="approve.model.productionStatus != 1" v-if="approve.model.isPreDeposit"
-                        size="large">预生产合同完成</el-button>
+                        :disabled="approve.model.collectionStatus == 1 || (!approve.model.isPreDeposit && approve.model.productionStatus == 1)"
+                        size="large">合同完成</el-button>
                 </el-col>
                 <el-col :span="2" :offset="4">
                     <el-button type="danger" @click="approve.openResetDialog"
@@ -489,8 +491,13 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="distribute.dialogVisible" title="分发" width="50%" :show-close="false">
-            <el-form :model="distribute.model" label-width="80px" :rules="rules" ref="distributeForm">
+        <el-dialog v-model="distribute.dialogVisible" title="分发" width="70%" :show-close="false">
+            <el-form :model="distribute.model" label-width="140px" :rules="rules" ref="distributeForm">
+                <el-row v-if="approve.model.isSpecial">
+                    <el-form-item label="特殊提成百分比" prop="pushMoneyPercentages">
+                        <el-input-number v-model="distribute.model.pushMoneyPercentages" :controls="false" :min="0" />
+                    </el-form-item>
+                </el-row>
                 <el-row>
                     <el-col :span="24">
                         <el-form-item label="类型" prop="type">
@@ -611,8 +618,14 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="resetContractTask.dialogVisible" title="重置" width="50%" :show-close="false">
-            <el-form :model="resetContractTask.model" label-width="80px" :rules="rules" ref="resetContractTaskForm">
+        <el-dialog v-model="resetContractTask.dialogVisible" title="重置" width="70%" :show-close="false">
+            <el-form :model="resetContractTask.model" label-width="140px" :rules="rules" ref="resetContractTaskForm">
+                <el-row v-if="approve.model.isSpecial">
+                    <el-form-item label="特殊提成百分比" prop="pushMoneyPercentages">
+                        <el-input-number v-model="resetContractTask.model.pushMoneyPercentages" :controls="false"
+                            :min="0" />
+                    </el-form-item>
+                </el-row>
                 <el-row>
                     <el-col :span="24">
                         <el-form-item label="类型" prop="type">
@@ -762,7 +775,7 @@ import { queryAllOffice } from "@/api/office"
 import { queryAllEmployee } from "@/api/employee"
 import { distributeTask, resetTask, rejectTask } from "@/api/contract_task"
 import { message } from '@/components/divMessage/index'
-import { reg_number } from '@/utils/regex'
+import { reg_number, reg_money } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
 
@@ -793,6 +806,9 @@ const rules = reactive({
     ],
     estimatedDeliveryDate: [
         { required: true, message: '请选择交货日期', trigger: 'blur' },
+    ],
+    pushMoneyPercentages: [
+        { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
     ],
 })
 
@@ -1777,6 +1793,7 @@ const distribute = reactive({
     model: {
         id: null,
         contractID: null,
+        pushMoneyPercentages: 0,
         type: 1,
         technicianManID: null,
         purchaseManID: null,
@@ -1885,6 +1902,7 @@ const resetContractTask = reactive({
     model: {
         id: null,
         contractID: null,
+        pushMoneyPercentages: 0,
         type: 1,
         technicianManID: null,
         purchaseManID: null,

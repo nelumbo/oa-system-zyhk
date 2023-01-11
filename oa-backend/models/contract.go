@@ -52,15 +52,16 @@ type Contract struct {
 	CreateDate            XDate   `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
 	AuditDate             XDate   `gorm:"type:date;comment:审核日期;default:(-)" json:"auditDate"`
 
-	Region   Region    `gorm:"foreignKey:RegionID" json:"region"`
-	Office   Office    `gorm:"foreignKey:OfficeID" json:"office"`
-	Employee Employee  `gorm:"foreignKey:EmployeeID" json:"employee"`
-	Customer Customer  `gorm:"foreignKey:CustomerID" json:"customer"`
-	Vendor   Vendor    `gorm:"foreignKey:VendorID" json:"vendor"`
-	Auditor  Employee  `gorm:"foreignKey:AuditorID" json:"auditor"`
 	Tasks    []Task    `json:"tasks"`
 	Invoices []Invoice `json:"invoices"`
 	Payments []Payment `json:"payments"`
+
+	Region   Region   `gorm:"foreignKey:RegionID" json:"region"`
+	Office   Office   `gorm:"foreignKey:OfficeID" json:"office"`
+	Employee Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
+	Customer Customer `gorm:"foreignKey:CustomerID" json:"customer"`
+	Vendor   Vendor   `gorm:"foreignKey:VendorID" json:"vendor"`
+	Auditor  Employee `gorm:"foreignKey:AuditorID" json:"auditor"`
 
 	IsPass           bool   `gorm:"-" json:"isPass"`
 	StartDate        string `gorm:"-" json:"startDate"`
@@ -213,6 +214,25 @@ func InsertContract(contract *Contract) (code int) {
 	if contract.ID == 0 {
 		err = db.Create(&contract).Error
 	} else {
+		err = db.Transaction(func(tx *gorm.DB) error {
+
+			var contractBak Contract
+
+			GeneralSelect(&contractBak, contract.ID, nil)
+
+			if tErr := tx.Model(&Contract{}).Where("id = ?", contract.ID).Updates(map[string]interface{}{"is_delete": true, "employee_id": nil}).Error; tErr != nil {
+				return tErr
+			}
+
+			contract.CreateDate = contractBak.ContractDate
+			contract.ID = 0
+
+			if tErr := tx.Create(&contract).Error; tErr != nil {
+				return tErr
+			}
+			return nil
+		})
+
 		err = db.Updates(&contract).Error
 	}
 
@@ -257,17 +277,6 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 					return tErr
 				}
 
-				//修改合同产品任务的开始时间
-				// t := time.Now().Format("2006-01-02")
-				// if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", contractBak.ID, magic.TASK_TYPE_1).Update("inventory_start_date", t).Error; tErr != nil {
-				// 	return tErr
-				// }
-				// if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", contractBak.ID, magic.TASK_TYPE_2).Update("purchase_start_date", t).Error; tErr != nil {
-				// 	return tErr
-				// }
-				// if tErr := tx.Model(&Task{}).Where("contract_id = ? AND type = ?", contractBak.ID, magic.TASK_TYPE_3).Update("technician_start_date", t).Error; tErr != nil {
-				// 	return tErr
-				// }
 				return nil
 			})
 		} else {
@@ -280,29 +289,30 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 			if tErr := tx.Model(&Contract{}).Where("id", contractBak.ID).Updates(maps).Error; tErr != nil {
 				return tErr
 			}
-			//删除子任务
-			// if tErr := tx.Model(&Task{}).Where("contract_id", contractBak.ID).Updates(map[string]interface{}{"is_delete": true, "contract_id": nil}).Error; tErr != nil {
-			// 	return tErr
-			// }
 			return nil
 		})
 	}
 	return
 }
 
-// 预存款合同完成
+// 合同完成
 func FinalContract(contract *Contract) (code int) {
 	var contractBak Contract
 	_ = db.Preload("Tasks").First(&contractBak, contract.ID).Error
 
-	if contractBak.ID != 0 && contractBak.IsPreDeposit &&
-		contractBak.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
+	if contractBak.ID != 0 && contractBak.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
 		isFinish := true
-		for k := range contractBak.Tasks {
-			if contractBak.Tasks[k].Status != magic.TASK_STATUS_SHIPMENT &&
-				contractBak.Tasks[k].Status != magic.TASK_STATUS_REJECT {
+		if contractBak.IsPreDeposit {
+			for k := range contractBak.Tasks {
+				if contractBak.Tasks[k].Status != magic.TASK_STATUS_SHIPMENT &&
+					contractBak.Tasks[k].Status != magic.TASK_STATUS_REJECT {
+					isFinish = false
+					break
+				}
+			}
+		} else {
+			if contractBak.ProductionStatus != magic.CONTRATCT_PRODUCTION_STATUS_FINISH {
 				isFinish = false
-				break
 			}
 		}
 
@@ -313,11 +323,31 @@ func FinalContract(contract *Contract) (code int) {
 			}
 			return msg.SUCCESS
 		}
-	} else {
-		code = msg.FAIL
 	}
+	return msg.FAIL
 
-	return
+	// if contractBak.ID != 0 && contractBak.IsPreDeposit &&
+	// 	contractBak.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
+	// 	isFinish := true
+	// 	for k := range contractBak.Tasks {
+	// 		if contractBak.Tasks[k].Status != magic.TASK_STATUS_SHIPMENT &&
+	// 			contractBak.Tasks[k].Status != magic.TASK_STATUS_REJECT {
+	// 			isFinish = false
+	// 			break
+	// 		}
+	// 	}
+
+	// 	if isFinish {
+	// 		err = db.Model(&Contract{}).Where("id = ?", contract.ID).Update("status", magic.CONTRACT_STATUS_FINISH).Error
+	// 		if err != nil {
+	// 			return msg.FAIL
+	// 		}
+	// 		return msg.SUCCESS
+	// 	}
+	// } else {
+	// 	code = msg.FAIL
+	// }
+
 }
 
 //回款状态回退
@@ -564,7 +594,7 @@ func DistributeTask(task *Task, maps map[string]interface{}) (code int) {
 			if tErr := tx.Preload("Contract").
 				Preload("Product.Type").
 				Preload("ProductAttribute").
-				First(taskBak, task.ID).Error; tErr != nil {
+				First(&taskBak, task.ID).Error; tErr != nil {
 				return tErr
 			}
 			var payment Payment
@@ -620,7 +650,7 @@ func NextTask(task *Task, maps map[string]interface{}) (code int) {
 
 	err = db.Transaction(func(tx *gorm.DB) error {
 
-		if maps["stauts"] == magic.TASK_STATUS_SHIPMENT {
+		if maps["status"] == magic.TASK_STATUS_SHIPMENT {
 			var contract Contract
 
 			if tErr := tx.Preload("Tasks").
@@ -630,27 +660,33 @@ func NextTask(task *Task, maps map[string]interface{}) (code int) {
 
 			if contract.ID != 0 && !contract.IsPreDeposit {
 				isFinish := true
-				for _, task := range contract.Tasks {
-					if task.Status != magic.TASK_STATUS_SHIPMENT {
+				for _, taskBak := range contract.Tasks {
+					if taskBak.ID != task.ID && taskBak.Status != magic.TASK_STATUS_SHIPMENT {
 						isFinish = false
 						break
 					}
 				}
 
 				if isFinish {
-					if contract.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
-						if tErr := tx.Model(&Contract{}).
-							Where("id = ?", task.ContractID).
-							Updates(map[string]interface{}{"production_status": magic.CONTRATCT_PRODUCTION_STATUS_FINISH, "status": magic.CONTRACT_STATUS_FINISH}).Error; tErr != nil {
-							return tErr
-						}
-					} else {
-						if tErr := tx.Model(&Contract{}).
-							Where("id = ?", task.ContractID).
-							Update("production_status", magic.CONTRATCT_PRODUCTION_STATUS_FINISH).Error; tErr != nil {
-							return tErr
-						}
+					if tErr := tx.Model(&Contract{}).
+						Where("id = ?", task.ContractID).
+						Update("production_status", magic.CONTRATCT_PRODUCTION_STATUS_FINISH).Error; tErr != nil {
+						return tErr
 					}
+
+					// if contract.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
+					// 	if tErr := tx.Model(&Contract{}).
+					// 		Where("id = ?", task.ContractID).
+					// 		Updates(map[string]interface{}{"production_status": magic.CONTRATCT_PRODUCTION_STATUS_FINISH, "status": magic.CONTRACT_STATUS_FINISH}).Error; tErr != nil {
+					// 		return tErr
+					// 	}
+					// } else {
+					// 	if tErr := tx.Model(&Contract{}).
+					// 		Where("id = ?", task.ContractID).
+					// 		Update("production_status", magic.CONTRATCT_PRODUCTION_STATUS_FINISH).Error; tErr != nil {
+					// 		return tErr
+					// 	}
+					// }
 				}
 
 			}

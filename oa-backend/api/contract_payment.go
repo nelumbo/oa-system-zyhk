@@ -41,9 +41,9 @@ func FinalPayment(c *gin.Context) {
 	if contractBak.ID != 0 {
 		var maps = make(map[string]interface{})
 		maps["collection_status"] = magic.CONTRATCT_COLLECTION_STATUS_FINISH
-		if !contractBak.IsPreDeposit && contractBak.ProductionStatus == magic.CONTRATCT_PRODUCTION_STATUS_FINISH {
-			maps["status"] = magic.CONTRACT_STATUS_FINISH
-		}
+		// if !contractBak.IsPreDeposit && contractBak.ProductionStatus == magic.CONTRATCT_PRODUCTION_STATUS_FINISH {
+		// 	maps["status"] = magic.CONTRACT_STATUS_FINISH
+		// }
 		code = models.GeneralUpdate(&models.Contract{}, payment.ContractID, maps)
 	} else {
 		code = msg.FAIL

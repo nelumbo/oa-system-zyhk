@@ -28,6 +28,7 @@ func DistributeTask(c *gin.Context) {
 		var maps = make(map[string]interface{})
 		tn := time.Now()
 		taskBak.AuditDate.Time = tn
+		maps["push_money_percentages"] = task.PushMoneyPercentages
 		maps["type"] = task.Type
 		maps["auditor_id"] = c.MustGet("employeeID").(int)
 		maps["audit_date"] = tn
@@ -103,7 +104,7 @@ func NextTask(c *gin.Context) {
 
 				maps["assembly_start_date"] = tn
 			} else {
-				maps["stauts"] = magic.TASK_STATUS_NOT_SHIPMENT
+				maps["status"] = magic.TASK_STATUS_NOT_SHIPMENT
 
 				maps["shipment_start_date"] = tn
 			}
@@ -150,6 +151,7 @@ func ResetTask(c *gin.Context) {
 
 		var maps = make(map[string]interface{})
 		tn := time.Now()
+		maps["push_money_percentages"] = task.PushMoneyPercentages
 		maps["type"] = task.Type
 		maps["auditor_id"] = c.MustGet("employeeID").(int)
 		maps["audit_date"] = tn

@@ -1,69 +1,66 @@
 <template>
-    <div>
-        <el-row :gutter="20">
-            <el-col :span="4" :offset="3">
-                <el-select v-model="base.model.customerCompany.regionID" placeholder="区域" clearable
-                    style="width: 100%;">
-                    <el-option v-for="item in base.regions" :key="item.id" :label="item.name" :value="item.id" />
-                </el-select>
-            </el-col>
-            <el-col :span="4">
-                <el-input v-model="base.model.customerCompany.name" placeholder="公司" clearable maxlength="25" />
-            </el-col>
-            <el-col :span="4">
-                <el-input v-model="base.model.name" placeholder="姓名" clearable maxlength="25" />
-            </el-col>
-            <el-col :span="4">
-                <el-input v-model="base.model.researchGroup" placeholder="课题组" clearable maxlength="25" />
-            </el-col>
-            <el-col :span="1">
-                <el-button type="primary" @click="base.query">查询</el-button>
-            </el-col>
-        </el-row>
-        <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
-            :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
+    <el-row :gutter="20">
+        <el-col :span="4" :offset="3">
+            <el-select v-model="base.model.customerCompany.regionID" placeholder="区域" clearable style="width: 100%;">
+                <el-option v-for="item in base.regions" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+        </el-col>
+        <el-col :span="4">
+            <el-input v-model="base.model.customerCompany.name" placeholder="公司" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="4">
+            <el-input v-model="base.model.name" placeholder="姓名" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="4">
+            <el-input v-model="base.model.researchGroup" placeholder="课题组" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="1">
+            <el-button type="primary" @click="base.query">查询</el-button>
+        </el-col>
+    </el-row>
+    <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
+        :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="edit.dialogVisible" title="客户编辑" width="50%" :show-close="false">
-            <el-form :model="edit.model" label-width="100px" :rules="rules" ref="editForm">
-                <el-form-item label="公司">
-                    <el-input v-model="edit.model.customerCompanyName" disabled />
-                </el-form-item>
-                <el-form-item label="姓名" prop="name">
-                    <el-input v-model.trim="edit.model.name" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="课题组">
-                    <el-input v-model.trim="edit.model.researchGroup" maxlength="100" />
-                </el-form-item>
-                <el-form-item label="电话">
-                    <el-input v-model.trim="edit.model.phone" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="微信号">
-                    <el-input v-model.trim="edit.model.wechatID" maxlength="50" />
-                </el-form-item>
-                <el-form-item label="电子邮箱">
-                    <el-input v-model.trim="edit.model.email" maxlength="50" />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="primary" @click="edit.submit" :disabled="edit.submitDisabled">提交</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
+    <el-dialog v-model="edit.dialogVisible" title="客户编辑" width="50%" :show-close="false">
+        <el-form :model="edit.model" label-width="100px" :rules="rules" ref="editForm">
+            <el-form-item label="公司">
+                <el-input v-model="edit.model.customerCompanyName" disabled />
+            </el-form-item>
+            <el-form-item label="姓名" prop="name">
+                <el-input v-model.trim="edit.model.name" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="课题组">
+                <el-input v-model.trim="edit.model.researchGroup" maxlength="100" />
+            </el-form-item>
+            <el-form-item label="电话">
+                <el-input v-model.trim="edit.model.phone" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="微信号">
+                <el-input v-model.trim="edit.model.wechatID" maxlength="50" />
+            </el-form-item>
+            <el-form-item label="电子邮箱">
+                <el-input v-model.trim="edit.model.email" maxlength="50" />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="edit.submit" :disabled="edit.submitDisabled">提交</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 
-        <el-dialog v-model="del.dialogVisible" title="客户删除" width="50%" :show-close="false">
-            <h1>是否确定删除【{{ del.model.name }}】？</h1>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="danger" @click="del.submit" :disabled="del.submitDisabled">确定</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
-    </div>
+    <el-dialog v-model="del.dialogVisible" title="删除" width="50%" :show-close="false">
+        <h1>是否确定删除【{{ del.model.name }}】？</h1>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="danger" @click="del.submit" :disabled="del.submitDisabled">确定</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -72,7 +69,7 @@ import { delCustomer, editCustomer, queryCustomers } from "@/api/customer"
 import { queryAllRegion } from '@/api/region'
 import { message, messageForCRUD } from '@/components/divMessage/index'
 
-import divTable from '../../components/divTable/index.vue'
+import divTable from '@/components/divTable/index.vue'
 
 const editForm = ref(null)
 const rules = reactive({
@@ -135,16 +132,16 @@ const base = reactive({
                         sortable: false,
                         onClick: (index, row) => base.openEditDialog(index, row)
                     },
-                    {
-                        isShow: (index, row) => {
-                            return true
-                        },
-                        label: "删除",
-                        type: "danger",
-                        align: "center",
-                        sortable: false,
-                        onClick: (index, row) => base.openDelDialog(index, row)
-                    }
+                    // {
+                    //     isShow: (index, row) => {
+                    //         return true
+                    //     },
+                    //     label: "删除",
+                    //     type: "danger",
+                    //     align: "center",
+                    //     sortable: false,
+                    //     onClick: (index, row) => base.openDelDialog(index, row)
+                    // }
                 ]
             },
         ],
