@@ -28,7 +28,7 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="view.dialogVisible" title="查看" width="75%" :show-close="false">
+        <el-dialog v-model="view.dialogVisible" title="查看" width="50%" :show-close="false">
             <el-divider content-position="left">
                 <h2>基本信息</h2>
             </el-divider>
@@ -76,20 +76,9 @@
                 <h2>任务详情</h2>
             </el-divider>
             <divTable :columnObj="view.column" :tableData="view.model.tasks" :allShow="true" />
-            <el-divider content-position="left" style="margin-top: 50px;">
-                <h2>采购详情</h2>
-            </el-divider>
-            <divTable :columnObj="view.columnP" :tableData="view.purchasings" :allShow="true" />
         </el-dialog>
 
-        <el-dialog v-model="next.dialogVisible" title="提交" width="75%" :show-close="false">
-            <el-divider content-position="left" style="margin-top: 50px;">
-                <h2>采购详情</h2>
-            </el-divider>
-            <divTable :columnObj="next.column" :tableData="next.purchasings" :allShow="true" />
-            <el-divider content-position="left" style="margin-top: 30px;">
-                <h2>备注填写</h2>
-            </el-divider>
+        <el-dialog v-model="next.dialogVisible" title="提交" width="50%" :show-close="false">
             <el-form :model="next.model" label-width="60px">
                 <el-form-item label="备注" prop="createRemark">
                     <el-input v-model="next.model.remark" type="textarea" :autosize="{ minRows: 9, maxRows: 18 }"
@@ -131,13 +120,6 @@
                 <h2>需求清单</h2>
             </el-divider>
             <divTable :columnObj="add.columnP" :tableData="add.purchasings" :allShow="true" />
-            <el-divider content-position="left" style="margin-top: 30px;">
-                <h2>备注填写</h2>
-            </el-divider>
-            <el-form-item>
-                <el-input v-model="add.task.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                    maxlength="300" />
-            </el-form-item>
             <template #footer>
                 <span class="dialog-footer">
                     <div style="text-align: center;">
@@ -210,7 +192,7 @@ import { queryMyTasks, queryMySavePurchasings } from "@/api/my"
 import { queryContract } from "@/api/contract"
 import { nextTask } from "@/api/contract_task"
 import { queryProducts } from "@/api/product"
-import { savePurchasing, submitPurchasing, delPurchasing, queryAllPurchasing } from "@/api/purchasing"
+import { savePurchasing, submitPurchasing, delPurchasing } from "@/api/purchasing"
 import { message } from '@/components/divMessage/index'
 import { reg_number } from '@/utils/regex'
 
@@ -307,19 +289,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-
-                            if (row.type == 3 && row.status > 1 && row.status < 6) {
+                            if (row.status > 0 && row.status < 6)
                                 return true
-                            }
-                            if (row.type == 2 && row.status > 2 && row.status < 6) {
-                                return true
-                            }
-                            if (row.type == 1 && row.status > 1 && row.status < 6) {
-                                return true
-                            }
-                            return false
                         },
-                        label: "提交|",
+                        label: "提交",
                         type: "primary",
                         align: "center",
                         sortable: false,
@@ -335,7 +308,7 @@ const base = reactive({
                             }
                             return false
                         },
-                        label: "提交||",
+                        label: "采购",
                         type: "primary",
                         align: "center",
                         sortable: false,
@@ -379,19 +352,9 @@ const base = reactive({
                 view.model.task = row
             }
         })
-        queryAllPurchasing({ "contractID": row.contractID, "taskID": row.id }).then((res) => {
-            if (res.status == 1) {
-                view.purchasings = res.data
-            }
-        })
         view.dialogVisible = true
     },
     openNextDialog: (index, row) => {
-        queryAllPurchasing({ "contractID": row.contractID, "taskID": row.id }).then((res) => {
-            if (res.status == 1) {
-                next.purchasings = res.data
-            }
-        })
         next.model.id = row.id
         next.dialogVisible = true
     },
@@ -405,7 +368,6 @@ const base = reactive({
 
 const view = reactive({
     dialogVisible: false,
-    purchasings: [],
     model: {
         customer: {
             customerCompany: {
@@ -464,147 +426,15 @@ const view = reactive({
             },
         ]
     },
-    columnP: {
-        headers: [
-            {
-                prop: "id",
-                label: "ID",
-                width: "4%"
-            },
-            {
-                prop: "createDate",
-                label: "发起时间",
-                width: "8%"
-            },
-            {
-                prop: "employee.name",
-                label: "发起人",
-                width: "5%"
-            },
-            {
-                prop: "product.name",
-                label: "名称",
-                width: "8%"
-            },
-            {
-                prop: "product.version",
-                label: "型号",
-                width: "7%"
-            },
-            {
-                prop: "product.specification",
-                label: "规格",
-                width: "8%"
-            },
-            {
-                prop: "number",
-                label: "需求采购数量",
-                width: "5%"
-            },
-            {
-                prop: "realNumber",
-                label: "实际采购数量",
-                width: "5%"
-            },
-            {
-                prop: "product.unit",
-                label: "单位",
-                width: "5%"
-            },
-            {
-                prop: "price",
-                label: "单价",
-                width: "5%"
-            },
-            {
-                prop: "totalPrice",
-                label: "总价",
-                width: "5%"
-            },
-            {
-                type: "purchasingStatus",
-                prop: "status",
-                label: "状态",
-                width: "15%"
-            }
-        ]
-    },
 })
 
 const next = reactive({
     dialogVisible: false,
     submitDisabled: false,
-    purchasings: [],
-    column: {
-        headers: [
-            {
-                prop: "id",
-                label: "ID",
-                width: "4%"
-            },
-            {
-                prop: "createDate",
-                label: "发起时间",
-                width: "8%"
-            },
-            {
-                prop: "employee.name",
-                label: "发起人",
-                width: "5%"
-            },
-            {
-                prop: "product.name",
-                label: "名称",
-                width: "8%"
-            },
-            {
-                prop: "product.version",
-                label: "型号",
-                width: "7%"
-            },
-            {
-                prop: "product.specification",
-                label: "规格",
-                width: "8%"
-            },
-            {
-                prop: "number",
-                label: "需求采购数量",
-                width: "5%"
-            },
-            {
-                prop: "realNumber",
-                label: "实际采购数量",
-                width: "5%"
-            },
-            {
-                prop: "product.unit",
-                label: "单位",
-                width: "5%"
-            },
-            {
-                prop: "price",
-                label: "单价",
-                width: "5%"
-            },
-            {
-                prop: "totalPrice",
-                label: "总价",
-                width: "5%"
-            },
-            {
-                type: "purchasingStatus",
-                prop: "status",
-                label: "状态",
-                width: "15%"
-            }
-        ]
-    },
     model: {
         id: 0,
         remark: "",
     },
-
     submit: () => {
         next.submitDisabled = true
         nextTask(next.model).then((res) => {
@@ -628,9 +458,8 @@ const add = reactive({
     submitDisabled: false,
     dialogVisible: false,
     task: {
-        id: null,
-        contractID: null,
-        remark: "",
+        "id": null,
+        "contractID": null,
     },
     model: {
         name: "",
@@ -775,10 +604,9 @@ const add = reactive({
     },
     submit: () => {
         add.submitDisabled = true
-        nextTask({ "id": add.task.id, "remark": add.task.remark }).then((res) => {
+        submitPurchasing({ "contractID": add.task.contractID, "taskID": add.task.id }).then((res) => {
             if (res.status == 1) {
                 message("提交成功", "success")
-                base.query()
             } else {
                 message("提交失败", "error")
             }
@@ -794,24 +622,6 @@ const add = reactive({
             }
             add.submitDisabled = false
         })
-        // submitPurchasing({ "contractID": add.task.contractID, "taskID": add.task.id }).then((res) => {
-        //     if (res.status == 1) {
-        //         message("提交成功", "success")
-        //     } else {
-        //         message("提交失败", "error")
-        //     }
-        //     add.dialogVisible = false
-        //     add.task = {
-        //         "id": null,
-        //         "contractID": null,
-        //     }
-        //     add.model = {
-        //         name: "",
-        //         version: "",
-        //         specification: "",
-        //     }
-        //     add.submitDisabled = false
-        // })
     },
     queryPurchasings: () => {
         queryMySavePurchasings({ "contractID": add.task.contractID, "taskID": add.task.id }).then((res) => {

@@ -44,7 +44,8 @@ type Purchasing struct {
 	Employee Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
 	Product  Product  `gorm:"foreignKey:ProductID" json:"product"`
 
-	IsPass bool `gorm:"-" json:"isPass"`
+	IsPass bool   `gorm:"-" json:"isPass"`
+	Remark string `gorm:"-" json:"remark"`
 }
 
 func SubmitPurchasing(purchasing *Purchasing, maps map[string]interface{}) (code int) {
@@ -123,7 +124,13 @@ func SelectPurchasings(purchasingQuery *Purchasing, xForms *XForms) (purchasings
 		maps["purchasing.type"] = purchasingQuery.Type
 	}
 
-	err = db.Where(maps).Find(&purchasings).Count(&xForms.Total).
+	tx := db.Where(maps)
+
+	if purchasingQuery.Status == 0 {
+		tx = tx.Where("purchasing.status <> ?", purchasingQuery.Status)
+	}
+
+	err = tx.Find(&purchasings).Count(&xForms.Total).
 		Preload("Product").Preload("Employee").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
 		Find(&purchasings).Error
@@ -150,4 +157,16 @@ func SelectAllSavePurchasings(contractID int, taskID int, employeeID int) (purch
 		return nil, msg.ERROR
 	}
 	return purchasings, msg.SUCCESS
+}
+
+func SelectAllPurchasings(maps map[string]interface{}) (purchasings []Purchasing, code int) {
+	err = db.Where(maps).
+		Preload("Product").Preload("Employee").
+		Find(&purchasings).Error
+
+	if err != nil {
+		return nil, msg.ERROR
+	}
+	return purchasings, msg.SUCCESS
+
 }

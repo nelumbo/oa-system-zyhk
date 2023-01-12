@@ -90,6 +90,21 @@
             <el-form-item label="产品名称">
                 <el-input v-model.trim="approve.model.product.name" readonly />
             </el-form-item>
+            <el-form-item label="型号">
+                <el-input v-model.trim="approve.model.product.verison" readonly />
+            </el-form-item>
+            <el-form-item label="品牌">
+                <el-input v-model.trim="approve.model.product.brand" readonly />
+            </el-form-item>
+            <el-form-item label="实际采购数量">
+                <el-input v-model.trim="approve.model.realNumber" readonly />
+            </el-form-item>
+            <el-form-item label="采购价格">
+                <el-input v-model.trim="approve.model.price" readonly />
+            </el-form-item>
+            <el-form-item label="采购总价">
+                <el-input v-model.trim="approve.model.totalPrice" readonly />
+            </el-form-item>
         </el-form>
         <template #footer>
             <span class="dialog-footer">
@@ -102,8 +117,14 @@
         </template>
     </el-dialog>
 
-    <el-dialog v-model="finalProduct.dialogVisible" title="收货确认" width="50%" :show-close="false">
+    <el-dialog v-model="finalProduct.dialogVisible" title="确认" width="50%" :show-close="false">
         <h1>是否确定该条采购记录已经收货？</h1>
+        <el-form :model="finalProduct.model" label-width="60px">
+            <el-form-item label="备注">
+                <el-input v-model="finalProduct.model.productRemark" type="textarea"
+                    :autosize="{ minRows: 3, maxRows: 6 }" maxlength="300" />
+            </el-form-item>
+        </el-form>
         <template #footer>
             <span class="dialog-footer">
                 <div style="text-align: center;">
@@ -514,8 +535,13 @@ const approve = reactive({
     model: {
         id: null,
         isPass: null,
+        realNumber: 0,
+        price: 0,
+        totalPrice: 0,
         product: {
             name: "",
+            verison: "",
+            brand: "",
         }
     },
     submit: () => {
@@ -558,6 +584,7 @@ const finalProduct = reactive({
     submitDisabled: false,
     model: {
         id: null,
+        productRemark: "",
     },
     submit: () => {
         finalProduct.submitDisabled = true
@@ -571,6 +598,7 @@ const finalProduct = reactive({
             finalProduct.dialogVisible = false
             finalProduct.model = {
                 id: null,
+                productRemark: "",
             }
             finalProduct.submitDisabled = false
         })

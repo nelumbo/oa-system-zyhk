@@ -700,7 +700,7 @@ func DistributeTask(task *Task, maps map[string]interface{}, employeeID int) (co
 	return
 }
 
-func NextTask(task *Task, maps map[string]interface{}) (code int) {
+func NextTask(task *Task, maps map[string]interface{}, employeeID int) (code int) {
 
 	err = db.Transaction(func(tx *gorm.DB) error {
 
@@ -727,20 +727,6 @@ func NextTask(task *Task, maps map[string]interface{}) (code int) {
 						Update("production_status", magic.CONTRATCT_PRODUCTION_STATUS_FINISH).Error; tErr != nil {
 						return tErr
 					}
-
-					// if contract.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
-					// 	if tErr := tx.Model(&Contract{}).
-					// 		Where("id = ?", task.ContractID).
-					// 		Updates(map[string]interface{}{"production_status": magic.CONTRATCT_PRODUCTION_STATUS_FINISH, "status": magic.CONTRACT_STATUS_FINISH}).Error; tErr != nil {
-					// 		return tErr
-					// 	}
-					// } else {
-					// 	if tErr := tx.Model(&Contract{}).
-					// 		Where("id = ?", task.ContractID).
-					// 		Update("production_status", magic.CONTRATCT_PRODUCTION_STATUS_FINISH).Error; tErr != nil {
-					// 		return tErr
-					// 	}
-					// }
 				}
 
 			}
@@ -748,6 +734,16 @@ func NextTask(task *Task, maps map[string]interface{}) (code int) {
 
 		if tErr := tx.Model(&Task{}).Where("id", task.ID).Updates(maps).Error; tErr != nil {
 			return tErr
+		}
+
+		if (task.Type == magic.TASK_TYPE_3 && task.Status == magic.TASK_STATUS_NOT_DESIGN) ||
+			(task.Type == magic.TASK_TYPE_2 && task.Status == magic.TASK_STATUS_NOT_PURCHASE) {
+			var pMaps = make(map[string]interface{})
+			pMaps["status"] = magic.PURCHASING_STATUS_NO_CHECK
+			pMaps["create_date"] = time.Now()
+			err = db.Model(&Purchasing{}).
+				Where("contract_id = ? AND task_id = ? AND employee_id = ? AND status = ?", task.ContractID, task.ID, employeeID, magic.PURCHASING_STATUS_SAVE).
+				Updates(pMaps).Error
 		}
 		return nil
 	})

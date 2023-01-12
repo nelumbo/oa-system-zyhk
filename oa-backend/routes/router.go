@@ -155,6 +155,7 @@ func Init() {
 		tRouter.PUT("purchasing/invoice/final", api.FinalPurchasingInvoiceStatus)
 		tRouter.PUT("purchasing/final", api.FinalPurchasing)
 		tRouter.POST("purchasings", api.QueryPurchasings)
+		tRouter.POST("purchasing/all", api.QueryAllPurchasing)
 
 		tRouter.POST("historyOffices", api.QueryHistoryOffices)
 		tRouter.POST("historyEmployees", api.QueryHistoryEmployees)

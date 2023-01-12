@@ -127,6 +127,7 @@ func FinalPurchasingProductStatus(c *gin.Context) {
 		maps["auditor_id"] = c.MustGet("employeeID").(int)
 		maps["real_end_date"] = time.Now()
 		maps["product_status"] = magic.PURCHASING_PRODUCT_STATUS_FINAL
+		maps["product_remark"] = purchasing.ProductRemark
 		code = models.GeneralUpdate(&models.Purchasing{}, purchasingBak.ID, maps)
 	} else {
 		code = msg.FAIL
@@ -147,6 +148,7 @@ func FinalPurchasingPayStatus(c *gin.Context) {
 		maps["pay_date"] = time.Now()
 		maps["pay_create_date"] = time.Now()
 		maps["pay_status"] = magic.PURCHASING_PRODUCT_STATUS_FINAL
+		maps["pay_remark"] = purchasing.PayRemark
 		code = models.GeneralUpdate(&models.Purchasing{}, purchasingBak.ID, maps)
 	} else {
 		code = msg.FAIL
@@ -166,6 +168,7 @@ func FinalPurchasingInvoiceStatus(c *gin.Context) {
 		maps["invoice_man_id"] = c.MustGet("employeeID").(int)
 		maps["invoice_date"] = time.Now()
 		maps["invoice_status"] = magic.PURCHASING_INVOICE_STATUS_FINAL
+		maps["invoice_remark"] = purchasing.InvoiceRemark
 		code = models.GeneralUpdate(&models.Purchasing{}, purchasingBak.ID, maps)
 	} else {
 		code = msg.FAIL
@@ -198,4 +201,21 @@ func QueryPurchasings(c *gin.Context) {
 
 	xForms.Data, code = models.SelectPurchasings(&purchasingQuery, &xForms)
 	msg.Message(c, code, xForms)
+}
+
+func QueryAllPurchasing(c *gin.Context) {
+	var purchasing models.Purchasing
+	var purchasings []models.Purchasing
+	_ = c.ShouldBindJSON(&purchasing)
+	var maps = make(map[string]interface{})
+	if purchasing.ContractID != 0 {
+		maps["contract_id"] = purchasing.ContractID
+	}
+	if purchasing.TaskID != 0 {
+		maps["task_id"] = purchasing.TaskID
+	}
+
+	purchasings, code = models.SelectAllPurchasings(maps)
+
+	msg.Message(c, code, purchasings)
 }

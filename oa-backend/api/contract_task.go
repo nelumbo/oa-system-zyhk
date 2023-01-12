@@ -78,6 +78,7 @@ func NextTask(c *gin.Context) {
 	_ = models.GeneralSelect(&taskBak, task.ID, nil)
 
 	if taskBak.ID != 0 {
+
 		var maps = make(map[string]interface{})
 		employeeID := c.MustGet("employeeID").(int)
 		tn := time.Now()
@@ -90,6 +91,7 @@ func NextTask(c *gin.Context) {
 			maps["purchase_end_date"] = tn.AddDate(0, 0, taskBak.PurchaseDays)
 			maps["purchase_start_date"] = tn
 		} else if taskBak.Status == magic.TASK_STATUS_NOT_PURCHASE && taskBak.PurchaseManID == employeeID {
+
 			maps["status"] = magic.TASK_STATUS_NOT_STORAGE
 
 			maps["purchase_final_date"] = tn
@@ -125,7 +127,7 @@ func NextTask(c *gin.Context) {
 		}
 
 		if code != msg.FAIL {
-			code = models.NextTask(&taskBak, maps)
+			code = models.NextTask(&taskBak, maps, employeeID)
 		}
 	} else {
 		code = msg.FAIL

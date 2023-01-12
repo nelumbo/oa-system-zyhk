@@ -21,6 +21,12 @@
 
     <el-dialog v-model="finalPay.dialogVisible" title="确认" width="50%" :show-close="false">
         <h1>是否确定该条采购记录已经付款？</h1>
+        <el-form :model="finalPay.model" label-width="60px">
+            <el-form-item label="备注">
+                <el-input v-model="finalPay.model.payRemark" type="textarea" :autosize="{ minRows: 9, maxRows: 18 }"
+                    maxlength="300" />
+            </el-form-item>
+        </el-form>
         <template #footer>
             <span class="dialog-footer">
                 <div style="text-align: center;">
@@ -32,6 +38,12 @@
     </el-dialog>
     <el-dialog v-model="finalInvoice.dialogVisible" title="确认" width="50%" :show-close="false">
         <h1>是否确定该条采购记录已经收到发票？</h1>
+        <el-form :model="finalInvoice.model" label-width="60px">
+            <el-form-item label="备注">
+                <el-input v-model="finalInvoice.model.invoiceRemark" type="textarea"
+                    :autosize="{ minRows: 9, maxRows: 18 }" maxlength="300" />
+            </el-form-item>
+        </el-form>
         <template #footer>
             <span class="dialog-footer">
                 <div style="text-align: center;">
@@ -182,6 +194,7 @@ const finalPay = reactive({
     submitDisabled: false,
     model: {
         id: null,
+        payRemark: "",
     },
     submit: () => {
         finalPay.submitDisabled = true
@@ -195,6 +208,7 @@ const finalPay = reactive({
             finalPay.dialogVisible = false
             finalPay.model = {
                 id: null,
+                remark: "",
             }
             finalPay.submitDisabled = false
         })
@@ -206,6 +220,7 @@ const finalInvoice = reactive({
     submitDisabled: false,
     model: {
         id: null,
+        invoiceRemark: "",
     },
     submit: () => {
         finalInvoice.submitDisabled = true
@@ -219,6 +234,7 @@ const finalInvoice = reactive({
             finalInvoice.dialogVisible = false
             finalInvoice.model = {
                 id: null,
+                remark: "",
             }
             finalInvoice.submitDisabled = false
         })

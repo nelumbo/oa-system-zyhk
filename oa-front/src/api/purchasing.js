@@ -82,3 +82,11 @@ export const queryPurchasings = (model, pageData) => {
         }
     })
 }
+
+export const queryAllPurchasing = (model) => {
+    return request({
+        url: '/purchasing/all',
+        method: 'POST',
+        data: model,
+    })
+}
