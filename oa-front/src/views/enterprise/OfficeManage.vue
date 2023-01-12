@@ -92,6 +92,10 @@
             <el-form-item label="今年完成金额" prop="targetLoad">
                 <el-input-number v-model="editMoney.model.targetLoad" :controls="false" :min="-9999999" />
             </el-form-item>
+            <el-form-item label="备注" prop="remark">
+                <el-input v-model="editMoney.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                    maxlength="100" />
+            </el-form-item>
         </el-form>
         <template #footer>
             <span class="dialog-footer">
@@ -134,6 +138,9 @@ const rules = reactive({
     ],
     targetLoad: [
         { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
+    ],
+    remark: [
+        { required: true, message: '请填写', trigger: 'blur' },
     ],
 })
 
@@ -396,6 +403,7 @@ const editMoney = reactive({
         money: 0,
         moneyCold: 0,
         targetLoad: 0,
+        remark: "",
     },
     submit: () => {
         editMoneyForm.value.validate((valid) => {
@@ -408,6 +416,7 @@ const editMoney = reactive({
                         "money": editMoney.model.money,
                         "moneyCold": editMoney.model.moneyCold,
                         "targetLoad": editMoney.model.targetLoad,
+                        "remark": editMoney.model.remark,
                     }
                 ).then((res) => {
                     if (res.status == 1) {
@@ -423,6 +432,7 @@ const editMoney = reactive({
                         money: 0,
                         moneyCold: 0,
                         targetLoad: 0,
+                        remark: "",
                     }
                     editMoney.submitDisabled = false
                 })

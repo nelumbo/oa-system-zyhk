@@ -3,6 +3,7 @@ package models
 import (
 	"oa-backend/utils/magic"
 	"oa-backend/utils/msg"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -39,10 +40,8 @@ type Expense struct {
 
 func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interface{}) (code int) {
 
-	//TODO日志
-
 	var employee Employee
-	db.First(&employee, expenseBak.EmployeeID)
+	db.Preload("Office").First(&employee, expenseBak.EmployeeID)
 	if employee.ID == 0 {
 		return msg.FAIL
 	}
@@ -53,6 +52,20 @@ func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interf
 		if expenseBak.Status == magic.EXPENSE_STATUS_NOT_APPROVAL_2 && expense.IsPass {
 			if expenseBak.Type == magic.EXPENSE_TYPE_BuZhu {
 				err = db.Transaction(func(tx *gorm.DB) error {
+
+					historyEmployee := HistoryEmployee{
+						UserID:      expenseBak.EmployeeID,
+						Remark:      "发起的[补助]财务审批通过",
+						EmployeeID:  expenseBak.FinanceID,
+						OldMoney:    employee.Money,
+						ChangeMoney: -expense.Amount,
+						NewMoney:    employee.Money - expense.Amount,
+						CreateDate:  XDate{Time: time.Now()},
+					}
+					if tErr := InsertHistoryEmployee(&historyEmployee, tx); tErr != nil {
+						return tErr
+					}
+
 					if tErr := tx.Exec("UPDATE employee SET money = money - ? WHERE id = ?", expenseBak.Amount, expenseBak.EmployeeID).Error; tErr != nil {
 						return tErr
 					}
@@ -63,6 +76,29 @@ func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interf
 				})
 			} else if expenseBak.Type == magic.EXPENSE_TYPE_TiChen {
 				err = db.Transaction(func(tx *gorm.DB) error {
+
+					historyOffice := HistoryOffice{
+						OfficeID:            employee.OfficeID,
+						EmployeeID:          expenseBak.FinanceID,
+						OldBusinessMoney:    employee.Office.BusinessMoney,
+						OldMoney:            employee.Office.Money,
+						OldMoneyCold:        employee.Office.MoneyCold,
+						OldTargetLoad:       employee.Office.TargetLoad,
+						ChangeBusinessMoney: 0,
+						ChangeMoney:         -expenseBak.Amount,
+						ChangeMoneyCold:     0,
+						ChangeTargetLoad:    0,
+						NewBusinessMoney:    employee.Office.BusinessMoney,
+						NewMoney:            employee.Office.Money - expenseBak.Amount,
+						NewMoneyCold:        employee.Office.MoneyCold,
+						NewTargetLoad:       employee.Office.TargetLoad,
+						CreateDate:          XDate{Time: time.Now()},
+						Remark:              "发起的[提成]财务审批通过",
+					}
+					if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+						return tErr
+					}
+
 					if tErr := tx.Exec("UPDATE office SET money = money - ? WHERE id = ?", expenseBak.Amount, employee.OfficeID).Error; tErr != nil {
 						return tErr
 					}
@@ -73,6 +109,29 @@ func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interf
 				})
 			} else if expenseBak.Type == magic.EXPENSE_TYPE_YeWuFei {
 				err = db.Transaction(func(tx *gorm.DB) error {
+
+					historyOffice := HistoryOffice{
+						OfficeID:            employee.OfficeID,
+						EmployeeID:          expenseBak.FinanceID,
+						OldBusinessMoney:    employee.Office.BusinessMoney,
+						OldMoney:            employee.Office.Money,
+						OldMoneyCold:        employee.Office.MoneyCold,
+						OldTargetLoad:       employee.Office.TargetLoad,
+						ChangeBusinessMoney: -expenseBak.Amount,
+						ChangeMoney:         0,
+						ChangeMoneyCold:     0,
+						ChangeTargetLoad:    0,
+						NewBusinessMoney:    employee.Office.BusinessMoney - expenseBak.Amount,
+						NewMoney:            employee.Office.Money,
+						NewMoneyCold:        employee.Office.MoneyCold,
+						NewTargetLoad:       employee.Office.TargetLoad,
+						CreateDate:          XDate{Time: time.Now()},
+						Remark:              "发起的[业务费]财务审批通过",
+					}
+					if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+						return tErr
+					}
+
 					if tErr := tx.Exec("UPDATE office SET business_money = business_money - ? WHERE id = ?", expenseBak.Amount, employee.OfficeID).Error; tErr != nil {
 						return tErr
 					}
@@ -85,6 +144,20 @@ func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interf
 		} else if expenseBak.Status == magic.EXPENSE_STATUS_NOT_PAYMENT && !expense.IsPass {
 			if expenseBak.Type == magic.EXPENSE_TYPE_BuZhu {
 				err = db.Transaction(func(tx *gorm.DB) error {
+
+					historyEmployee := HistoryEmployee{
+						UserID:      expenseBak.EmployeeID,
+						Remark:      "发起的[补助]出纳驳回",
+						EmployeeID:  expenseBak.CashierID,
+						OldMoney:    employee.Money,
+						ChangeMoney: expense.Amount,
+						NewMoney:    employee.Money + expense.Amount,
+						CreateDate:  XDate{Time: time.Now()},
+					}
+					if tErr := InsertHistoryEmployee(&historyEmployee, tx); tErr != nil {
+						return tErr
+					}
+
 					if tErr := tx.Exec("UPDATE employee SET money = money + ? WHERE id = ?", expenseBak.Amount, expenseBak.EmployeeID).Error; tErr != nil {
 						return tErr
 					}
@@ -95,6 +168,29 @@ func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interf
 				})
 			} else if expenseBak.Type == magic.EXPENSE_TYPE_TiChen {
 				err = db.Transaction(func(tx *gorm.DB) error {
+
+					historyOffice := HistoryOffice{
+						OfficeID:            employee.OfficeID,
+						EmployeeID:          expenseBak.CashierID,
+						OldBusinessMoney:    employee.Office.BusinessMoney,
+						OldMoney:            employee.Office.Money,
+						OldMoneyCold:        employee.Office.MoneyCold,
+						OldTargetLoad:       employee.Office.TargetLoad,
+						ChangeBusinessMoney: 0,
+						ChangeMoney:         expenseBak.Amount,
+						ChangeMoneyCold:     0,
+						ChangeTargetLoad:    0,
+						NewBusinessMoney:    employee.Office.BusinessMoney,
+						NewMoney:            employee.Office.Money + expenseBak.Amount,
+						NewMoneyCold:        employee.Office.MoneyCold,
+						NewTargetLoad:       employee.Office.TargetLoad,
+						CreateDate:          XDate{Time: time.Now()},
+						Remark:              "发起的[提成]出纳驳回",
+					}
+					if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+						return tErr
+					}
+
 					if tErr := tx.Exec("UPDATE office SET money = money + ? WHERE id = ?", expenseBak.Amount, employee.OfficeID).Error; tErr != nil {
 						return tErr
 					}
@@ -105,6 +201,29 @@ func UpdateExpense(expense *Expense, expenseBak *Expense, maps map[string]interf
 				})
 			} else if expenseBak.Type == magic.EXPENSE_TYPE_YeWuFei {
 				err = db.Transaction(func(tx *gorm.DB) error {
+
+					historyOffice := HistoryOffice{
+						OfficeID:            employee.OfficeID,
+						EmployeeID:          expenseBak.FinanceID,
+						OldBusinessMoney:    employee.Office.BusinessMoney,
+						OldMoney:            employee.Office.Money,
+						OldMoneyCold:        employee.Office.MoneyCold,
+						OldTargetLoad:       employee.Office.TargetLoad,
+						ChangeBusinessMoney: expenseBak.Amount,
+						ChangeMoney:         0,
+						ChangeMoneyCold:     0,
+						ChangeTargetLoad:    0,
+						NewBusinessMoney:    employee.Office.BusinessMoney + expenseBak.Amount,
+						NewMoney:            employee.Office.Money,
+						NewMoneyCold:        employee.Office.MoneyCold,
+						NewTargetLoad:       employee.Office.TargetLoad,
+						CreateDate:          XDate{Time: time.Now()},
+						Remark:              "发起的[业务费]出纳驳回",
+					}
+					if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+						return tErr
+					}
+
 					if tErr := tx.Exec("UPDATE office SET business_money = business_money + ? WHERE id = ?", expenseBak.Amount, employee.OfficeID).Error; tErr != nil {
 						return tErr
 					}

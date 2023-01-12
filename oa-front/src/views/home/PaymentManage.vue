@@ -1085,7 +1085,7 @@ const addP = reactive({
         editP.model.contractID = row.contractID
         editP.model.taskID = row.taskID
         editP.model.money = 0
-        editP.model.paymentDate = ""
+        editP.model.paymentDate = new Date(row.paymentDate.replace(/-/g, "/"))
         editP.dialogVisible = true
     },
 })

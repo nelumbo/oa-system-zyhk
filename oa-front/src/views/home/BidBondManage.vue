@@ -1,71 +1,69 @@
 <template>
-    <div>
-        <el-row :gutter="20">
-            <el-col :span="6" :offset="8">
-                <el-select v-model="base.model.status" placeholder="状态" clearable style="width: 100%;">
-                    <el-option v-for="item in bidBondStatusItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="1">
-                <el-button type="primary" @click="base.query">查询</el-button>
-            </el-col>
-            <el-col :span="1">
-                <el-button type="success" @click="base.openAddDialog">发起</el-button>
-            </el-col>
-        </el-row>
-        <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
-            :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
+    <el-row :gutter="20">
+        <el-col :span="6" :offset="8">
+            <el-select v-model="base.model.status" placeholder="状态" clearable style="width: 100%;">
+                <el-option v-for="item in bidBondStatusItems" :key="item.value" :label="item.label"
+                    :value="item.value" />
+            </el-select>
+        </el-col>
+        <el-col :span="1">
+            <el-button type="primary" @click="base.query">查询</el-button>
+        </el-col>
+        <el-col :span="1">
+            <el-button type="success" @click="base.openAddDialog">发起</el-button>
+        </el-col>
+    </el-row>
+    <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
+        :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="add.dialogVisible" title="投标保证金录入" width="50%" :show-close="false">
-            <el-form :model="add.model" label-width="60px" :rules="rules" ref="addForm">
-                <el-form-item label="金额" prop="money">
-                    <el-input-number v-model="add.model.money" :controls="false" :min="0" />
-                </el-form-item>
-                <el-form-item label="备注" prop="createRemark">
-                    <el-input v-model="add.model.createRemark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                        maxlength="300" />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="primary" @click="add.submit" :disabled="add.submitDisabled">提交</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
+    <el-dialog v-model="add.dialogVisible" title="投标保证金录入" width="50%" :show-close="false">
+        <el-form :model="add.model" label-width="60px" :rules="rules" ref="addForm">
+            <el-form-item label="金额" prop="money">
+                <el-input-number v-model="add.model.money" :controls="false" :min="0" />
+            </el-form-item>
+            <el-form-item label="备注" prop="createRemark">
+                <el-input v-model="add.model.createRemark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                    maxlength="300" />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="add.submit" :disabled="add.submitDisabled">提交</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 
-        <el-dialog v-model="edit.dialogVisible" title="投标保证金编辑" width="50%" :show-close="false">
-            <el-form :model="edit.model" label-width="60px" :rules="rules" ref="editForm">
-                <el-form-item label="金额" prop="money">
-                    <el-input-number v-model="edit.model.money" :controls="false" :min="0" />
-                </el-form-item>
-                <el-form-item label="备注" prop="createRemark">
-                    <el-input v-model="edit.model.createRemark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                        maxlength="300" />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="primary" @click="edit.submit" :disabled="edit.submitDisabled">提交</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
+    <el-dialog v-model="edit.dialogVisible" title="投标保证金编辑" width="50%" :show-close="false">
+        <el-form :model="edit.model" label-width="60px" :rules="rules" ref="editForm">
+            <el-form-item label="金额" prop="money">
+                <el-input-number v-model="edit.model.money" :controls="false" :min="0" />
+            </el-form-item>
+            <el-form-item label="备注" prop="createRemark">
+                <el-input v-model="edit.model.createRemark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                    maxlength="300" />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="edit.submit" :disabled="edit.submitDisabled">提交</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 
-        <el-dialog v-model="del.dialogVisible" title="投标保证金删除" width="50%" :show-close="false">
-            <h1>是否确定删除该条投标保证金记录？</h1>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="danger" @click="del.submit" :disabled="del.submitDisabled">确定</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
-    </div>
+    <el-dialog v-model="del.dialogVisible" title="投标保证金删除" width="50%" :show-close="false">
+        <h1>是否确定删除该条投标保证金记录？</h1>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="danger" @click="del.submit" :disabled="del.submitDisabled">确定</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -98,61 +96,61 @@ const base = reactive({
             {
                 prop: "createDate",
                 label: "录入日期",
-                width:"10%",
+                width: "10%",
             },
             {
                 prop: "employee.name",
                 label: "业务员",
-                width:"8%",
+                width: "8%",
             },
             {
                 prop: "money",
                 label: "金额",
-                width:"7%",
+                width: "7%",
             },
             {
                 type: "textarea",
                 prop: "createRemark",
                 label: "业务员备注",
-                width:"15%",
+                width: "15%",
             },
             {
                 prop: "auditor.name",
                 label: "审核",
-                width:"5%",
+                width: "5%",
             },
             {
                 prop: "auditDate",
                 label: "审核日期",
-                width:"10%",
+                width: "10%",
             },
             {
                 prop: "finalce.name",
                 label: "财务",
-                width:"5%",
+                width: "5%",
             },
             {
                 prop: "finalDate",
                 label: "回款日期",
-                width:"10%",
+                width: "10%",
             },
             {
                 type: "textarea",
                 prop: "finalRemark",
                 label: "回款备注",
-                width:"15%",
+                width: "15%",
             },
             {
                 type: "transform",
                 prop: "status",
                 items: bidBondStatusItems,
                 label: "状态",
-                width:"5%",
+                width: "5%",
             },
             {
                 type: "operation",
                 label: "操作",
-                width:"10%",
+                width: "10%",
                 operations: [
                     {
                         isShow: (index, row) => {

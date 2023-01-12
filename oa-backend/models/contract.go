@@ -389,7 +389,32 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 			}
 		}
 
-		//TODO 历史记录
+		//历史记录
+		var officeBak Office
+		if tErr := tx.First(&officeBak, contract.OfficeID).Error; tErr != nil {
+			return tErr
+		}
+		historyOffice := HistoryOffice{
+			OfficeID:            officeBak.ID,
+			EmployeeID:          employeeID,
+			OldBusinessMoney:    officeBak.BusinessMoney,
+			OldMoney:            officeBak.Money,
+			OldMoneyCold:        officeBak.MoneyCold,
+			OldTargetLoad:       officeBak.TargetLoad,
+			ChangeBusinessMoney: -tempBusinessMoney,
+			ChangeMoney:         -tempMoney,
+			ChangeMoneyCold:     -tempMoneyCold,
+			ChangeTargetLoad:    -tempTargetLoad,
+			NewBusinessMoney:    officeBak.BusinessMoney - tempBusinessMoney,
+			NewMoney:            officeBak.Money - tempMoney,
+			NewMoneyCold:        officeBak.MoneyCold - tempMoneyCold,
+			NewTargetLoad:       officeBak.TargetLoad - tempTargetLoad,
+			CreateDate:          XDate{Time: time.Now()},
+			Remark:              "合同(" + contract.No + ")驳回",
+		}
+		if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+			return tErr
+		}
 
 		//办事处记录变更
 		if tErr := tx.Exec("UPDATE office SET target_load = target_load - ?,money = money - ?, money_cold = money_cold - ?, business_money = business_money - ? WHERE id = ?", tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney, contract.OfficeID).Error; tErr != nil {
@@ -585,7 +610,7 @@ func InsertTask(contract *Contract, task *Task) (code int) {
 }
 
 // 分发任务
-func DistributeTask(task *Task, maps map[string]interface{}) (code int) {
+func DistributeTask(task *Task, maps map[string]interface{}, employeeID int) (code int) {
 
 	if task.Contract.IsPreDeposit {
 		var taskBak Task
@@ -614,18 +639,47 @@ func DistributeTask(task *Task, maps map[string]interface{}) (code int) {
 			if tErr := tx.Exec("UPDATE contract SET payment_total_amount = payment_total_amount + ? WHERE id = ?", payment.Money, payment.ContractID).Error; tErr != nil {
 				return tErr
 			}
-			//更新办事处数据
+			//更新办事处数据&生成历史记录
 			tempPushMoney1 := payment.PushMoney * 0.5
 			tempPushMoney2 := payment.PushMoney - tempPushMoney1
+			var officeBak Office
+			if tErr := tx.First(&officeBak, taskBak.Contract.OfficeID).Error; tErr != nil {
+				return tErr
+			}
+			historyOffice := HistoryOffice{
+				OfficeID:            taskBak.Contract.OfficeID,
+				EmployeeID:          employeeID,
+				OldBusinessMoney:    officeBak.BusinessMoney,
+				OldMoney:            officeBak.Money,
+				OldMoneyCold:        officeBak.MoneyCold,
+				OldTargetLoad:       officeBak.TargetLoad,
+				ChangeBusinessMoney: payment.BusinessMoney,
+				ChangeMoney:         tempPushMoney1,
+				ChangeMoneyCold:     tempPushMoney2,
+				ChangeTargetLoad:    0,
+				NewBusinessMoney:    officeBak.BusinessMoney + payment.BusinessMoney,
+				NewMoney:            officeBak.Money + tempPushMoney1,
+				NewMoneyCold:        officeBak.MoneyCold + tempPushMoney2,
+				NewTargetLoad:       0,
+				CreateDate:          XDate{Time: time.Now()},
+				Remark:              "预存款合同(" + taskBak.Contract.No + ")采购商品",
+			}
 			if task.Product.Type.IsTaskLoad {
 				if tErr := tx.Exec("UPDATE office SET target_load = target_load + ?, money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", payment.Money, tempPushMoney1, tempPushMoney2, payment.BusinessMoney, taskBak.Contract.OfficeID).Error; tErr != nil {
 					return tErr
 				}
+				historyOffice.ChangeTargetLoad = payment.Money
+				historyOffice.NewTargetLoad = officeBak.TargetLoad + payment.Money
 			} else {
 				if tErr := tx.Exec("UPDATE office SET money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempPushMoney1, tempPushMoney2, payment.BusinessMoney, taskBak.Contract.OfficeID).Error; tErr != nil {
 					return tErr
 				}
+				historyOffice.NewTargetLoad = officeBak.TargetLoad
 			}
+			if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+				return tErr
+			}
+			//跟新task记录
 			if tErr := tx.Model(&Task{}).Where("id = ?", taskBak.ID).Updates(maps).Error; tErr != nil {
 				return tErr
 			}
@@ -861,7 +915,9 @@ func SelectInvoices(invoiceQuery *Invoice) (invoices []Invoice, code int) {
 
 func InsertPayment(payment *Payment) (code int) {
 	var contract Contract
+	var officeBak Office
 	db.First(&contract, payment.ContractID)
+	db.First(&officeBak, contract.OfficeID)
 	if contract.ID != 0 {
 		if contract.IsPreDeposit {
 			//预存款合同回款不产生利润
@@ -876,6 +932,28 @@ func InsertPayment(payment *Payment) (code int) {
 				}
 				//办事处任务量增加
 				if tErr := tx.Exec("UPDATE office SET target_load = target_load + ? WHERE id = ?", payment.Money, contract.OfficeID).Error; tErr != nil {
+					return tErr
+				}
+				//生成记录
+				historyOffice := HistoryOffice{
+					OfficeID:            contract.OfficeID,
+					EmployeeID:          payment.EmployeeID,
+					OldBusinessMoney:    officeBak.BusinessMoney,
+					OldMoney:            officeBak.Money,
+					OldMoneyCold:        officeBak.MoneyCold,
+					OldTargetLoad:       officeBak.TargetLoad,
+					ChangeBusinessMoney: 0,
+					ChangeMoney:         0,
+					ChangeMoneyCold:     0,
+					ChangeTargetLoad:    payment.Money,
+					NewBusinessMoney:    officeBak.BusinessMoney,
+					NewMoney:            officeBak.Money,
+					NewMoneyCold:        officeBak.MoneyCold,
+					NewTargetLoad:       officeBak.TargetLoad + payment.Money,
+					CreateDate:          XDate{Time: time.Now()},
+					Remark:              "预存款合同(" + contract.No + ")添加回款",
+				}
+				if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
 					return tErr
 				}
 				return nil
@@ -904,17 +982,45 @@ func InsertPayment(payment *Payment) (code int) {
 				if tErr := tx.Exec("UPDATE task SET payment_total_price = payment_total_price + ? WHERE id = ?", payment.Money, payment.TaskID).Error; tErr != nil {
 					return tErr
 				}
-				//更新办事处数据
+				//更新办事处数据&生成历史记录
 				tempPushMoney1 := payment.PushMoney * 0.5
 				tempPushMoney2 := payment.PushMoney - tempPushMoney1
+				var officeBak Office
+				if tErr := tx.First(&officeBak, task.Contract.OfficeID).Error; tErr != nil {
+					return tErr
+				}
+				historyOffice := HistoryOffice{
+					OfficeID:            task.Contract.OfficeID,
+					EmployeeID:          payment.EmployeeID,
+					OldBusinessMoney:    officeBak.BusinessMoney,
+					OldMoney:            officeBak.Money,
+					OldMoneyCold:        officeBak.MoneyCold,
+					OldTargetLoad:       officeBak.TargetLoad,
+					ChangeBusinessMoney: payment.BusinessMoney,
+					ChangeMoney:         tempPushMoney1,
+					ChangeMoneyCold:     tempPushMoney2,
+					ChangeTargetLoad:    0,
+					NewBusinessMoney:    officeBak.BusinessMoney + payment.BusinessMoney,
+					NewMoney:            officeBak.Money + tempPushMoney1,
+					NewMoneyCold:        officeBak.MoneyCold + tempPushMoney2,
+					NewTargetLoad:       0,
+					CreateDate:          XDate{Time: time.Now()},
+					Remark:              "普通合同(" + task.Contract.No + ")添加回款",
+				}
 				if task.Product.Type.IsTaskLoad {
 					if tErr := tx.Exec("UPDATE office SET target_load = target_load + ?, money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", payment.Money, tempPushMoney1, tempPushMoney2, payment.BusinessMoney, contract.OfficeID).Error; tErr != nil {
 						return tErr
 					}
+					historyOffice.ChangeTargetLoad = payment.Money
+					historyOffice.NewTargetLoad = officeBak.TargetLoad + payment.Money
 				} else {
 					if tErr := tx.Exec("UPDATE office SET money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempPushMoney1, tempPushMoney2, payment.BusinessMoney, contract.OfficeID).Error; tErr != nil {
 						return tErr
 					}
+					historyOffice.NewTargetLoad = officeBak.TargetLoad
+				}
+				if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+					return tErr
 				}
 				return nil
 			})
@@ -933,7 +1039,7 @@ func UpdatePayment(payment *Payment) (code int) {
 	var paymentBak Payment
 	var contractBak Contract
 	_ = db.First(&paymentBak, payment.ID)
-	_ = db.First(&contractBak, paymentBak.ContractID)
+	_ = db.Preload("Office").First(&contractBak, paymentBak.ContractID)
 	if contractBak.ID != 0 {
 		if contractBak.IsPreDeposit {
 			err = db.Transaction(func(tx *gorm.DB) error {
@@ -952,6 +1058,28 @@ func UpdatePayment(payment *Payment) (code int) {
 				maps["payment_date"] = payment.PaymentDate
 				maps["money"] = payment.Money
 				if tErr := tx.Model(&Payment{}).Where("id = ?", paymentBak.ID).Updates(maps).Error; tErr != nil {
+					return tErr
+				}
+
+				historyOffice := HistoryOffice{
+					OfficeID:            contractBak.OfficeID,
+					EmployeeID:          payment.EmployeeID,
+					OldBusinessMoney:    contractBak.Office.BusinessMoney,
+					OldMoney:            contractBak.Office.Money,
+					OldMoneyCold:        contractBak.Office.MoneyCold,
+					OldTargetLoad:       contractBak.Office.TargetLoad,
+					ChangeBusinessMoney: 0,
+					ChangeMoney:         0,
+					ChangeMoneyCold:     0,
+					ChangeTargetLoad:    tempPaymentTotalAmount,
+					NewBusinessMoney:    contractBak.Office.BusinessMoney,
+					NewMoney:            contractBak.Office.Money,
+					NewMoneyCold:        contractBak.Office.MoneyCold,
+					NewTargetLoad:       contractBak.Office.TargetLoad + tempPaymentTotalAmount,
+					CreateDate:          XDate{Time: time.Now()},
+					Remark:              "预存款合同(" + contractBak.No + ")回款编辑",
+				}
+				if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
 					return tErr
 				}
 				return nil
@@ -975,7 +1103,29 @@ func UpdatePayment(payment *Payment) (code int) {
 				tempPushMoney1 := payment.PushMoney*0.5 - tempOldPushMoney1
 				tempPushMoney2 := payment.PushMoney - payment.PushMoney*0.5 - tempOldPushMoney2
 				tempBusinessMoney := payment.BusinessMoney - paymentBak.BusinessMoney
-
+				////生成历史记录
+				var officeBak Office
+				if tErr := tx.First(&officeBak, task.Contract.OfficeID).Error; tErr != nil {
+					return tErr
+				}
+				historyOffice := HistoryOffice{
+					OfficeID:            task.Contract.OfficeID,
+					EmployeeID:          payment.EmployeeID,
+					OldBusinessMoney:    officeBak.BusinessMoney,
+					OldMoney:            officeBak.Money,
+					OldMoneyCold:        officeBak.MoneyCold,
+					OldTargetLoad:       officeBak.TargetLoad,
+					ChangeBusinessMoney: tempBusinessMoney,
+					ChangeMoney:         tempPushMoney1,
+					ChangeMoneyCold:     tempPushMoney2,
+					ChangeTargetLoad:    0,
+					NewBusinessMoney:    officeBak.BusinessMoney + payment.BusinessMoney,
+					NewMoney:            officeBak.Money + tempPushMoney1,
+					NewMoneyCold:        officeBak.MoneyCold + tempPushMoney2,
+					NewTargetLoad:       0,
+					CreateDate:          XDate{Time: time.Now()},
+					Remark:              "普通合同(" + task.Contract.No + ")回款编辑",
+				}
 				//更新回款记录
 				var maps = make(map[string]interface{})
 				maps["employee_id"] = payment.EmployeeID
@@ -1001,10 +1151,16 @@ func UpdatePayment(payment *Payment) (code int) {
 					if tErr := tx.Exec("UPDATE office SET target_load = target_load + ?, money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempMoney, tempPushMoney1, tempPushMoney2, tempBusinessMoney, contractBak.OfficeID).Error; tErr != nil {
 						return tErr
 					}
+					historyOffice.ChangeTargetLoad = tempMoney
+					historyOffice.NewTargetLoad = officeBak.TargetLoad + tempMoney
 				} else {
 					if tErr := tx.Exec("UPDATE office SET money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempPushMoney1, tempPushMoney2, tempBusinessMoney, contractBak.OfficeID).Error; tErr != nil {
 						return tErr
 					}
+					historyOffice.NewTargetLoad = officeBak.TargetLoad
+				}
+				if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+					return tErr
 				}
 				return nil
 			})

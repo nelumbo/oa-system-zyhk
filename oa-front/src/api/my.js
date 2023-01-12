@@ -105,3 +105,15 @@ export const queryMySavePurchasings = (model) => {
         data: model
     })
 }
+
+export const queryMyHistorys = (model, pageData) => {
+    return request({
+        url: '/my/historys',
+        method: 'POST',
+        data: model,
+        params: {
+            "pageSize": pageData.pageSize,
+            "pageNo": pageData.pageNo,
+        }
+    })
+}

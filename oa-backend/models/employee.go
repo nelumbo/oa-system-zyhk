@@ -3,6 +3,7 @@ package models
 import (
 	"oa-backend/utils/msg"
 	"oa-backend/utils/pwd"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -28,6 +29,8 @@ type Employee struct {
 
 	Office Office `gorm:"foreignKey:OfficeID" json:"office"`
 	Roles  []Role `gorm:"many2many:employee_role;foreignKey:ID;references:ID" json:"roles"`
+
+	Remark string `gorm:"-" json:"remark"`
 }
 
 func UpdateEmployeeOffice(employee *Employee) (code int) {
@@ -48,6 +51,42 @@ func UpdateEmployeeOffice(employee *Employee) (code int) {
 		return nil
 	})
 
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
+}
+
+func UpdateEmployeeMoney(employee *Employee, employeeID int) (code int) {
+	var maps = make(map[string]interface{})
+	maps["money"] = employee.Money
+	maps["credit"] = employee.Credit
+	maps["office_credit"] = employee.OfficeCredit
+	err = db.Transaction(func(tx *gorm.DB) error {
+		var employeeBak Employee
+		if tErr := tx.First(&employeeBak, employee.ID).Error; tErr != nil {
+			return tErr
+		}
+
+		historyEmployee := HistoryEmployee{
+			UserID:      employee.ID,
+			EmployeeID:  employeeID,
+			OldMoney:    employeeBak.Money,
+			ChangeMoney: employee.Money - employeeBak.Money,
+			NewMoney:    employee.Money,
+			CreateDate:  XDate{Time: time.Now()},
+			Remark:      "[直接修改] : " + employee.Remark,
+		}
+		if tErr := InsertHistoryEmployee(&historyEmployee, tx); tErr != nil {
+			return tErr
+		}
+
+		if tErr := tx.Model(&Employee{ID: employee.ID}).Updates(maps).Error; tErr != nil {
+			return tErr
+		}
+
+		return nil
+	})
 	if err != nil {
 		return msg.ERROR
 	}

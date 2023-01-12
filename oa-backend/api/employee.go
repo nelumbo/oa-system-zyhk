@@ -77,15 +77,16 @@ func EditEmployeeBase(c *gin.Context) {
 // 修改员工资金信息
 func EditEmployeeExpense(c *gin.Context) {
 	var employee models.Employee
-	var maps = make(map[string]interface{})
+	// var maps = make(map[string]interface{})
 	_ = c.ShouldBindJSON(&employee)
 
-	maps["money"] = employee.Money
-	maps["credit"] = employee.Credit
-	maps["office_credit"] = employee.OfficeCredit
+	// maps["money"] = employee.Money
+	// maps["credit"] = employee.Credit
+	// maps["office_credit"] = employee.OfficeCredit
 
-	code = models.GeneralUpdate(&models.Employee{}, employee.ID, maps)
-	//TODO日志
+	// code = models.GeneralUpdate(&models.Employee{}, employee.ID, maps)
+	code = models.UpdateEmployeeMoney(&employee, c.MustGet("employeeID").(int))
+
 	msg.Message(c, code, nil)
 }
 

@@ -88,12 +88,7 @@ func EditOfficeBase(c *gin.Context) {
 func EditOfficeMoney(c *gin.Context) {
 	var office models.Office
 	_ = c.ShouldBindJSON(&office)
-	var maps = make(map[string]interface{})
-	maps["business_money"] = office.BusinessMoney
-	maps["money"] = office.Money
-	maps["money_cold"] = office.MoneyCold
-	maps["target_load"] = office.TargetLoad
-	code = models.UpdateOffice(&office, maps)
+	code = models.UpdateOfficeMoney(&office, c.MustGet("employeeID").(int))
 	msg.Message(c, code, nil)
 }
 

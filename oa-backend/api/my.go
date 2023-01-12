@@ -96,3 +96,14 @@ func QueryMySavePurchasings(c *gin.Context) {
 
 	msg.Message(c, code, purchasings)
 }
+
+func QueryMyHistorys(c *gin.Context) {
+	var historyEmployee models.HistoryEmployee
+	_ = c.ShouldBindJSON(&historyEmployee)
+	historyEmployee.UserID = c.MustGet("employeeID").(int)
+
+	xForms := ginUtil.GinArrayPreprocessing(c)
+
+	xForms.Data, code = models.SelectHistoryEmployees(&historyEmployee, &xForms)
+	msg.Message(c, code, xForms)
+}

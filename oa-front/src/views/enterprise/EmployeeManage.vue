@@ -141,7 +141,7 @@
 
         <el-dialog v-model="edit.expenseDialogVisivle" title="财务编辑" width="50%" :show-close="false">
             <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
-                <el-form-item label="初始补助额度" prop="money">
+                <el-form-item label="补助额度" prop="money">
                     <el-input-number v-model="edit.model.money" :controls="false" :min="-9999999" />
                 </el-form-item>
                 <el-form-item label="每月总部补助额度" prop="credit">
@@ -149,6 +149,10 @@
                 </el-form-item>
                 <el-form-item label="每月办事处补助额度" prop="officeCredit">
                     <el-input-number v-model="edit.model.officeCredit" :controls="false" :min="-9999999" />
+                </el-form-item>
+                <el-form-item label="备注" prop="remark">
+                    <el-input v-model="edit.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                        maxlength="100" />
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -248,6 +252,9 @@ const rules = reactive({
     ],
     officeCredit: [
         { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
+    ],
+    remark: [
+        { required: true, message: '请填写', trigger: 'blur' },
     ],
 })
 
@@ -524,6 +531,7 @@ const edit = reactive({
             name: ""
         },
         roles: [],
+        remark: "",
     },
     submitBase: () => {
         editForm.value.validate((valid) => {
@@ -560,6 +568,7 @@ const edit = reactive({
                             name: ""
                         },
                         roles: [],
+                        remark: "",
                     }
                     edit.submitDisabled = false
                 })
@@ -578,6 +587,7 @@ const edit = reactive({
                         "money": edit.model.money,
                         "credit": edit.model.credit,
                         "officeCredit": edit.model.officeCredit,
+                        "remark": edit.model.remark,
                     }
                 ).then((res) => {
                     if (res.status == 1) {
@@ -601,6 +611,7 @@ const edit = reactive({
                             name: ""
                         },
                         roles: [],
+                        remark: "",
                     }
                     edit.submitDisabled = false
                 })
@@ -643,6 +654,7 @@ const edit = reactive({
                             name: ""
                         },
                         roles: [],
+                        remark: "",
                     }
                     edit.submitDisabled = false
                 })

@@ -102,9 +102,53 @@
                     <div v-if="scope.row.status > 5">物流：{{ scope.row.shipmentFinalDate }}</div>
                 </span>
 
-
                 <span v-if="header.type === 'purchasingStatus'">
                     {{ purchasingStatusToText(scope.row) }}
+                </span>
+
+                <span v-if="header.type === 'logOld'">
+                    <div>
+                        业务费:{{ scope.row.oldBusinessMoney }}
+                    </div>
+                    <div>
+                        可报销额度:{{ scope.row.oldMoney }}
+                    </div>
+                    <div>
+                        冻结报销额度:{{ scope.row.oldMoneyCold }}
+                    </div>
+                    <div>
+                        完成量:{{ scope.row.oldTargetLoad }}
+                    </div>
+                </span>
+
+                <span v-if="header.type === 'logChange'">
+                    <div>
+                        业务费:{{ scope.row.changeBusinessMoney }}
+                    </div>
+                    <div>
+                        可报销额度:{{ scope.row.changeMoney }}
+                    </div>
+                    <div>
+                        冻结报销额度:{{ scope.row.changeMoneyCold }}
+                    </div>
+                    <div>
+                        完成量:{{ scope.row.changeTargetLoad }}
+                    </div>
+                </span>
+
+                <span v-if="header.type === 'logNew'">
+                    <div>
+                        业务费:{{ scope.row.newBusinessMoney }}
+                    </div>
+                    <div>
+                        可报销额度:{{ scope.row.newMoney }}
+                    </div>
+                    <div>
+                        冻结报销额度:{{ scope.row.newMoneyCold }}
+                    </div>
+                    <div>
+                        完成量:{{ scope.row.newTargetLoad }}
+                    </div>
                 </span>
             </template>
         </el-table-column>

@@ -2,6 +2,7 @@ package models
 
 import (
 	"oa-backend/utils/msg"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -29,15 +30,47 @@ type Office struct {
 
 	FinalPercentages float64 `gorm:"-" json:"finalPercentages"`
 	NotPayment       float64 `gorm:"-" json:"notPayment"`
+	Remark           string  `gorm:"-" json:"remark"`
 }
 
-func UpdateOffice(office *Office, maps map[string]interface{}) (code int) {
+func UpdateOfficeMoney(office *Office, employeeID int) (code int) {
+	var maps = make(map[string]interface{})
+	maps["business_money"] = office.BusinessMoney
+	maps["money"] = office.Money
+	maps["money_cold"] = office.MoneyCold
+	maps["target_load"] = office.TargetLoad
 	err = db.Transaction(func(tx *gorm.DB) error {
+		var officeBak Office
+		if tErr := tx.First(&officeBak, office.ID).Error; tErr != nil {
+			return tErr
+		}
+
+		historyOffice := HistoryOffice{
+			OfficeID:            officeBak.ID,
+			EmployeeID:          employeeID,
+			OldBusinessMoney:    officeBak.BusinessMoney,
+			OldMoney:            officeBak.Money,
+			OldMoneyCold:        officeBak.MoneyCold,
+			OldTargetLoad:       officeBak.TargetLoad,
+			ChangeBusinessMoney: office.BusinessMoney - officeBak.BusinessMoney,
+			ChangeMoney:         office.Money - officeBak.Money,
+			ChangeMoneyCold:     office.MoneyCold - officeBak.MoneyCold,
+			ChangeTargetLoad:    office.TargetLoad - officeBak.TargetLoad,
+			NewBusinessMoney:    office.BusinessMoney,
+			NewMoney:            office.Money,
+			NewMoneyCold:        office.MoneyCold,
+			NewTargetLoad:       office.TargetLoad,
+			CreateDate:          XDate{Time: time.Now()},
+			Remark:              "[直接修改] : " + office.Remark,
+		}
+		if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+			return tErr
+		}
 
 		if tErr := tx.Model(&Office{}).Where("id", office.ID).Updates(maps).Error; tErr != nil {
 			return tErr
 		}
-		//TODO日志
+
 		return nil
 	})
 	if err != nil {
@@ -66,6 +99,6 @@ func SelectOffices(officeQuery *Office, xForms *XForms) (offices []Office, code 
 func SelectNotPaymentForTopList() (offices1 []Office, offices2 []Office, productTypes []ProductType) {
 	db.Raw("SELECT office_id id,sum(total_amount - payment_total_amount) money FROM contract WHERE is_delete IS FALSE AND is_pre_deposit IS FALSE AND STATUS > 1 GROUP BY office_id").Scan(&offices1)
 	db.Raw("SELECT office_id id,sum(pre_deposit_record - payment_total_amount) money FROM contract WHERE is_delete IS FALSE AND is_pre_deposit IS TRUE AND STATUS > 1 AND pre_deposit_record > payment_total_amount GROUP BY office_id").Scan(&offices2)
-	db.Raw("SELECT product_type.id,product_type.`name` ,sum(payment.money) FROM payment LEFT JOIN task ON payment.task_id = task.id LEFT JOIN product ON task.product_id = product.id LEFT JOIN product_type ON product.type_id = product_type.id WHERE payment.task_id IS NOT NULL GROUP BY product_type.id").Scan(&productTypes)
+	db.Raw("SELECT product_type.id,product_type.`name` ,sum(payment.money) as push_money_percentages FROM payment LEFT JOIN task ON payment.task_id = task.id LEFT JOIN product ON task.product_id = product.id LEFT JOIN product_type ON product.type_id = product_type.id WHERE payment.task_id IS NOT NULL GROUP BY product_type.id").Scan(&productTypes)
 	return
 }

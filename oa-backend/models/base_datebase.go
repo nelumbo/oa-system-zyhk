@@ -59,6 +59,9 @@ func initDB() {
 		&PredesignTask{},
 
 		&Purchasing{},
+
+		&HistoryEmployee{},
+		&HistoryOffice{},
 	)
 
 	sqlDB, _ := db.DB()

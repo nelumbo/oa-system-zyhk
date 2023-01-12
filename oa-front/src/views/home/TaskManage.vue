@@ -62,7 +62,7 @@
                 <el-form-item label="采购备注">
                     <el-input v-model="view.model.task.purchaseRemark" type="textarea" autosize readonly />
                 </el-form-item>
-                <el-form-item label="查看备注">
+                <el-form-item label="仓库备注">
                     <el-input v-model="view.model.task.inventoryRemark" type="textarea" autosize readonly />
                 </el-form-item>
                 <el-form-item label="装配备注">
@@ -289,7 +289,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status > 1 && row.status < 6)
+                            if (row.status > 0 && row.status < 6)
                                 return true
                         },
                         label: "提交",

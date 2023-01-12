@@ -77,6 +77,7 @@ func ApprovalExpense(c *gin.Context) {
 			if expense.IsPass {
 				maps["finance_id"] = c.MustGet("employeeID").(int)
 				maps["status"] = magic.EXPENSE_STATUS_NOT_PAYMENT
+				expenseBak.FinanceID = c.MustGet("employeeID").(int)
 				code = models.UpdateExpense(&expense, &expenseBak, maps)
 			} else {
 				maps["finance_id"] = c.MustGet("employeeID").(int)
@@ -91,6 +92,7 @@ func ApprovalExpense(c *gin.Context) {
 			} else {
 				maps["cashier_id"] = c.MustGet("employeeID").(int)
 				maps["status"] = magic.EXPENSE_STATUS_FAIL
+				expenseBak.CashierID = c.MustGet("employeeID").(int)
 				code = models.UpdateExpense(&expense, &expenseBak, maps)
 			}
 		} else {

@@ -63,7 +63,7 @@ func DistributeTask(c *gin.Context) {
 			maps["purchase_days"] = task.PurchaseDays
 		}
 
-		code = models.DistributeTask(&taskBak, maps)
+		code = models.DistributeTask(&taskBak, maps, c.MustGet("employeeID").(int))
 	} else {
 		code = msg.FAIL
 	}
