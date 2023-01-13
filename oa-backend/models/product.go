@@ -13,7 +13,7 @@ type Supplier struct {
 	IsDelete    bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	Name        string `gorm:"type:varchar(50);comment:名称;not null" json:"name"`
 	Address     string `gorm:"type:varchar(100);comment:地址" json:"address"`
-	Web         string `gorm:"type:varchar(50);comment:网站" json:"web"`
+	Web         string `gorm:"type:varchar(100);comment:网站" json:"web"`
 	Linkman     string `gorm:"type:varchar(50);comment:联系人" json:"linkman"`
 	Phone       string `gorm:"type:varchar(50);comment:联系电话" json:"phone"`
 	WechatID    string `gorm:"type:varchar(50);comment:微信号" json:"wechatID"`
@@ -30,7 +30,7 @@ type Product struct {
 	ID            int     `gorm:"primary_key" json:"id"`
 	IsDelete      bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	Name          string  `gorm:"type:varchar(50);comment:名称;not null" json:"name"`
-	Version       string  `gorm:"type:varchar(50);comment:型号;not null" json:"version"`
+	Version       string  `gorm:"type:varchar(50);comment:型号" json:"version"`
 	Brand         string  `gorm:"type:varchar(50);comment:品牌" json:"brand"`
 	Specification string  `gorm:"type:varchar(100);comment:规格" json:"specification"`
 	Number        int     `gorm:"type:int;comment:可售数量(库存数量-订单锁定但未出库的数量)" json:"number"`

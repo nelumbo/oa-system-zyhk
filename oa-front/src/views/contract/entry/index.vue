@@ -74,11 +74,11 @@
             </el-form-item>
             <el-form-item label="开票内容和要求" prop="invoiceContent">
                 <el-input v-model="base.model.invoiceContent" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                    maxlength="300" v-if="base.model.invoiceType != 1" />
+                    maxlength="500" v-if="base.model.invoiceType != 1" />
             </el-form-item>
             <el-form-item label="付款方式" prop="paymentContent">
                 <el-input v-model="base.model.paymentContent" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                    maxlength="300" />
+                    maxlength="500" />
             </el-form-item>
             <el-form-item label="备注(发货地址等，如是经销商，须说明终端客户)" prop="remark">
                 <el-input v-model="base.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"

@@ -101,6 +101,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { computed, ref, reactive, onBeforeMount } from 'vue'
 import { predesignTaskStatusItems } from '@/utils/magic'
 import { approvePredesignTask, queryPredesignTasks } from "@/api/predesign_task"
@@ -167,7 +168,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status == 2) {
+                            if (user().my.pids.includes('24') && row.status == 2) {
                                 return true
                             }
                             return false

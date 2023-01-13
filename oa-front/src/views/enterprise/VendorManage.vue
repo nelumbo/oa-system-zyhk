@@ -7,7 +7,7 @@
             <el-col :span="1">
                 <el-button type="primary" @click="base.query">查询</el-button>
             </el-col>
-            <el-col :span="1">
+            <el-col :span="1" v-if="user().my.pids.includes('73')">
                 <el-button type="success" @click="base.openAddDialog">添加</el-button>
             </el-col>
         </el-row>
@@ -47,6 +47,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { addVendor, editVendor, queryVendors } from "@/api/vendor";
 import { message } from '@/components/divMessage/index'
@@ -80,7 +81,10 @@ const base = reactive({
                 operations: [
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('74')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "编辑",
                         type: "primary",

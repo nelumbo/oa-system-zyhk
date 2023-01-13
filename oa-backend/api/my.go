@@ -10,8 +10,9 @@ import (
 
 func QueryMe(c *gin.Context) {
 	var employee models.Employee
-
 	employee, code = models.SelectEmployee(c.MustGet("employeeID").(int))
+
+	_ = models.SelectAllPermission(&employee)
 
 	msg.Message(c, code, employee)
 }

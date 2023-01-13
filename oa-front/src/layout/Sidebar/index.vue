@@ -9,14 +9,14 @@
         <span class="title">{{ user().my.name }}</span>
       </template>
       <el-menu-item-group>
-        <el-menu-item index="1-1">
+        <!-- <el-menu-item index="1-1">
           <template #title>
             <el-icon>
               <Setting />
             </el-icon>
             <span>设置</span>
           </template>
-        </el-menu-item>
+        </el-menu-item> -->
         <el-menu-item index="1-2" @click="exit">
           <template #title>
             <el-icon>
@@ -46,7 +46,7 @@
       </el-icon>
       <span>合同管理</span>
     </el-menu-item>
-    <el-menu-item index="/pre-research">
+    <el-menu-item index="/predesign">
       <el-icon>
         <List />
       </el-icon>

@@ -6,7 +6,7 @@
         <el-col :span="1">
             <el-button type="primary" @click="base.query">查询</el-button>
         </el-col>
-        <el-col :span="1">
+        <el-col :span="1" v-if="user().my.pids.includes('37')">
             <el-button type="success" @click="base.openAddDialog">添加</el-button>
         </el-col>
     </el-row>
@@ -100,6 +100,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { addProductType, editProductType, queryProductTypes } from "@/api/product_type"
 import { message } from '@/components/divMessage/index'
@@ -178,7 +179,10 @@ const base = reactive({
                 operations: [
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('38')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "编辑",
                         type: "primary",

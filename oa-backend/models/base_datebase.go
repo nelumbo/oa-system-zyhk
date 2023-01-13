@@ -37,6 +37,7 @@ func initDB() {
 		&Office{},
 		&Role{},
 		&Permission{},
+		&Url{},
 		&Region{},
 		&Vendor{},
 
@@ -71,4 +72,22 @@ func initDB() {
 	sqlDB.SetMaxOpenConns(100)
 	// 设置了连接可复用的最大时间。
 	sqlDB.SetConnMaxLifetime(10 * time.Second)
+
 }
+
+// func changeDate() {
+// 	var tasks []Task
+// 	db.Find(&tasks)
+// 	for i := range tasks {
+
+// 		productAttribute := ProductAttribute{
+// 			IsDelete:         false,
+// 			StandardPrice:    tasks[i].StandardPrice,
+// 			StandardPriceUSD: tasks[i].StandardPriceUSD,
+// 		}
+
+// 		db.Create(&productAttribute)
+// 		db.Model(&Task{}).Where("id = ?", tasks[i].ID).Update("product_attribute_id", productAttribute.ID)
+
+// 	}
+// }

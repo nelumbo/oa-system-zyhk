@@ -2,6 +2,7 @@
     <el-table :data="data" :row-style="columnObj.rowStyle" :cell-style="columnObj.cellStyle"
         :highlight-current-row="columnObj.highlightCurrentRow || false">
 
+        <el-table-column type="index" width="50" v-if="columnObj.showIndex" />
         <el-table-column v-for="(header, hi) in columnObj.headers" :key="hi" :prop="header.prop" :label="header.label"
             :min-width="header.width" :align="header.align || 'center'" :index="hi" show-overflow-tooltip>
 

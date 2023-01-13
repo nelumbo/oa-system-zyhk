@@ -19,7 +19,8 @@
         </el-row>
         <el-row :gutter="20">
             <el-col :span="5" :offset="1">
-                <el-select v-model="base.model.officeID" placeholder="办事处" clearable style="width: 100%;">
+                <el-select v-model="base.model.officeID" placeholder="办事处" clearable style="width: 100%;"
+                    :disabled="!user().my.pids.includes('18')">
                     <el-option v-for="item in base.offices" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
             </el-col>
@@ -763,6 +764,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount, computed } from 'vue'
 import {
     contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems,
@@ -912,7 +914,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status > 0) {
+                            if (user().my.pids.includes('19') && row.status > 0) {
                                 return true
                             }
                             return false
@@ -2051,11 +2053,19 @@ const units = reactive({
 })
 
 onBeforeMount(() => {
+    queryAllOffice().then((res) => {
+        if (res.status == 1) {
+            base.offices = res.data
+        }
+    })
     queryAllRegion().then((res) => {
         if (res.status == 1) {
             base.regions = res.data
         }
     })
+    if (!user().my.pids.includes('18')) {
+        base.model.officeID = Number(localStorage.getItem("officeID"))
+    }
     base.query()
 })
 </script>

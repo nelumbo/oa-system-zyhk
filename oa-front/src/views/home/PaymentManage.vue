@@ -436,7 +436,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (row.status == 2 && row.collectionStatus == 1) {
+                                return true
+                            }
+                            return false
                         },
                         label: "添加发票",
                         type: "primary",
@@ -446,7 +449,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (row.status == 2 && row.collectionStatus == 1) {
+                                return true
+                            }
+                            return false
                         },
                         label: "添加回款",
                         type: "primary",
@@ -456,7 +462,9 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.isPreDeposit || row.totalAmount == row.paymentTotalAmount) {
+                            if (row.status == 2 &&
+                                row.collectionStatus == 1 &&
+                                (row.isPreDeposit || row.totalAmount == row.paymentTotalAmount)) {
                                 return true
                             }
                             return false

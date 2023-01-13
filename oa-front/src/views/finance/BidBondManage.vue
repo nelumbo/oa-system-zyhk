@@ -82,6 +82,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { reactive, onBeforeMount } from 'vue'
 import { bidBondStatusItems } from '@/utils/magic'
 import { queryAllOffice } from "@/api/office"
@@ -155,7 +156,7 @@ const base = reactive({
                 operations: [
                     {
                         isShow: (index, row) => {
-                            if (row.status == 1) {
+                            if (user().my.pids.includes('49') && row.status == 1) {
                                 return true
                             }
                             return false
@@ -168,7 +169,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status == 2) {
+                            if (user().my.pids.includes('50') && row.status == 2) {
                                 return true
                             }
                             return false

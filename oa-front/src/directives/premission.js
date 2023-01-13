@@ -1,8 +1,12 @@
+import { user } from '@/pinia/modules/user'
+
 export default function (app) {
     app.directive('permission', {
         mounted(el, bindings) {
             // 获取到指令的值
             let bv = bindings.value;
+
+
             // 判断当前是否存在值
             if (!bv) return console.error("自定义指令值缺失");
 

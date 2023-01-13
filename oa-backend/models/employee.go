@@ -30,7 +30,8 @@ type Employee struct {
 	Office Office `gorm:"foreignKey:OfficeID" json:"office"`
 	Roles  []Role `gorm:"many2many:employee_role;foreignKey:ID;references:ID" json:"roles"`
 
-	Remark string `gorm:"-" json:"remark"`
+	Remark string   `gorm:"-" json:"remark"`
+	Pids   []string `gorm:"-" json:"pids"`
 }
 
 func UpdateEmployeeOffice(employee *Employee) (code int) {

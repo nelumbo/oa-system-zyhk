@@ -6,7 +6,7 @@
         <el-col :span="1">
             <el-button type="primary" @click="base.query">查询</el-button>
         </el-col>
-        <el-col :span="1">
+        <el-col :span="1" v-if="user().my.pids.includes('52')">
             <el-button type="success" @click="base.openAddDialog">添加</el-button>
         </el-col>
     </el-row>
@@ -109,6 +109,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { addOffice, editOfficeBase, editOfficeMoney, queryOffices } from "@/api/office"
 import { queryAllRole } from '@/api/role'
@@ -203,7 +204,10 @@ const base = reactive({
                 operations: [
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('53')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "基础编辑",
                         type: "primary",
@@ -213,7 +217,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('53')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "费用编辑",
                         type: "primary",

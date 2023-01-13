@@ -13,8 +13,8 @@ type CustomerCompany struct {
 	ID       int    `gorm:"primary_key" json:"id"`
 	IsDelete bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	RegionID int    `gorm:"type:int;comment:省份ID;default:(-)" json:"regionID"`
-	Name     string `gorm:"type:varchar(50);comment:名称;not null" json:"name"`
-	Address  string `gorm:"type:varchar(100);comment:地址" json:"address"`
+	Name     string `gorm:"type:varchar(100);comment:名称;not null" json:"name"`
+	Address  string `gorm:"type:varchar(300);comment:地址" json:"address"`
 
 	Region    Region     `gorm:"foreignKey:RegionID" json:"region"`
 	Customers []Customer `json:"customers"`

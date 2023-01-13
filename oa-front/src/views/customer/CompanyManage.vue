@@ -11,7 +11,7 @@
         <el-col :span="1">
             <el-button type="primary" @click="base.query">查询</el-button>
         </el-col>
-        <el-col :span="1">
+        <el-col :span="1" v-if="user().my.pids.includes('29')">
             <el-button type="success" @click="base.openAddDialog">添加</el-button>
         </el-col>
     </el-row>
@@ -27,10 +27,10 @@
                 </el-select>
             </el-form-item>
             <el-form-item label="名称" prop="name">
-                <el-input v-model.trim="add.model.name" maxlength="50" />
+                <el-input v-model.trim="add.model.name" maxlength="100" />
             </el-form-item>
             <el-form-item label="地址">
-                <el-input v-model.trim="add.model.address" maxlength="100" />
+                <el-input v-model.trim="add.model.address" maxlength="300" />
             </el-form-item>
         </el-form>
         <template #footer>
@@ -109,6 +109,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { addCustomerCompany, delCustomerCompany, editCustomerCompany, queryCustomerCompanys } from "@/api/customer_company"
 import { addCustomer } from "@/api/customer"
@@ -167,7 +168,10 @@ const base = reactive({
                 operations: [
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('30')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "添加客户",
                         type: "primary",
@@ -177,7 +181,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('28')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "编辑",
                         type: "primary",

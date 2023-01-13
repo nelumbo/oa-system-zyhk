@@ -40,6 +40,8 @@ const submit = () => {
     login(model).then((res) => {
         if (res.status == 1) {
             localStorage.setItem("token", res.data.token);
+            localStorage.setItem("id", res.data.employee.id);
+            localStorage.setItem("officeID", res.data.employee.officeID);
             window.location.href = '/'
         } else if (res.status == 2) {
 

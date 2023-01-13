@@ -29,10 +29,6 @@ const base = reactive({
     column: {
         headers: [
             {
-                prop: "id",
-                label: "排名",
-            },
-            {
                 prop: "name",
                 label: "名称",
             },
@@ -65,8 +61,9 @@ const base = reactive({
                 label: "渠道合同量",
             },
         ],
+        showIndex: true,
         rowStyle: ({ row }) => {
-            if (row.finalPercentages > 100) {
+            if (row.finalPercentages >= 100) {
                 return {
                     //绿色
                     backgroundColor: '#32CD32',

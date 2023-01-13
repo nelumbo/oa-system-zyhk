@@ -204,6 +204,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { taskStatusItems, taskStatusSelectItems } from '@/utils/magic'
 import { queryMyTasks, queryMySavePurchasings } from "@/api/my"
@@ -308,14 +309,28 @@ const base = reactive({
                     {
                         isShow: (index, row) => {
 
-                            if (row.type == 3 && row.status > 1 && row.status < 6) {
-                                return true
-                            }
-                            if (row.type == 2 && row.status > 2 && row.status < 6) {
-                                return true
-                            }
-                            if (row.type == 1 && row.status > 1 && row.status < 6) {
-                                return true
+                            if (row.contract.status == 2) {
+                                if (row.type == 3) {
+                                    if (row.stauts == 2 && row.purchaseManID == user().my.id) {
+                                        return true
+                                    }
+                                    if (row.stauts == 3 && row.inventoryManID == user().my.id) {
+                                        return true
+                                    }
+                                    if (row.stauts == 4 && row.technicianManID == user().my.id) {
+                                        return true
+                                    }
+                                    if (row.stauts == 5 && row.shipmentManID == user().my.id) {
+                                        return true
+                                    }
+                                } else if (row.type == 2 || row.type == 1) {
+                                    if (row.stauts == 3 && row.inventoryManID == user().my.id) {
+                                        return true
+                                    }
+                                    if (row.stauts == 5 && row.shipmentManID == user().my.id) {
+                                        return true
+                                    }
+                                }
                             }
                             return false
                         },
@@ -327,11 +342,16 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.type == 3 && row.status == 1) {
-                                return true
-                            }
-                            if (row.type == 2 && row.status == 2) {
-                                return true
+                            if (row.contract.status == 2) {
+                                if (row.type == 3) {
+                                    if (row.status == 1 && row.technicianManID == user().my.id) {
+                                        return true
+                                    }
+                                } else if (row.type == 2) {
+                                    if (row.status == 2 && row.purchaseManID == user().my.id) {
+                                        return true
+                                    }
+                                }
                             }
                             return false
                         },

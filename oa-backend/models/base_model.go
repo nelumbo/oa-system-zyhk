@@ -10,7 +10,7 @@ var db *gorm.DB
 var err error
 
 type BaseModel struct {
-	ID        uint `gorm:"primary_key" json:"ID"`
+	// ID        uint `gorm:"primary_key" json:"ID"`
 	CreatedAt XTime
 	UpdatedAt XTime
 	DeletedAt gorm.DeletedAt `gorm:"index"`

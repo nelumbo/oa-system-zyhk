@@ -64,6 +64,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { delCustomer, editCustomer, queryCustomers } from "@/api/customer"
 import { queryAllRegion } from '@/api/region'
@@ -124,7 +125,10 @@ const base = reactive({
                 operations: [
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('26')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "编辑",
                         type: "primary",

@@ -8,7 +8,7 @@ import (
 )
 
 type Office struct {
-	// UID           string  `gorm:"type:varchar(32);comment:唯一标识" json:"UID"`
+	// UID string `gorm:"type:varchar(32);comment:唯一标识" json:"UID"`
 
 	ID            int     `gorm:"primary_key" json:"id"`
 	IsDelete      bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`

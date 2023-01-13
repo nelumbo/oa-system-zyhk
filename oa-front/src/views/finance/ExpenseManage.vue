@@ -12,7 +12,8 @@
             </el-select>
         </el-col>
         <el-col :span="5">
-            <el-select v-model="base.model.employee.officeID" placeholder="办事处" clearable style="width: 100%;">
+            <el-select v-model="base.model.employee.officeID" placeholder="办事处" clearable style="width: 100%;"
+                :disabled="!user().my.pids.includes('43')">
                 <el-option v-for="item in base.offices" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
         </el-col>
@@ -114,13 +115,14 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { computed, reactive, onBeforeMount } from 'vue'
 import { expenseTypeItems, expenseStatusItems } from '@/utils/magic'
 import { approveExpense, queryExpenses } from "@/api/expense"
 import { queryAllOffice } from "@/api/office";
 import { message } from '@/components/divMessage/index'
 
-import divTable from '../../components/divTable/index.vue'
+import divTable from '@/components/divTable/index.vue'
 
 const base = reactive({
     offices: [],
@@ -212,11 +214,11 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status == 1) {
+                            if (row.status == 1 && user().my.pids.includes('44')) {
                                 return true
-                            } else if (row.status == 2) {
+                            } else if (row.status == 2 && user().my.pids.includes('45')) {
                                 return true
-                            } else if (row.status == 3) {
+                            } else if (row.status == 3 && user().my.pids.includes('46')) {
                                 return true
                             }
                             return false
@@ -420,6 +422,9 @@ onBeforeMount(() => {
             base.offices = res.data
         }
     })
+    if (!user().my.pids.includes('43')) {
+        base.model.employee.officeID = Number(localStorage.getItem("officeID"))
+    }
     base.query()
 })
 </script>

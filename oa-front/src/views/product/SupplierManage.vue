@@ -12,7 +12,7 @@
         <el-col :span="1">
             <el-button type="primary" @click="base.query">查询</el-button>
         </el-col>
-        <el-col :span="1">
+        <el-col :span="1" v-if="user().my.pids.includes('40')">
             <el-button type="success" @click="base.openAddDialog">添加</el-button>
         </el-col>
     </el-row>
@@ -107,7 +107,7 @@
                 <el-input v-model.trim="edit.model.address" maxlength="100" />
             </el-form-item>
             <el-form-item label="网站">
-                <el-input v-model.trim="edit.model.web" maxlength="50" />
+                <el-input v-model.trim="edit.model.web" maxlength="100" />
             </el-form-item>
             <el-form-item label="联系人">
                 <el-input v-model.trim="edit.model.linkman" maxlength="50" />
@@ -144,6 +144,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { addSupplier, editSupplier, querySuppliers } from "@/api/supplier"
 import { message } from '@/components/divMessage/index'
@@ -198,7 +199,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('41')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "编辑",
                         type: "primary",

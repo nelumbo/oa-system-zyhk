@@ -35,7 +35,9 @@ func TopList(c *gin.Context) {
 	//office2:预付款合同待回款量
 	var offices, offices1, offices2 []models.Office
 	var productTypes []models.ProductType
-	code = models.GeneralSelectAll(&offices, nil)
+	var maps = make(map[string]interface{})
+	maps["is_ranking"] = true
+	code = models.GeneralSelectAll(&offices, maps)
 	offices1, offices2, productTypes = models.SelectNotPaymentForTopList()
 
 	for i := range offices {
@@ -53,7 +55,7 @@ func TopList(c *gin.Context) {
 			}
 		}
 		if offices[i].TaskLoad == 0 {
-			offices[i].FinalPercentages = 100
+			offices[i].FinalPercentages = 0
 		} else {
 			offices[i].FinalPercentages = round((offices[i].TargetLoad / offices[i].TaskLoad * 100), 2)
 		}

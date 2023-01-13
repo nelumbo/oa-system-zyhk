@@ -35,8 +35,8 @@ type Contract struct {
 	EndDeliveryDate       XDate   `gorm:"type:date;comment:实际交货日期;default:(-)" json:"endDeliveryDate"`
 	EndPaymentDate        XDate   `gorm:"type:date;comment:完成回款日期;default:(-)" json:"endPaymentDate"`
 	InvoiceType           int     `gorm:"type:int;comment:开票类型" json:"invoiceType"`
-	InvoiceContent        string  `gorm:"type:varchar(300);comment:开票内容" json:"invoiceContent"`
-	PaymentContent        string  `gorm:"type:varchar(300);comment:付款方式" json:"paymentContent"`
+	InvoiceContent        string  `gorm:"type:varchar(500);comment:开票内容" json:"invoiceContent"`
+	PaymentContent        string  `gorm:"type:varchar(500);comment:付款方式" json:"paymentContent"`
 	IsSpecial             bool    `gorm:"type:boolean;comment:是否是特殊合同" json:"isSpecial"`
 	IsPreDeposit          bool    `gorm:"type:boolean;comment:是否是预存款合同" json:"isPreDeposit"`
 	PreDeposit            float64 `gorm:"type:decimal(20,6);comment:可用预存款金额" json:"preDeposit"`
@@ -104,7 +104,7 @@ type Task struct {
 	PurchaseManID        int     `gorm:"type:int;comment:采购负责人ID;default:(-)" json:"purchaseManID"`
 	InventoryManID       int     `gorm:"type:int;comment:仓库负责人ID;default:(-)" json:"inventoryManID"`
 	ShipmentManID        int     `gorm:"type:int;comment:物流人员ID;default:(-)" json:"shipmentManID"`
-	Remark               string  `gorm:"type:varchar(300);comment:业务备注" json:"remark"`
+	Remark               string  `gorm:"type:varchar(500);comment:业务备注" json:"remark"`
 	PushMoney            float64 `gorm:"type:decimal(20,6);comment:提成(元)" json:"pushMoney"`
 	PushMoneyPercentages float64 `gorm:"type:decimal(20,6);comment:特殊合同提成百分比" json:"pushMoneyPercentages"`
 	TechnicianDays       int     `gorm:"type:int;comment:技术预计工作天数;default:(-)" json:"technicianDays"`

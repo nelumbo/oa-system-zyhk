@@ -99,6 +99,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { computed, ref, reactive, onBeforeMount } from 'vue'
 import { predesignStatusItems, predesignTaskStatusItems } from '@/utils/magic'
 import { queryAllOffice } from "@/api/office"
@@ -172,7 +173,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status == 1) {
+                            if (user().my.pids.includes('22') && row.status == 1) {
                                 return true
                             }
                             return false

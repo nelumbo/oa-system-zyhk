@@ -2,7 +2,8 @@
     <div>
         <el-row :gutter="20">
             <el-col :span="6" :offset="2">
-                <el-select v-model="base.model.officeID" placeholder="办事处" clearable style="width: 100%;">
+                <el-select v-model="base.model.officeID" placeholder="办事处" clearable style="width: 100%;"
+                    :disabled="!user().my.pids.includes('59')">
                     <el-option v-for="item in base.offices" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
             </el-col>
@@ -16,7 +17,8 @@
                 <el-button type="primary" @click="base.query">查询</el-button>
             </el-col>
             <el-col :span="1">
-                <el-button type="success" @click="base.openAddDialog">添加</el-button>
+                <el-button type="success" @click="base.openAddDialog"
+                    v-if="user().my.pids.includes('60')">添加</el-button>
             </el-col>
         </el-row>
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
@@ -223,6 +225,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { addEmployee, delEmployee, editEmployeeBase, editEmployeeExpense, editEmployeeOffice, queryEmployee, queryEmployees, resetPwd } from "@/api/employee";
 import { queryAllRole } from "@/api/role";
@@ -304,7 +307,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('61')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "基础编辑",
                         type: "primary",
@@ -314,7 +320,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('62')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "财务编辑",
                         type: "primary",
@@ -324,7 +333,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('63')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "人事编辑",
                         type: "primary",
@@ -334,7 +346,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('64')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "重置密码",
                         type: "danger",
@@ -344,7 +359,10 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('65')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "停用",
                         type: "danger",
@@ -719,6 +737,9 @@ onBeforeMount(() => {
             base.offices = res.data
         }
     })
+    if (!user().my.pids.includes('59')) {
+        base.model.officeID = Number(localStorage.getItem("officeID"))
+    }
     base.query()
 })
 </script>

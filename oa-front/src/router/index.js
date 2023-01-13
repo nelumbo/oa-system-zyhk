@@ -34,7 +34,7 @@ const router = createRouter({
           meta: { login_require: true, title: "中研环科-管理系统-合同管理" },
         },
         {
-          path: 'pre-research',
+          path: 'predesign',
           component: () => import('../views/predesign/index.vue'),
           meta: { login_require: true, title: "中研环科-管理系统-预设计管理" },
         },

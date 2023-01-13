@@ -1,7 +1,8 @@
 <template>
     <el-row :gutter="20">
         <el-col :span="4" :offset="1">
-            <el-select v-model="base.model.user.officeID" placeholder="办事处" clearable style="width: 100%;">
+            <el-select v-model="base.model.user.officeID" placeholder="办事处" clearable style="width: 100%;"
+                :disabled="!user().my.pids.includes('88')">
                 <el-option v-for="item in base.offices" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
         </el-col>
@@ -29,6 +30,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { reactive, onBeforeMount } from 'vue'
 import { queryAllOffice } from "@/api/office"
 import { queryHistoryEmployees } from "@/api/history"
@@ -125,6 +127,9 @@ onBeforeMount(() => {
             base.offices = res.data
         }
     })
+    if (!user().my.pids.includes('88')) {
+        base.model.user.officeID = Number(localStorage.getItem("officeID"))
+    }
     base.query()
 })
 
