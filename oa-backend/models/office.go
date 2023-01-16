@@ -25,12 +25,16 @@ type Office struct {
 	RoleID        int     `gorm:"type:int;comment:角色ID;default:(-)" json:"roleID"`
 	IsRanking     bool    `gorm:"type:boolean;comment:是否进入排行榜" json:"isRanking"`
 	IsSubmit      bool    `gorm:"type:boolean;comment:今年结算是否提交" json:"isSubmit"`
+	LastYearMoney float64 `gorm:"type:decimal(20,6);comment:上年结算提成(元)" json:"lastYearMoney"`
+	NextTaskLoad  float64 `gorm:"type:decimal(20,6);comment:今年目标量(元)" json:"nextTaskLoad"`
+	IsSetSubmit   int     `gorm:"type:int;comment:提成方案是否提交(-1：提交被驳回 0:未提交 1：已提交 2：通过)" json:"isSetSubmit"`
 
 	Role Role `gorm:"foreignKey:RoleID" json:"role"`
 
 	FinalPercentages float64 `gorm:"-" json:"finalPercentages"`
 	NotPayment       float64 `gorm:"-" json:"notPayment"`
 	Remark           string  `gorm:"-" json:"remark"`
+	IsPass           bool    `gorm:"-" json:"isPass"`
 }
 
 func UpdateOfficeMoney(office *Office, employeeID int) (code int) {

@@ -159,6 +159,14 @@ func Init() {
 
 		tRouter.POST("historyOffices", api.QueryHistoryOffices)
 		tRouter.POST("historyEmployees", api.QueryHistoryEmployees)
+
+		tRouter.GET("ice", api.IceGet)
+		tRouter.PUT("ice/start", api.IceStart)
+		tRouter.PUT("ice/end", api.IceEnd)
+		tRouter.PUT("ice/submit", api.IceSubmit)
+
+		tRouter.PUT("sett/submit", api.SettSubmit)
+		tRouter.PUT("sett/approve", api.SettApprove)
 	}
 
 	_ = r.Run(config.SystemConfig.Server.Port)

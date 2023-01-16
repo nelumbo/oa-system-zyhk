@@ -164,26 +164,31 @@ const base = reactive({
             {
                 prop: "businessMoney",
                 label: "业务费",
-                width: "10%"
+                width: "8%"
             },
             {
                 prop: "money",
                 label: "可提成金额",
-                width: "10%"
+                width: "8%"
             },
             {
                 prop: "moneyCold",
                 label: "年底提成金额",
-                width: "10%"
+                width: "8%"
             },
             {
                 prop: "taskLoad",
                 label: "今年目标金额",
-                width: "10%"
+                width: "8%"
             },
             {
                 prop: "targetLoad",
                 label: "今年完成金额",
+                width: "8%"
+            },
+            {
+                prop: "lastYearMoney",
+                label: "结算提成",
                 width: "10%"
             },
             {

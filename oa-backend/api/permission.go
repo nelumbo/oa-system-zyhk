@@ -9,6 +9,6 @@ import (
 
 func QueryAllPermission(c *gin.Context) {
 	var permissions []models.Permission
-	code = models.GeneralSelectAll(&permissions, nil)
+	code = models.GeneralSelectAll2(&permissions, nil)
 	msg.Message(c, code, permissions)
 }

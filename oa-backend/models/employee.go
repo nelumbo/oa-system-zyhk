@@ -27,6 +27,8 @@ type Employee struct {
 	Credit        float64 `gorm:"type:decimal(20,6);comment:每月总部补助额度(元)" json:"credit"`
 	OfficeCredit  float64 `gorm:"type:decimal(20,6);comment:每月办事处补助额度(元)" json:"officeCredit"`
 
+	YearMoney float64 `gorm:"type:decimal(20,6);comment:补助额度(元)" json:"yearMoney"`
+
 	Office Office `gorm:"foreignKey:OfficeID" json:"office"`
 	Roles  []Role `gorm:"many2many:employee_role;foreignKey:ID;references:ID" json:"roles"`
 

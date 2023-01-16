@@ -69,6 +69,18 @@ func GeneralSelectAll(model interface{}, maps map[string]interface{}) int {
 	return msg.SUCCESS
 }
 
+func GeneralSelectAll2(model interface{}, maps map[string]interface{}) int {
+	if len(maps) > 0 {
+		err = db.Where(maps).Find(model).Error
+	} else {
+		err = db.Find(model).Error
+	}
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
+}
+
 func GeneralSelectLimit(model interface{}, xForms *XForms, maps map[string]interface{}) int {
 	tx := db.Where("1 = ?", 1)
 	if len(maps) > 0 {

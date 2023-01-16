@@ -63,6 +63,9 @@ func initDB() {
 
 		&HistoryEmployee{},
 		&HistoryOffice{},
+
+		&System{},
+		&OfficeBak{},
 	)
 
 	sqlDB, _ := db.DB()

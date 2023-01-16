@@ -5,4 +5,6 @@ func Init() {
 	initDB()
 	//初始化定时任务
 	InitCronTabs()
+	//初始化系统变量
+	InitSystem()
 }

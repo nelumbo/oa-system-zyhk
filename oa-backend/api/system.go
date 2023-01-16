@@ -67,6 +67,60 @@ func TopList(c *gin.Context) {
 	msg.Message(c, code, map[string]interface{}{"offices": offices, "productTypes": productTypes})
 }
 
+func IceGet(c *gin.Context) {
+	msg.Message(c, msg.SUCCESS, models.Ice)
+}
+
+func IceStart(c *gin.Context) {
+	code = models.SettlementStart()
+	msg.Message(c, code, nil)
+}
+
+func IceEnd(c *gin.Context) {
+	code = models.SettlementEnd()
+	msg.Message(c, code, nil)
+}
+
+func IceSubmit(c *gin.Context) {
+	var office models.Office
+	_ = c.ShouldBindJSON(&office)
+
+	var maps = make(map[string]interface{})
+	maps["is_submit"] = true
+	maps["next_task_load"] = office.NextTaskLoad
+	maps["last_year_money"] = office.LastYearMoney
+
+	code = models.GeneralUpdate(&models.Office{}, office.ID, maps)
+	msg.Message(c, code, nil)
+}
+
+func SettSubmit(c *gin.Context) {
+	var employee models.Employee
+	var employees []models.Employee
+	_ = c.ShouldBindJSON(&employees)
+	models.GeneralSelect(&employee, c.MustGet("employeeID").(int), nil)
+
+	code = models.SettSubmit(&employee, employees)
+	msg.Message(c, code, nil)
+}
+
+func SettApprove(c *gin.Context) {
+	var office models.Office
+	var employees []models.Employee
+	_ = c.ShouldBindJSON(&office)
+
+	models.GeneralSelectAll(&employees, map[string]interface{}{"office_id": office.ID})
+
+	if office.IsPass {
+		code = models.SettApprove(c.MustGet("employeeID").(int), office.ID, employees)
+	} else {
+		var maps = make(map[string]interface{})
+		maps["is_set_submit"] = -1
+		code = models.GeneralUpdate(&models.Office{}, office.ID, maps)
+	}
+	msg.Message(c, code, nil)
+}
+
 func round(f float64, n int) float64 {
 	pow10_n := math.Pow10(n)
 	return math.Trunc((f+0.5/pow10_n)*pow10_n) / pow10_n

@@ -339,3 +339,22 @@ export const PurchasingTypeSelectItems = [
         label: '库存配件备货',
     },
 ] 
+
+export const OfficeIsSetSubmitItems = [
+    {
+        value: -1,
+        label: '驳回',
+    },
+    {
+        value: 0,
+        label: '待提交',
+    },
+    {
+        value: 1,
+        label: '待审批',
+    },
+    {
+        value: 2,
+        label: '已通过',
+    },
+] 

@@ -409,10 +409,7 @@
                 <h2>任务详情</h2>
             </el-divider>
             <divTable :columnObj="approve.column" :tableData="approve.model.tasks" :pageData="approve.pageData"
-                :showAll="true" v-if="approve.model.tasks" />
-
-
-
+                :allShow="true" v-if="approve.model.tasks" />
             <el-row style="margin-top: 30px;" v-if="approve.model.status == 1">
                 <el-col :span="2" :offset="7">
                     <el-button type="success" @click="approve.pass" :disabled="base.submitDisabled"

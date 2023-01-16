@@ -88,6 +88,12 @@
       </el-icon>
       <span>日志系统</span>
     </el-menu-item>
+    <el-menu-item index="/end">
+      <el-icon>
+        <Checked />
+      </el-icon>
+      <span>结算系统</span>
+    </el-menu-item>
   </el-menu>
 </template>
 

@@ -68,6 +68,11 @@ const router = createRouter({
           component: () => import('@/views/log/index.vue'),
           meta: { login_require: true, title: "中研环科-日志系统" },
         },
+        {
+          path: 'end',
+          component: () => import('@/views/end/index.vue'),
+          meta: { login_require: true, title: "中研环科-结算系统" },
+        },
       ]
     },
     {
