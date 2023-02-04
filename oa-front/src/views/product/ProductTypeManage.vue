@@ -45,6 +45,12 @@
                     <el-radio :label="false">否</el-radio>
                 </el-radio-group>
             </el-form-item>
+            <el-form-item label="类型" prop="officeID">
+                <el-select v-model="add.model.type" clearable>
+                    <el-option v-for="productType in ProductTypeType" :key="productType.value"
+                        :label="productType.label" :value="productType.value" />
+                </el-select>
+            </el-form-item>
         </el-form>
         <template #footer>
             <span class="dialog-footer">
@@ -88,6 +94,12 @@
                     <el-radio :label="false">否</el-radio>
                 </el-radio-group>
             </el-form-item>
+            <el-form-item label="类型" prop="officeID">
+                <el-select v-model="edit.model.type" clearable>
+                    <el-option v-for="productType in ProductTypeType" :key="productType.value"
+                        :label="productType.label" :value="productType.value" />
+                </el-select>
+            </el-form-item>
         </el-form>
         <template #footer>
             <span class="dialog-footer">
@@ -102,6 +114,7 @@
 <script setup>
 import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
+import { ProductTypeType } from '@/utils/magic'
 import { addProductType, editProductType, queryProductTypes } from "@/api/product_type"
 import { message } from '@/components/divMessage/index'
 import { reg_number_2d } from '@/utils/regex'
@@ -174,6 +187,12 @@ const base = reactive({
                 label: "是否计算任务量",
             },
             {
+                type: "transform",
+                prop: "type",
+                items: ProductTypeType,
+                label: "类型",
+            },
+            {
                 type: "operation",
                 label: "操作",
                 operations: [
@@ -234,6 +253,11 @@ const base = reactive({
         edit.model.businessMoneyPercentages = row.businessMoneyPercentages
         edit.model.businessMoneyPercentagesUp = row.businessMoneyPercentagesUp
         edit.model.isTaskLoad = row.isTaskLoad
+        if (row.type == 0) {
+            edit.model.type = null
+        } else {
+            edit.model.type = row.type
+        }
         edit.dialogVisible = true
     },
 })
@@ -250,6 +274,7 @@ const add = reactive({
         businessMoneyPercentages: 0,
         businessMoneyPercentagesUp: 0,
         isTaskLoad: true,
+        type: null,
     },
     submit: () => {
         addForm.value.validate((valid) => {
@@ -295,6 +320,7 @@ const edit = reactive({
         businessMoneyPercentages: 0,
         businessMoneyPercentagesUp: 0,
         isTaskLoad: true,
+        type: null,
     },
     submit: () => {
         editForm.value.validate((valid) => {

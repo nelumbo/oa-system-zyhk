@@ -116,17 +116,17 @@ const base = reactive({
             },
             {
                 prop: "auditor.name",
-                label: "审核",
+                label: "付款财务",
                 width: "5%",
             },
             {
                 prop: "auditDate",
-                label: "审核日期",
+                label: "付款日期",
                 width: "10%",
             },
             {
                 prop: "finalce.name",
-                label: "财务",
+                label: "回款财务",
                 width: "5%",
             },
             {

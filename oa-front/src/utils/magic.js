@@ -214,7 +214,7 @@ export const bidBondStatusItems = [
     },
     {
         value: 1,
-        label: '待审核',
+        label: '待付款',
     },
     {
         value: 2,
@@ -338,7 +338,7 @@ export const PurchasingTypeSelectItems = [
         value: 3,
         label: '库存配件备货',
     },
-] 
+]
 
 export const OfficeIsSetSubmitItems = [
     {
@@ -357,4 +357,50 @@ export const OfficeIsSetSubmitItems = [
         value: 2,
         label: '已通过',
     },
-] 
+]
+
+export const ProductTypeType = [
+    {
+        value: 1,
+        label: '原位',
+    },
+    {
+        value: 2,
+        label: '自研',
+    },
+    {
+        value: 3,
+        label: '渠道',
+    },
+]
+
+export const ProductTrialStatusItems = [
+    {
+        value: -1,
+        label: '驳回',
+    },
+    {
+        value: 0,
+        label: '待提交',
+    },
+    {
+        value: 1,
+        label: '待审批',
+    },
+    {
+        value: 2,
+        label: '待发货',
+    },
+    {
+        value: 3,
+        label: '待归还',
+    },
+    {
+        value: 4,
+        label: '待确认',
+    },
+    {
+        value: 5,
+        label: '完成',
+    },
+]

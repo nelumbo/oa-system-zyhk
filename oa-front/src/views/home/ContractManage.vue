@@ -1,362 +1,357 @@
 <template>
-    <div>
-        <el-row :gutter="20">
-            <el-col :span="5" :offset="1">
-                <el-input v-model="base.model.no" placeholder="合同编号" clearable maxlength="50" />
-            </el-col>
-            <el-col :span="5">
-                <el-select v-model="base.model.regionID" placeholder="省份" clearable style="width: 100%;">
-                    <el-option v-for="item in base.regions" :key="item.id" :label="item.name" :value="item.id" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-input v-model="base.model.customer.customerCompany.name" placeholder="客户单位" clearable
-                    maxlength="25" />
-            </el-col>
-            <el-col :span="5">
-                <el-input v-model="base.model.customer.name" placeholder="客户名称" clearable maxlength="25" />
-            </el-col>
-        </el-row>
-        <el-row :gutter="20">
-            <el-col :span="5" :offset="1">
-                <el-select v-model="base.model.status" placeholder="合同状态" clearable style="width: 100%;">
-                    <el-option v-for="item in contractStatusItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-select v-model="base.model.productionStatus" placeholder="生产状态" clearable style="width: 100%;">
-                    <el-option v-for="item in productionStatusItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-select v-model="base.model.collectionStatus" placeholder="回款状态" clearable style="width: 100%;">
-                    <el-option v-for="item in collectionStatusItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-select v-model="base.model.payType" placeholder="付款类型" clearable style="width: 100%;">
-                    <el-option v-for="item in payTypeItems" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="1">
-                <el-button type="primary" @click="base.query">查询</el-button>
-            </el-col>
-            <el-col :span="1">
-                <el-button type="success" @click="base.jumpEntryPage()">录入</el-button>
-            </el-col>
-        </el-row>
-        <el-row :gutter="20">
-            <el-col :span="5" :offset="1">
-                <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
-            </el-col>
-            <el-col :span="5">
-                <el-date-picker v-model="base.model.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
-            </el-col>
-            <el-col :span="5">
-                <el-select v-model="base.model.isSpecialNum" placeholder="特殊合同" clearable style="width: 100%;">
-                    <el-option v-for="item in boolItems" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-            </el-col>
-            <el-col :span="5">
-                <el-select v-model="base.model.isPreDepositNum" placeholder="预存款合同" clearable style="width: 100%;">
-                    <el-option v-for="item in boolItems" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-            </el-col>
-        </el-row>
-        <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
-            :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
+    <el-row :gutter="20">
+        <el-col :span="5" :offset="1">
+            <el-input v-model="base.model.no" placeholder="合同编号" clearable maxlength="50" />
+        </el-col>
+        <el-col :span="5">
+            <el-select v-model="base.model.regionID" placeholder="省份" clearable style="width: 100%;">
+                <el-option v-for="item in base.regions" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+        </el-col>
+        <el-col :span="5">
+            <el-input v-model="base.model.customer.customerCompany.name" placeholder="客户单位" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="5">
+            <el-input v-model="base.model.customer.name" placeholder="客户名称" clearable maxlength="25" />
+        </el-col>
+    </el-row>
+    <el-row :gutter="20">
+        <el-col :span="5" :offset="1">
+            <el-select v-model="base.model.status" placeholder="合同状态" clearable style="width: 100%;">
+                <el-option v-for="item in contractStatusItems" :key="item.value" :label="item.label"
+                    :value="item.value" />
+            </el-select>
+        </el-col>
+        <el-col :span="5">
+            <el-select v-model="base.model.productionStatus" placeholder="生产状态" clearable style="width: 100%;">
+                <el-option v-for="item in productionStatusItems" :key="item.value" :label="item.label"
+                    :value="item.value" />
+            </el-select>
+        </el-col>
+        <el-col :span="5">
+            <el-select v-model="base.model.collectionStatus" placeholder="回款状态" clearable style="width: 100%;">
+                <el-option v-for="item in collectionStatusItems" :key="item.value" :label="item.label"
+                    :value="item.value" />
+            </el-select>
+        </el-col>
+        <el-col :span="5">
+            <el-select v-model="base.model.payType" placeholder="付款类型" clearable style="width: 100%;">
+                <el-option v-for="item in payTypeItems" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+        </el-col>
+        <el-col :span="1">
+            <el-button type="primary" @click="base.query">查询</el-button>
+        </el-col>
+        <el-col :span="1">
+            <el-button type="success" @click="base.jumpEntryPage()">录入</el-button>
+        </el-col>
+    </el-row>
+    <el-row :gutter="20">
+        <el-col :span="5" :offset="1">
+            <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
+        </el-col>
+        <el-col :span="5">
+            <el-date-picker v-model="base.model.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
+        </el-col>
+        <el-col :span="5">
+            <el-select v-model="base.model.isSpecialNum" placeholder="特殊合同" clearable style="width: 100%;">
+                <el-option v-for="item in boolItems" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+        </el-col>
+        <el-col :span="5">
+            <el-select v-model="base.model.isPreDepositNum" placeholder="预存款合同" clearable style="width: 100%;">
+                <el-option v-for="item in boolItems" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+        </el-col>
+    </el-row>
+    <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
+        :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="view.dialogVisible" title="合同查看" width="75%" :show-close="false">
-            <el-divider content-position="left">
-                <h2>基本信息</h2>
-            </el-divider>
-            <el-form :model="view.model" label-width="120px">
+    <el-dialog v-model="view.dialogVisible" title="合同查看" width="75%" :show-close="false">
+        <el-divider content-position="left">
+            <h2>基本信息</h2>
+        </el-divider>
+        <el-form :model="view.model" label-width="120px">
+            <el-row>
+                <el-col :span="6">
+                    <el-form-item label="合同编号">
+                        <el-input v-model="view.model.no" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="录入时间">
+                        <el-input v-model="view.model.createDate" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="办事处">
+                        <el-input v-model="view.model.office.name" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="业务员">
+                        <el-input v-model="view.model.employee.name" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="区域">
+                        <el-input v-model="view.model.region.name" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="客户公司">
+                        <el-input v-model="view.model.customer.customerCompany.name" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="客户">
+                        <el-input v-model="view.model.customer.name" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6"></el-col>
+                <el-col :span="6">
+                    <el-form-item label="签订日期">
+                        <el-input v-model="view.model.contractDate" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="交货日期">
+                        <el-input v-model="view.model.estimatedDeliveryDate" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="实际交货日期">
+                        <el-input v-model="view.model.endDeliveryDate" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="最后回款日期">
+                        <el-input v-model="view.model.endPaymentDate" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="特殊合同">
+                        <el-input v-model="view.isSpecialString" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="预存款合同">
+                        <el-input v-model="view.isPreDepositString" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12"></el-col>
+                <el-col :span="6">
+                    <el-form-item label="签订单位">
+                        <el-input v-model="view.model.vendor.name" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="付款类型">
+                        <el-input v-model="view.payTypeString" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="总金额">
+                        <el-input v-model="view.model.totalAmount" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="回款额">
+                        <el-input v-model="view.model.paymentTotalAmount" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="发票类型">
+                        <el-input v-model="view.invoiceTypeString" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="18"></el-col>
+                <el-col :span="24">
+                    <el-form-item label="发票内容">
+                        <el-input v-model="view.model.invoiceContent" type="textarea"
+                            :autosize="{ minRows: 1, maxRows: 9 }" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="24">
+                    <el-form-item label="付款方式">
+                        <el-input v-model="view.model.paymentContent" type="textarea"
+                            :autosize="{ minRows: 1, maxRows: 9 }" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="24">
+                    <el-form-item label="备注">
+                        <el-input v-model="view.model.remark" type="textarea" :autosize="{ minRows: 1, maxRows: 9 }"
+                            readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="合同状态">
+                        <el-input v-model="view.statusString" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="生产状态">
+                        <el-input v-model="view.productionStatusString" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="6">
+                    <el-form-item label="回款状态">
+                        <el-input v-model="view.collectionStatusString" readonly />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+        </el-form>
+        <el-divider content-position="left" style="margin-top: 15px;">
+            <h2>产品详情</h2>
+        </el-divider>
+        <divTable :columnObj="view.columnT" :tableData="view.model.tasks" :allShow="true" />
+        <el-divider content-position="left" style="margin-top: 15px;">
+            <h2>开票记录</h2>
+        </el-divider>
+        <divTable :columnObj="view.columnI" :tableData="view.model.invoices" :allShow="true" />
+        <el-divider content-position="left" style="margin-top: 15px;">
+            <h2>回款记录</h2>
+        </el-divider>
+        <divTable :columnObj="view.columnPP" :tableData="view.model.payments" :allShow="true"
+            v-if="view.model.isPreDeposit" />
+        <divTable :columnObj="view.columnP" :tableData="view.model.payments" :allShow="true" v-else />
+        <el-divider content-position="left" style="margin-top: 15px;" v-if="view.model.isPreDeposit">
+            <h2>提成记录</h2>
+        </el-divider>
+        <divTable :columnObj="view.columnAuto" :tableData="view.model.paymentAutos" :allShow="true"
+            v-if="view.model.isPreDeposit" />
+    </el-dialog>
+
+    <el-dialog v-model="viewDLC.dialogVisible" title="物流备注" width="50%" :show-close="false">
+        <el-form :model="viewDLC.model" label-width="120px">
+            <el-form-item label="物流备注">
+                <el-input v-model="viewDLC.model.shipmentRemark" readonly />
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+
+    <el-dialog v-model="edit.dialogVisible" title="编辑" width="75%" :show-close="false">
+        <divTable :columnObj="edit.column" :tableData="edit.pageData" :allShow="true" />
+    </el-dialog>
+
+    <el-dialog v-model="editDLC.dialogVisible" title="删除任务" width="50%" :show-close="false">
+        <h1>是否确定删除该条任务？</h1>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="danger" @click="editDLC.submit" :disabled="editDLC.submitDisabled">确定</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
+
+    <el-dialog v-model="add.dialogVisible" title="采购" width="75%" :show-close="false">
+        <el-form :model="viewDLC.model" label-width="120px">
+            <el-row>
+                <el-col :span="12">
+                    <el-form-item label="合同编号">
+                        <el-input v-model="add.contract.no" readonly />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="12">
+                    <el-form-item label="可用预存款">
+                        <el-input v-model="add.contract.preDeposit" readonly />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+        </el-form>
+        <divTable :columnObj="add.column" :tableData="add.tableData" :pageData="add.pageData"
+            :handleSizeChange="add.handleSizeChange" :handleCurrentChange="add.handleCurrentChange" />
+    </el-dialog>
+
+    <el-dialog v-model="addView.dialogVisible" title="产品查看" width="50%" :show-close="false">
+        <el-form :model="addView.model" label-width="150px">
+            <el-form-item label="类型">
+                <el-input v-model.trim="addView.model.type.name" disabled />
+            </el-form-item>
+            <el-form-item label="名称">
+                <el-input v-model.trim="addView.model.name" disabled />
+            </el-form-item>
+            <el-form-item label="品牌">
+                <el-input v-model.trim="addView.model.brand" disabled />
+            </el-form-item>
+            <el-form-item label="规格">
+                <el-input v-model.trim="addView.model.specification" disabled />
+            </el-form-item>
+            <el-form-item label="供应商">
                 <el-row>
-                    <el-col :span="6">
-                        <el-form-item label="合同编号">
-                            <el-input v-model="view.model.no" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="录入时间">
-                            <el-input v-model="view.model.createDate" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="办事处">
-                            <el-input v-model="view.model.office.name" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="业务员">
-                            <el-input v-model="view.model.employee.name" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="区域">
-                            <el-input v-model="view.model.region.name" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="客户公司">
-                            <el-input v-model="view.model.customer.customerCompany.name" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="客户">
-                            <el-input v-model="view.model.customer.name" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6"></el-col>
-                    <el-col :span="6">
-                        <el-form-item label="签订日期">
-                            <el-input v-model="view.model.contractDate" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="交货日期">
-                            <el-input v-model="view.model.estimatedDeliveryDate" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="实际交货日期">
-                            <el-input v-model="view.model.endDeliveryDate" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="最后回款日期">
-                            <el-input v-model="view.model.endPaymentDate" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="特殊合同">
-                            <el-input v-model="view.isSpecialString" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="预存款合同">
-                            <el-input v-model="view.isPreDepositString" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12"></el-col>
-                    <el-col :span="6">
-                        <el-form-item label="签订单位">
-                            <el-input v-model="view.model.vendor.name" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="付款类型">
-                            <el-input v-model="view.payTypeString" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="总金额">
-                            <el-input v-model="view.model.totalAmount" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="回款额">
-                            <el-input v-model="view.model.paymentTotalAmount" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="发票类型">
-                            <el-input v-model="view.invoiceTypeString" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="18"></el-col>
-                    <el-col :span="24">
-                        <el-form-item label="发票内容">
-                            <el-input v-model="view.model.invoiceContent" type="textarea"
-                                :autosize="{ minRows: 1, maxRows: 9 }" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="24">
-                        <el-form-item label="付款方式">
-                            <el-input v-model="view.model.paymentContent" type="textarea"
-                                :autosize="{ minRows: 1, maxRows: 9 }" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="24">
-                        <el-form-item label="备注">
-                            <el-input v-model="view.model.remark" type="textarea" :autosize="{ minRows: 1, maxRows: 9 }"
-                                readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="合同状态">
-                            <el-input v-model="view.statusString" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="生产状态">
-                            <el-input v-model="view.productionStatusString" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="6">
-                        <el-form-item label="回款状态">
-                            <el-input v-model="view.collectionStatusString" readonly />
-                        </el-form-item>
+                    <el-col :span="24" v-for="supplier in addView.model.suppliers" :key="supplier.id">
+                        {{ supplier.name }}
                     </el-col>
                 </el-row>
-            </el-form>
-            <el-divider content-position="left" style="margin-top: 15px;">
-                <h2>产品详情</h2>
-            </el-divider>
-            <divTable :columnObj="view.columnT" :tableData="view.model.tasks" :allShow="true" />
-            <el-divider content-position="left" style="margin-top: 15px;">
-                <h2>开票记录</h2>
-            </el-divider>
-            <divTable :columnObj="view.columnI" :tableData="view.model.invoices" :allShow="true" />
-            <el-divider content-position="left" style="margin-top: 15px;">
-                <h2>回款记录</h2>
-            </el-divider>
-            <divTable :columnObj="view.columnPP" :tableData="view.model.payments" :allShow="true"
-                v-if="view.model.isPreDeposit" />
-            <divTable :columnObj="view.columnP" :tableData="view.model.payments" :allShow="true" v-else />
-            <el-divider content-position="left" style="margin-top: 15px;" v-if="view.model.isPreDeposit">
-                <h2>提成记录</h2>
-            </el-divider>
-            <divTable :columnObj="view.columnAuto" :tableData="view.model.paymentAutos" :allShow="true"
-                v-if="view.model.isPreDeposit" />
-        </el-dialog>
+            </el-form-item>
+            <el-form-item label="采购价格(元)">
+                <el-input v-model.trim="addView.model.attribute.purchasePrice" disabled />
+            </el-form-item>
+            <el-form-item label="采购价格(美元)">
+                <el-input v-model.trim="addView.model.attribute.purchasePriceUSD" disabled />
+            </el-form-item>
+            <el-form-item label="标准售价(元)">
+                <el-input v-model.trim="addView.model.attribute.standardPrice" disabled />
+            </el-form-item>
+            <el-form-item label="标准售价(美元)">
+                <el-input v-model.trim="addView.model.attribute.standardPriceUSD" disabled />
+            </el-form-item>
+            <el-form-item label="库存数量" prop="number">
+                <el-input v-model.trim="addView.model.number" disabled />
+            </el-form-item>
+            <el-form-item label="库存单位" prop="unit">
+                <el-input v-model.trim="addView.model.unit" disabled />
+            </el-form-item>
+            <el-form-item label="供货周期">
+                <el-input v-model.trim="addView.model.deliveryCycle" disabled />
+            </el-form-item>
+            <el-form-item label="备注">
+                <el-input v-model="addView.model.remark" type="textarea" :autosize=true disabled />
+            </el-form-item>
+            <el-form-item label="小零配件">
+                <div v-if="addView.model.isFree">
+                    是
+                </div>
+                <div v-if="!addView.model.isFree">
+                    否
+                </div>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
 
-        <el-dialog v-model="viewDLC.dialogVisible" title="物流备注" width="50%" :show-close="false">
-            <el-form :model="viewDLC.model" label-width="120px">
-                <el-form-item label="物流备注">
-                    <el-input v-model="viewDLC.model.shipmentRemark" readonly />
-                </el-form-item>
-            </el-form>
-        </el-dialog>
+    <el-dialog v-model="addDLC.dialogVisible" :title="addDLC.product.name" width="50%" :show-close="false">
+        <el-form :model="addDLC.model" label-width="60px" :rules="rules" ref="addForm">
+            <el-form-item label="数量" prop="number">
+                <el-input-number v-model="addDLC.model.number" :controls="false" :min="1" />
+            </el-form-item>
+            <el-form-item label="价格" prop="price">
+                <el-input-number v-model="addDLC.model.price" :controls="false" :min="0" />
+            </el-form-item>
+            <el-form-item label="备注">
+                <el-input v-model="addDLC.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                    maxlength="300" />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="primary" @click="addDLC.submit" :disabled="addDLC.submitDisabled">提交</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 
-        <el-dialog v-model="edit.dialogVisible" title="编辑" width="75%" :show-close="false">
-            <divTable :columnObj="edit.column" :tableData="edit.pageData" :allShow="true" />
-        </el-dialog>
-
-        <el-dialog v-model="editDLC.dialogVisible" title="删除任务" width="50%" :show-close="false">
-            <h1>是否确定删除该条任务？</h1>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="danger" @click="editDLC.submit"
-                            :disabled="editDLC.submitDisabled">确定</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
-
-        <el-dialog v-model="add.dialogVisible" title="采购" width="75%" :show-close="false">
-            <el-form :model="viewDLC.model" label-width="120px">
-                <el-row>
-                    <el-col :span="12">
-                        <el-form-item label="合同编号">
-                            <el-input v-model="add.contract.no" readonly />
-                        </el-form-item>
-                    </el-col>
-                    <el-col :span="12">
-                        <el-form-item label="可用预存款">
-                            <el-input v-model="add.contract.preDeposit" readonly />
-                        </el-form-item>
-                    </el-col>
-                </el-row>
-            </el-form>
-            <divTable :columnObj="add.column" :tableData="add.tableData" :pageData="add.pageData"
-                :handleSizeChange="add.handleSizeChange" :handleCurrentChange="add.handleCurrentChange" />
-        </el-dialog>
-
-        <el-dialog v-model="addView.dialogVisible" title="产品查看" width="50%" :show-close="false">
-            <el-form :model="addView.model" label-width="150px">
-                <el-form-item label="类型">
-                    <el-input v-model.trim="addView.model.type.name" disabled />
-                </el-form-item>
-                <el-form-item label="名称">
-                    <el-input v-model.trim="addView.model.name" disabled />
-                </el-form-item>
-                <el-form-item label="品牌">
-                    <el-input v-model.trim="addView.model.brand" disabled />
-                </el-form-item>
-                <el-form-item label="规格">
-                    <el-input v-model.trim="addView.model.specification" disabled />
-                </el-form-item>
-                <el-form-item label="供应商">
-                    <el-row>
-                        <el-col :span="24" v-for="supplier in addView.model.suppliers" :key="supplier.id">
-                            {{ supplier.name }}
-                        </el-col>
-                    </el-row>
-                </el-form-item>
-                <el-form-item label="采购价格(元)">
-                    <el-input v-model.trim="addView.model.attribute.purchasePrice" disabled />
-                </el-form-item>
-                <el-form-item label="采购价格(美元)">
-                    <el-input v-model.trim="addView.model.attribute.purchasePriceUSD" disabled />
-                </el-form-item>
-                <el-form-item label="标准售价(元)">
-                    <el-input v-model.trim="addView.model.attribute.standardPrice" disabled />
-                </el-form-item>
-                <el-form-item label="标准售价(美元)">
-                    <el-input v-model.trim="addView.model.attribute.standardPriceUSD" disabled />
-                </el-form-item>
-                <el-form-item label="库存数量" prop="numberCount">
-                    <el-input v-model.trim="addView.model.numberCount" disabled />
-                </el-form-item>
-                <el-form-item label="库存单位" prop="unit">
-                    <el-input v-model.trim="addView.model.unit" disabled />
-                </el-form-item>
-                <el-form-item label="供货周期">
-                    <el-input v-model.trim="addView.model.deliveryCycle" disabled />
-                </el-form-item>
-                <el-form-item label="备注">
-                    <el-input v-model="addView.model.remark" type="textarea" :autosize=true disabled />
-                </el-form-item>
-                <el-form-item label="小零配件">
-                    <div v-if="addView.model.isFree">
-                        是
-                    </div>
-                    <div v-if="!addView.model.isFree">
-                        否
-                    </div>
-                </el-form-item>
-            </el-form>
-        </el-dialog>
-
-        <el-dialog v-model="addDLC.dialogVisible" :title="addDLC.product.name" width="50%" :show-close="false">
-            <el-form :model="addDLC.model" label-width="60px" :rules="rules" ref="addForm">
-                <el-form-item label="数量" prop="number">
-                    <el-input-number v-model="addDLC.model.number" :controls="false" :min="1" />
-                </el-form-item>
-                <el-form-item label="价格" prop="price">
-                    <el-input-number v-model="addDLC.model.price" :controls="false" :min="0" />
-                </el-form-item>
-                <el-form-item label="备注">
-                    <el-input v-model="addDLC.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                        maxlength="300" />
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="primary" @click="addDLC.submit"
-                            :disabled="addDLC.submitDisabled">提交</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
-
-        <el-dialog v-model="del.dialogVisible" title="合同删除" width="50%" :show-close="false">
-            <h1>是否确定删除该合同？</h1>
-            <template #footer>
-                <span class="dialog-footer">
-                    <div style="text-align: center;">
-                        <el-button type="danger" @click="del.submit" :disabled="del.submitDisabled">确定</el-button>
-                    </div>
-                </span>
-            </template>
-        </el-dialog>
-    </div>
+    <el-dialog v-model="del.dialogVisible" title="合同删除" width="50%" :show-close="false">
+        <h1>是否确定删除该合同？</h1>
+        <template #footer>
+            <span class="dialog-footer">
+                <div style="text-align: center;">
+                    <el-button type="danger" @click="del.submit" :disabled="del.submitDisabled">确定</el-button>
+                </div>
+            </span>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -417,7 +412,7 @@ const base = reactive({
             {
                 prop: "customer.customerCompany.name",
                 label: "客户单位",
-                width: "5%",
+                width: "13%",
             },
             {
                 prop: "customer.name",
@@ -427,12 +422,12 @@ const base = reactive({
             {
                 prop: "estimatedDeliveryDate",
                 label: "交货日期",
-                width: "10%",
+                width: "8%",
             },
             {
                 prop: "endDeliveryDate",
                 label: "实际交货日期",
-                width: "10%",
+                width: "8%",
             },
             {
                 type: "boolean",
@@ -444,7 +439,7 @@ const base = reactive({
                 type: "contractPreDeposit",
                 prop: "preDeposit",
                 label: "剩余预存款",
-                width: "10%",
+                width: "8%",
             },
             {
                 prop: "totalAmount",
@@ -455,7 +450,7 @@ const base = reactive({
                 type: "contractNotPayment",
                 prop: "notPaymentTotalAmount",
                 label: "未回款",
-                width: "10%",
+                width: "8%",
             },
             {
                 type: "contractType",
@@ -1095,12 +1090,12 @@ const add = reactive({
             {
                 prop: "type.name",
                 label: "类型",
-                width: "5%",
+                width: "10%",
             },
             {
                 prop: "name",
                 label: "名称",
-                width: "10%",
+                width: "20%",
             },
             {
                 prop: "brand",
@@ -1110,16 +1105,11 @@ const add = reactive({
             {
                 prop: "specification",
                 label: "规格",
-                width: "15%",
-            },
-            {
-                prop: "numberCount",
-                label: "库存数量",
                 width: "10%",
             },
             {
                 prop: "number",
-                label: "可售数量",
+                label: "库存数量",
                 width: "10%",
             },
             {
@@ -1233,7 +1223,6 @@ const addView = reactive({
             standardPriceUSD: 0,
         },
         number: 0,
-        numberCount: 0,
         unit: "",
         deliveryCycle: "",
         remark: "",

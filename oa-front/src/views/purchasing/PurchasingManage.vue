@@ -386,11 +386,6 @@ const add = reactive({
                 width: "10%",
             },
             {
-                prop: "numberCount",
-                label: "库存数量",
-                width: "10%",
-            },
-            {
                 prop: "number",
                 label: "可售数量",
                 width: "10%",

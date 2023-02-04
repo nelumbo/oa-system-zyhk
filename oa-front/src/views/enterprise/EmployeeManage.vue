@@ -56,6 +56,9 @@
                 <el-form-item label="每月办事处补助额度" prop="officeCredit">
                     <el-input-number v-model="add.model.officeCredit" :controls="false" :min="-9999999" />
                 </el-form-item>
+                <el-form-item label="每月职位补贴额度" prop="roleCredit">
+                    <el-input-number v-model="add.model.roleCredit" :controls="false" :min="-9999999" />
+                </el-form-item>
                 <el-form-item label="职位">
                     <el-checkbox-group v-model="add.model.roles" style="width:100%">
                         <el-row>
@@ -106,6 +109,9 @@
                 <el-form-item label="每月办事处补助额度">
                     <el-input v-model.trim="view.model.officeCredit" disabled />
                 </el-form-item>
+                <el-form-item label="每月职位补助额度">
+                    <el-input v-model.trim="view.model.roleCredit" disabled />
+                </el-form-item>
                 <el-form-item label="职位">
                     <el-row style="width:80%">
                         <el-col :span="6" v-for="role in view.model.roles" :key="role.id">
@@ -151,6 +157,9 @@
                 </el-form-item>
                 <el-form-item label="每月办事处补助额度" prop="officeCredit">
                     <el-input-number v-model="edit.model.officeCredit" :controls="false" :min="-9999999" />
+                </el-form-item>
+                <el-form-item label="每月职位补助额度" prop="roleCredit">
+                    <el-input-number v-model="edit.model.roleCredit" :controls="false" :min="-9999999" />
                 </el-form-item>
                 <el-form-item label="备注" prop="remark">
                     <el-input v-model="edit.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
@@ -254,6 +263,9 @@ const rules = reactive({
         { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
     ],
     officeCredit: [
+        { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
+    ],
+    roleCredit: [
         { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
     ],
     remark: [
@@ -475,6 +487,7 @@ const add = reactive({
         money: 0,
         credit: 0,
         officeCredit: 0,
+        roleCredit: 0,
         roles: [],
     },
     submit: () => {
@@ -499,6 +512,7 @@ const add = reactive({
                         money: 0,
                         credit: 0,
                         officeCredit: 0,
+                        roleCredit: 0,
                         roles: [],
                     }
                     add.submitDisabled = false
@@ -545,6 +559,7 @@ const edit = reactive({
         money: 0,
         credit: 0,
         officeCredit: 0,
+        roleCredit: 0,
         office: {
             name: ""
         },
@@ -582,6 +597,7 @@ const edit = reactive({
                         money: 0,
                         credit: 0,
                         officeCredit: 0,
+                        roleCredit: 0,
                         office: {
                             name: ""
                         },
@@ -605,6 +621,7 @@ const edit = reactive({
                         "money": edit.model.money,
                         "credit": edit.model.credit,
                         "officeCredit": edit.model.officeCredit,
+                        "roleCredit": edit.model.roleCredit,
                         "remark": edit.model.remark,
                     }
                 ).then((res) => {
@@ -625,6 +642,7 @@ const edit = reactive({
                         money: 0,
                         credit: 0,
                         officeCredit: 0,
+                        roleCredit: 0,
                         office: {
                             name: ""
                         },
@@ -668,6 +686,7 @@ const edit = reactive({
                         money: 0,
                         credit: 0,
                         officeCredit: 0,
+                        roleCredit: 0,
                         office: {
                             name: ""
                         },

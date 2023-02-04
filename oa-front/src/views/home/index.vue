@@ -48,6 +48,12 @@
         </el-divider>
         <bidBondManage />
     </div>
+    <div style="margin-top: 30px;">
+        <el-divider content-position="left">
+            <h2>产品试用</h2>
+        </el-divider>
+        <productTrialManage />
+    </div>
 </template>
 
 <script setup>
@@ -59,4 +65,5 @@ import paymentManage from './PaymentManage.vue'
 import predesignManage from './PredesignManage.vue'
 import predesignTaskManage from './PredesignTaskManage.vue'
 import bidBondManage from './BidBondManage.vue'
+import productTrialManage from './ProductTrialManage.vue'
 </script>

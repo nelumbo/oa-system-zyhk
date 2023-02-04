@@ -132,6 +132,10 @@ const base = reactive({
     column: {
         headers: [
             {
+                prop: "no",
+                label: "编号",
+            },
+            {
                 prop: "createDate",
                 label: "发起日期",
             },

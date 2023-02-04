@@ -3,6 +3,8 @@ package models
 import (
 	"oa-backend/utils/magic"
 	"oa-backend/utils/msg"
+	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -11,6 +13,7 @@ import (
 type Predesign struct {
 	ID         int    `gorm:"primary_key" json:"id"`
 	IsDelete   bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
+	No         string `gorm:"type:varchar(100);comment:编号" json:"no"`
 	EmployeeID int    `gorm:"type:int;comment:业务员ID;default:(-)" json:"employeeID"`
 	AuditorID  int    `gorm:"type:int;comment:审核员ID;default:(-)" json:"auditorID"`
 	Remark     string `gorm:"type:varchar(300);comment:设计需求" json:"remark"`
@@ -52,7 +55,27 @@ type PredesignTask struct {
 	NewDays         int    `gorm:"-" json:"newDays"`
 }
 
+func createPreNo(predesign *Predesign, tx *gorm.DB) (no string, err error) {
+	var employee Employee
+
+	err = tx.Preload("Office").First(&employee, predesign.EmployeeID).Error
+	if err != nil {
+		return "", err
+	}
+
+	employeeCount := strconv.Itoa(employee.PreCount + 1)
+	if len(employeeCount) == 1 {
+		employeeCount = "00" + employeeCount
+	} else if len(employeeCount) == 2 {
+		employeeCount = "0" + employeeCount
+	}
+	no = "YSJ-" + strings.ReplaceAll(predesign.CreateDate.Format("2006-01-02"), "-", "") + "-" + employee.Office.Number + employee.Number + employeeCount
+
+	return no, nil
+}
+
 func UpdatePredesign(predesign *Predesign, maps map[string]interface{}) (code int) {
+
 	var predesignTask PredesignTask
 	predesignTask.PredesignID = predesign.ID
 	predesignTask.CreaterID = predesign.AuditorID
@@ -64,10 +87,19 @@ func UpdatePredesign(predesign *Predesign, maps map[string]interface{}) (code in
 	predesignTask.Status = magic.PREDESIGN_TASK_STATUS_NOT_SUBMIT
 
 	err = db.Transaction(func(tx *gorm.DB) error {
+		no, cpnErr := createPreNo(predesign, tx)
+		if cpnErr != nil {
+			return cpnErr
+		}
+		maps["no"] = no
 		if tErr := tx.Model(&Predesign{ID: predesign.ID}).Updates(maps).Error; tErr != nil {
 			return tErr
 		}
 		if tErr := tx.Create(&predesignTask).Error; tErr != nil {
+			return tErr
+		}
+		//业务员累计预设计数目+1
+		if tErr := tx.Exec("UPDATE employee SET pre_count = pre_count + 1 WHERE id = ?", predesign.EmployeeID).Error; tErr != nil {
 			return tErr
 		}
 		return nil
@@ -133,6 +165,7 @@ func ApprovePredesignTask(predesignTaskBak *PredesignTask, maps map[string]inter
 			return nil
 		})
 	} else {
+
 		var predesignTask PredesignTask
 		predesignTask.PredesignID = predesignTaskBak.PredesignID
 		predesignTask.CreaterID = predesignTaskBak.AuditorID
@@ -148,6 +181,10 @@ func ApprovePredesignTask(predesignTaskBak *PredesignTask, maps map[string]inter
 				return tErr
 			}
 			if tErr := tx.Create(&predesignTask).Error; tErr != nil {
+				return tErr
+			}
+			//扣除本月100职位补贴
+			if tErr := tx.Exec("UPDATE employee SET role_credit_del = role_credit_del + 100 WHERE id = ?", predesignTaskBak.EmployeeID).Error; tErr != nil {
 				return tErr
 			}
 			return nil

@@ -170,8 +170,8 @@
                 <el-form-item label="标准售价(美元)">
                     <el-input v-model.trim="bankView.model.attribute.standardPriceUSD" disabled />
                 </el-form-item>
-                <el-form-item label="库存数量" prop="numberCount">
-                    <el-input v-model.trim="bankView.model.numberCount" disabled />
+                <el-form-item label="库存数量" prop="number">
+                    <el-input v-model.trim="bankView.model.number" disabled />
                 </el-form-item>
                 <el-form-item label="库存单位" prop="unit">
                     <el-input v-model.trim="bankView.model.unit" disabled />
@@ -670,13 +670,8 @@ const bank = reactive({
                 width: "10%",
             },
             {
-                prop: "numberCount",
-                label: "库存数量",
-                width: "10%",
-            },
-            {
                 prop: "number",
-                label: "可售数量",
+                label: "库存数量",
                 width: "10%",
             },
             {
@@ -697,7 +692,7 @@ const bank = reactive({
             {
                 type: "operation",
                 label: "操作",
-                width: "20%",
+                width: "30%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -789,7 +784,6 @@ const bankView = reactive({
             standardPriceUSD: 0,
         },
         number: 0,
-        numberCount: 0,
         unit: "",
         deliveryCycle: "",
         remark: "",

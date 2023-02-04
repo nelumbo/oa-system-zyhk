@@ -101,7 +101,7 @@ func SelectOffices(officeQuery *Office, xForms *XForms) (offices []Office, code 
 }
 
 func SelectNotPaymentForTopList() (offices1 []Office, offices2 []Office, productTypes []ProductType) {
-	db.Raw("SELECT office_id id,sum(total_amount - payment_total_amount) money FROM contract WHERE is_delete IS FALSE AND is_pre_deposit IS FALSE AND STATUS > 1 GROUP BY office_id").Scan(&offices1)
+	db.Raw("SELECT office_id id,sum(total_amount - payment_total_amount) money FROM contract WHERE is_delete IS FALSE AND is_pre_deposit IS FALSE AND pay_type = 1 AND STATUS > 1 GROUP BY office_id").Scan(&offices1)
 	db.Raw("SELECT office_id id,sum(pre_deposit_record - payment_total_amount) money FROM contract WHERE is_delete IS FALSE AND is_pre_deposit IS TRUE AND STATUS > 1 AND pre_deposit_record > payment_total_amount GROUP BY office_id").Scan(&offices2)
 	db.Raw("SELECT product_type.id,product_type.`name` ,sum(payment.money) as push_money_percentages FROM payment LEFT JOIN task ON payment.task_id = task.id LEFT JOIN product ON task.product_id = product.id LEFT JOIN product_type ON product.type_id = product_type.id WHERE payment.task_id IS NOT NULL GROUP BY product_type.id").Scan(&productTypes)
 	return

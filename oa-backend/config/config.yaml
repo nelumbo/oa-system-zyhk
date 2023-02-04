@@ -5,8 +5,8 @@ server:
 
 db:
   type : 'mysql'
-  username : 'king'
-  password : 'king'
-  host : '192.168.110.201'
+  username : 'zyhk'
+  password : 'zyhk'
+  host : '192.168.203.201'
   port : '3306'
   name : 'zyhk'

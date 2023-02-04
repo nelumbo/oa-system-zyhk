@@ -117,3 +117,15 @@ export const queryMyHistorys = (model, pageData) => {
         }
     })
 }
+
+export const queryMyProductTrials = (model, pageData) => {
+    return request({
+        url: '/my/productTrials',
+        method: 'POST',
+        data: model,
+        params: {
+            "pageSize": pageData.pageSize,
+            "pageNo": pageData.pageNo,
+        }
+    })
+}

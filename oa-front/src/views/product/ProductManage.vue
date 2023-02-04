@@ -60,8 +60,8 @@
                 <el-input-number v-model="add.model.attribute.standardPriceUSD" :controls="false" :min="0"
                     :max="9999999999" />
             </el-form-item>
-            <el-form-item label="库存数量" prop="numberCount">
-                <el-input-number v-model="add.model.numberCount" :controls="false" :min="-10000" :max="99999" />
+            <el-form-item label="库存数量" prop="number">
+                <el-input-number v-model="add.model.number" :controls="false" :min="-10000" :max="99999" />
             </el-form-item>
             <el-form-item label="库存单位" prop="unit">
                 <el-input v-model.trim="add.model.unit" maxlength="50" />
@@ -152,11 +152,8 @@
             <el-form-item label="标准售价(美元)">
                 <el-input v-model.trim="view.model.attribute.standardPriceUSD" disabled />
             </el-form-item>
-            <el-form-item label="可售数量">
-                <el-input v-model.trim="view.model.number" disabled />
-            </el-form-item>
             <el-form-item label="库存数量">
-                <el-input v-model.trim="view.model.numberCount" disabled />
+                <el-input v-model.trim="view.model.number" disabled />
             </el-form-item>
             <el-form-item label="库存单位">
                 <el-input v-model.trim="view.model.unit" disabled />
@@ -293,10 +290,7 @@
 
     <el-dialog v-model="edit.numberDialogVisivle" title="数量编辑" width="50%" :show-close="false">
         <el-form :model="edit.model" label-width="150px" :rules="rules" ref="editForm">
-            <el-form-item label="库存数量" prop="numberCount">
-                <el-input-number v-model="edit.model.numberCount" :controls="false" :min="-10000" :max="99999" />
-            </el-form-item>
-            <el-form-item label="可售数量" prop="number">
+            <el-form-item label="库存数量" prop="number">
                 <el-input-number v-model="edit.model.number" :controls="false" :min="-10000" :max="99999" />
             </el-form-item>
         </el-form>
@@ -343,7 +337,7 @@ const rules = reactive({
             { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
         ],
     },
-    numberCount: [
+    number: [
         { required: true, pattern: reg_number, message: '请输入有效数字', trigger: 'blur' }
     ],
     callNumber: [
@@ -376,12 +370,12 @@ const base = reactive({
             {
                 prop: "version",
                 label: "型号",
-                width: "6%",
+                width: "8%",
             },
             {
                 prop: "brand",
                 label: "品牌",
-                width: "6%",
+                width: "8%",
             },
             {
                 prop: "specification",
@@ -389,13 +383,8 @@ const base = reactive({
                 width: "8%",
             },
             {
-                prop: "numberCount",
-                label: "库存数量",
-                width: "6%",
-            },
-            {
                 prop: "number",
-                label: "可售数量",
+                label: "库存数量",
                 width: "6%",
             },
             {
@@ -422,7 +411,7 @@ const base = reactive({
             {
                 type: "operation",
                 label: "操作",
-                width: "26%",
+                width: "28%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -556,7 +545,6 @@ const add = reactive({
         brand: "",
         specification: "",
         number: 0,
-        numberCount: 0,
         callNumber: 0,
         unit: "",
         deliveryCycle: "",
@@ -587,7 +575,6 @@ const add = reactive({
                         brand: "",
                         specification: "",
                         number: 0,
-                        numberCount: 0,
                         unit: "",
                         deliveryCycle: "",
                         remark: "",
@@ -643,7 +630,6 @@ const view = reactive({
             standardPriceUSD: 0,
         },
         number: 0,
-        numberCount: 0,
         unit: "",
         callNumber: 0,
         deliveryCycle: "",
@@ -674,7 +660,6 @@ const edit = reactive({
             standardPriceUSD: 0,
         },
         number: 0,
-        numberCount: 0,
         unit: "",
         callNumber: 0,
         deliveryCycle: "",
@@ -709,7 +694,6 @@ const edit = reactive({
                             standardPriceUSD: 0,
                         },
                         number: 0,
-                        numberCount: 0,
                         unit: "",
                         deliveryCycle: "",
                         remark: "",
@@ -749,7 +733,6 @@ const edit = reactive({
                             standardPriceUSD: 0,
                         },
                         number: 0,
-                        numberCount: 0,
                         unit: "",
                         deliveryCycle: "",
                         remark: "",
@@ -789,7 +772,6 @@ const edit = reactive({
                             standardPriceUSD: 0,
                         },
                         number: 0,
-                        numberCount: 0,
                         unit: "",
                         deliveryCycle: "",
                         remark: "",

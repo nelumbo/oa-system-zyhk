@@ -239,3 +239,17 @@ func QueryContracts(c *gin.Context) {
 	xForms.Data, code = models.SelectContracts(&contractQuery, &xForms)
 	msg.Message(c, code, xForms)
 }
+
+func EditContractPreDeposit(c *gin.Context) {
+	var contract, contractBak models.Contract
+	_ = c.ShouldBindJSON(&contract)
+
+	_ = models.GeneralSelect(&contractBak, contract.ID, nil)
+
+	if contractBak.ID != 0 && contractBak.IsPreDeposit && contractBak.Status == 2 {
+		code = models.UpdateContractPreDeposit(&contract, c.MustGet("employeeID").(int))
+	} else {
+		code = msg.FAIL
+	}
+	msg.Message(c, code, nil)
+}

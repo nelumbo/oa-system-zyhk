@@ -32,6 +32,14 @@ export const editContractEDD = (contract) => {
     })
 }
 
+export const editContractPreDeposit = (contract) => {
+    return request({
+        url: '/contract/preDeposit',
+        method: 'PUT',
+        data: contract
+    })
+}
+
 export const approveContract = (contract) => {
     return request({
         url: '/contract/approve',

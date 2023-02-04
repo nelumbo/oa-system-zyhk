@@ -64,6 +64,12 @@
       </el-icon>
       <span>产品管理</span>
     </el-menu-item>
+    <el-menu-item index="/product_trial">
+      <el-icon>
+        <Box />
+      </el-icon>
+      <span>试用管理</span>
+    </el-menu-item>
     <el-menu-item index="/purchasing">
       <el-icon>
         <ShoppingTrolley />

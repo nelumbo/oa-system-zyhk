@@ -33,9 +33,12 @@ func AddEmployee(c *gin.Context) {
 				OfficeID:      employee.OfficeID,
 				Number:        employee.Number,
 				ContractCount: 0,
+				PreCount:      0,
 				Money:         employee.Money,
 				Credit:        employee.Credit,
 				OfficeCredit:  employee.Credit,
+				RoleCredit:    employee.RoleCredit,
+				RoleCreditDel: 0,
 				Roles:         employee.Roles,
 			}
 			code = models.GeneralInsert(&employeeCre)

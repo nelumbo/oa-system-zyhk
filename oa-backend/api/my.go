@@ -30,12 +30,19 @@ func QueryMyExpenses(c *gin.Context) {
 
 func QueryMyBidbonds(c *gin.Context) {
 	var bidbondQuery models.Bidbond
+	var employeeBak models.Employee
 	_ = c.ShouldBindJSON(&bidbondQuery)
-	bidbondQuery.EmployeeID = c.MustGet("employeeID").(int)
 
+	models.GeneralSelect(&employeeBak, c.MustGet("employeeID").(int), nil)
 	xForms := ginUtil.GinArrayPreprocessing(c)
 
-	xForms.Data, code = models.SelectBidbonds(&bidbondQuery, &xForms)
+	if employeeBak.ID > 0 {
+		bidbondQuery.Employee.OfficeID = employeeBak.OfficeID
+		xForms.Data, code = models.SelectBidbonds(&bidbondQuery, &xForms)
+	} else {
+		code = msg.ERROR
+	}
+
 	msg.Message(c, code, xForms)
 }
 
@@ -106,5 +113,23 @@ func QueryMyHistorys(c *gin.Context) {
 	xForms := ginUtil.GinArrayPreprocessing(c)
 
 	xForms.Data, code = models.SelectHistoryEmployees(&historyEmployee, &xForms)
+	msg.Message(c, code, xForms)
+}
+
+func QueryMyProductTrials(c *gin.Context) {
+	var productTrialQuery models.ProductTrial
+	var employeeBak models.Employee
+	_ = c.ShouldBindJSON(&productTrialQuery)
+
+	models.GeneralSelect(&employeeBak, c.MustGet("employeeID").(int), nil)
+	xForms := ginUtil.GinArrayPreprocessing(c)
+
+	if employeeBak.ID > 0 {
+		productTrialQuery.Employee.OfficeID = employeeBak.OfficeID
+		xForms.Data, code = models.SelectProductTrials(&productTrialQuery, &xForms)
+	} else {
+		code = msg.ERROR
+	}
+
 	msg.Message(c, code, xForms)
 }

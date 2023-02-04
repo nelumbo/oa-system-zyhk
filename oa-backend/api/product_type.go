@@ -28,6 +28,11 @@ func EditProductType(c *gin.Context) {
 	maps["business_money_percentages"] = productType.BusinessMoneyPercentages
 	maps["business_money_percentages_up"] = productType.BusinessMoneyPercentagesUp
 	maps["is_task_load"] = productType.IsTaskLoad
+	if productType.Type == 0 {
+		maps["type"] = nil
+	} else {
+		maps["type"] = productType.Type
+	}
 
 	code = models.GeneralUpdate(&productType, productType.ID, maps)
 	msg.Message(c, code, nil)

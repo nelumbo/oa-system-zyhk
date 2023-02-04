@@ -1,14 +1,14 @@
 package models
 
 import (
+	"oa-backend/utils/magic"
 	"oa-backend/utils/msg"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 type Supplier struct {
-	// UID  string `gorm:"type:varchar(32);comment:唯一标识" json:"UID"`
-
 	ID          int    `gorm:"primary_key" json:"id"`
 	IsDelete    bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	Name        string `gorm:"type:varchar(50);comment:名称;not null" json:"name"`
@@ -24,17 +24,13 @@ type Supplier struct {
 }
 
 type Product struct {
-	// UID  string `gorm:"type:varchar(32);comment:唯一标识" json:"UID"`
-	// SupplierUID string `gorm:"type:varchar(32);comment:供应商UID;default:(-)" json:"supplierUID"`
-
 	ID            int     `gorm:"primary_key" json:"id"`
 	IsDelete      bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	Name          string  `gorm:"type:varchar(50);comment:名称;not null" json:"name"`
 	Version       string  `gorm:"type:varchar(50);comment:型号" json:"version"`
 	Brand         string  `gorm:"type:varchar(50);comment:品牌" json:"brand"`
 	Specification string  `gorm:"type:varchar(100);comment:规格" json:"specification"`
-	Number        int     `gorm:"type:int;comment:可售数量(库存数量-订单锁定但未出库的数量)" json:"number"`
-	NumberCount   int     `gorm:"type:int;comment:库存数量" json:"numberCount"`
+	Number        int     `gorm:"type:int;comment:库存数量" json:"number"`
 	CallNumber    int     `gorm:"type:int;comment:报警数量" json:"callNumber"`
 	Unit          string  `gorm:"type:varchar(50);comment:单位" json:"unit"`
 	DeliveryCycle string  `gorm:"type:varchar(50);comment:供货周期" json:"deliveryCycle"`
@@ -50,8 +46,6 @@ type Product struct {
 }
 
 type ProductAttribute struct {
-	// TypeUID          string  `gorm:"type:varchar(32);comment:类型UID;default:(-)" json:"typeUID"`
-
 	ID               int     `gorm:"primary_key" json:"id"`
 	IsDelete         bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	StandardPrice    float64 `gorm:"type:decimal(20,6);comment:标准价格(元)" json:"standardPrice"`
@@ -59,8 +53,6 @@ type ProductAttribute struct {
 }
 
 type ProductType struct {
-	// UID                        string  `gorm:"type:varchar(32);comment:唯一标识;not null;unique" json:"UID"`
-
 	ID                         int     `gorm:"primary_key" json:"id"`
 	IsDelete                   bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	Name                       string  `gorm:"type:varchar(20);comment:名称;not null" json:"name"`
@@ -72,6 +64,36 @@ type ProductType struct {
 	BusinessMoneyPercentagesUp float64 `gorm:"type:decimal(20,6);comment:业务费用上涨百分比" json:"businessMoneyPercentagesUp"`
 	Type                       int     `gorm:"type:int;comment:类型(1:原味 2:渠道 3:自研)" json:"type"`
 	IsTaskLoad                 bool    `gorm:"type:boolean;comment:是否计算任务量" json:"isTaskLoad"`
+}
+
+type ProductTrial struct {
+	ID            int    `gorm:"primary_key" json:"id"`
+	IsDelete      bool   `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
+	ProductID     int    `gorm:"type:int;comment:产品ID" json:"productID"`
+	Number        int    `gorm:"type:int;comment:数量" json:"number"`
+	Status        int    `gorm:"type:int;comment:状态(-1:驳回 1:待审批 2:待发货 3:待归还 4:待确认 5:完成)" json:"status"`
+	EmployeeID    int    `gorm:"type:int;comment:业务员ID;default:(-)" json:"employeeID"`
+	AuditorID     int    `gorm:"type:int;comment:审核员ID;default:(-)" json:"auditorID"`
+	ShipmentID    int    `gorm:"type:int;comment:物流人员ID;default:(-)" json:"shipmentID"`
+	InventoryID   int    `gorm:"type:int;comment:仓库负责人ID;default:(-)" json:"inventoryID"`
+	FinalID       int    `gorm:"type:int;comment:确认人员ID;default:(-)" json:"finalID"`
+	CreateDate    XDate  `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
+	AuditDate     XDate  `gorm:"type:date;comment:审核日期;default:(-)" json:"auditDate"`
+	ShipmentDate  XDate  `gorm:"type:date;comment:发货日期;default:(-)" json:"shipmentDate"`
+	InventoryDate XDate  `gorm:"type:date;comment:归还日期;default:(-)" json:"inventoryDate"`
+	FinalDate     XDate  `gorm:"type:date;comment:确认日期;default:(-)" json:"finalDate"`
+	Remark1       string `gorm:"type:varchar(300);comment:备注1" json:"remark1"`
+	Remark2       string `gorm:"type:varchar(300);comment:备注2" json:"remark2"`
+	Remark3       string `gorm:"type:varchar(300);comment:备注3" json:"remark3"`
+	Remark4       string `gorm:"type:varchar(300);comment:备注4" json:"remark4"`
+	Remark5       string `gorm:"type:varchar(300);comment:备注5" json:"remark5"`
+
+	Product   Product  `gorm:"foreignKey:ProductID" json:"product"`
+	Employee  Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
+	Auditor   Employee `gorm:"foreignKey:AuditorID" json:"auditor"`
+	Shipment  Employee `gorm:"foreignKey:ShipmentID" json:"shipment"`
+	Inventory Employee `gorm:"foreignKey:InventoryID" json:"inventory"`
+	Final     Employee `gorm:"foreignKey:FinalID" json:"final"`
 }
 
 func SelectSuppliers(supplierQuery *Supplier, xForms *XForms) (suppliers []Supplier, code int) {
@@ -183,7 +205,7 @@ func UpdateProductNumber(product *Product) (code int) {
 	//TODO日志
 	err = db.Transaction(func(tx *gorm.DB) error {
 
-		if tErr := tx.Model(&Product{}).Where("id", product.ID).Updates(map[string]interface{}{"number": product.Number, "number_count": product.NumberCount}).Error; tErr != nil {
+		if tErr := tx.Model(&Product{}).Where("id", product.ID).Update("number", product.Number).Error; tErr != nil {
 			return tErr
 		}
 
@@ -245,4 +267,81 @@ func SelectProductTypes(productTypeQuery *ProductType, xForms *XForms) (productT
 		return nil, msg.ERROR
 	}
 	return productTypes, msg.SUCCESS
+}
+
+func NextProductTrial(productTrial *ProductTrial, productTrialBak *ProductTrial, employeeID int) (code int) {
+	var maps = make(map[string]interface{})
+
+	if productTrialBak.Status == magic.PRODUCT_TRIAL_STATUS_NO_APPROVE {
+		if productTrial.Status == magic.PRODUCT_TRIAL_STATUS_NO_SEND {
+			err = db.Transaction(func(tx *gorm.DB) error {
+
+				if tErr := tx.Model(&Product{}).Where("id", productTrialBak.ProductID).Update("number", gorm.Expr("number - ?", productTrialBak.Number)).Error; tErr != nil {
+					return tErr
+				}
+
+				if tErr := tx.Model(&ProductTrial{}).Where("id", productTrialBak.ID).Updates(map[string]interface{}{"status": magic.PRODUCT_TRIAL_STATUS_NO_SEND, "auditor_id": employeeID, "audit_date": XDate{Time: time.Now()}}).Error; tErr != nil {
+					return tErr
+				}
+
+				return nil
+			})
+
+			if err != nil {
+				return msg.ERROR
+			}
+			return msg.SUCCESS
+
+		} else if productTrial.Status == magic.PRODUCT_TRIAL_STATUS_REJECT {
+			maps["status"] = magic.PRODUCT_TRIAL_STATUS_REJECT
+			maps["auditor_id"] = employeeID
+			maps["audit_date"] = XDate{Time: time.Now()}
+		}
+	} else if productTrialBak.Status == magic.PRODUCT_TRIAL_STATUS_NO_SEND && productTrial.Status == magic.PRODUCT_TRIAL_STATUS_NO_BACK {
+		maps["status"] = magic.PRODUCT_TRIAL_STATUS_NO_BACK
+		maps["shipment_id"] = employeeID
+		maps["shipment_date"] = XDate{Time: time.Now()}
+		maps["remark3"] = productTrial.Remark3
+	} else if productTrialBak.Status == magic.PRODUCT_TRIAL_STATUS_NO_BACK && productTrial.Status == magic.PRODUCT_TRIAL_STATUS_NO_FINAL {
+		maps["status"] = magic.PRODUCT_TRIAL_STATUS_NO_FINAL
+		maps["inventory_id"] = employeeID
+		maps["inventory_date"] = XDate{Time: time.Now()}
+		maps["remark4"] = productTrial.Remark4
+	} else if productTrialBak.Status == magic.PRODUCT_TRIAL_STATUS_NO_FINAL && productTrial.Status == magic.PRODUCT_TRIAL_STATUS_FINAL {
+		maps["status"] = magic.PRODUCT_TRIAL_STATUS_FINAL
+		maps["final_id"] = employeeID
+		maps["final_date"] = XDate{Time: time.Now()}
+		maps["remark5"] = productTrial.Remark5
+	} else {
+		return msg.FAIL
+	}
+
+	err = db.Model(&ProductTrial{}).Where("id", productTrialBak.ID).Updates(maps).Error
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
+}
+
+func SelectProductTrials(productTrialQuery *ProductTrial, xForms *XForms) (productTrials []ProductTrial, code int) {
+	var maps = make(map[string]interface{})
+	maps["product_trial.is_delete"] = false
+	if productTrialQuery.Status != 0 {
+		maps["product_trial.status"] = productTrialQuery.Status
+	}
+	if productTrialQuery.Employee.OfficeID != 0 {
+		maps["Employee.office_id"] = productTrialQuery.Employee.OfficeID
+	}
+
+	tx := db.Where(maps).Joins("Employee")
+	err = tx.Find(&productTrials).Count(&xForms.Total).
+		Preload("Product").Preload("Employee.Office").Preload("Auditor").
+		Preload("Shipment").Preload("Inventory").Preload("Final").
+		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
+		Order("id desc").Find(&productTrials).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, msg.ERROR
+	}
+	return productTrials, msg.SUCCESS
 }

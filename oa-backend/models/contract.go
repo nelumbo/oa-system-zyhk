@@ -13,15 +13,6 @@ import (
 )
 
 type Contract struct {
-	// UID                   string  `gorm:"type:varchar(32);comment:唯一标识;unique" json:"UID"`
-	// RegionUID             string  `gorm:"type:varchar(32);comment:省份UID;default:(-)" json:"regionUID"`
-	// OfficeUID             string  `gorm:"type:varchar(32);comment:办事处UID;default:(-)" json:"officeUID"`
-	// EmployeeUID           string  `gorm:"type:varchar(32);comment:业务员UID;default:(-)" json:"employeeUID"`
-	// CustomerUID           string  `gorm:"type:varchar(32);comment:客户ID;default:(-)" json:"customerUID"`
-	// ContractUnitUID string `gorm:"type:varchar(32);comment:签订单位;default:(-)" json:"contractUnitUID"`
-	// AuditorUID            string  `gorm:"type:varchar(32);comment:审核员ID;default:(-)" json:"auditorUID"`
-	// ContractUnitID        int     `gorm:"type:int;comment:签订单位;default:(-)" json:"contractUnitID"`
-
 	ID                    int     `gorm:"primary_key" json:"id"`
 	IsDelete              bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	No                    string  `gorm:"type:varchar(100);comment:合同编号" json:"no"`
@@ -73,22 +64,6 @@ type Contract struct {
 }
 
 type Task struct {
-	// UID                  string  `gorm:"type:varchar(32);comment:唯一标识;not null;unique" json:"UID"`
-	// ContractUID          string  `gorm:"type:varchar(32);comment:合同ID" json:"contractUID"`
-	// ProductUID           string  `gorm:"type:varchar(32);comment:产品ID" json:"productUID"`
-	// Unit                 string  `gorm:"type:varchar(50);comment:单位" json:"unit"`
-	// StandardPrice        float64 `gorm:"type:decimal(20,6);comment:下单时标准价格" json:"standardPrice"`
-	// StandardPriceUSD     float64 `gorm:"type:decimal(20,6);comment:下单时标准价格(美元)" json:"standardPriceUSD"`
-	// TechnicianManUID     string  `gorm:"type:varchar(32);comment:技术负责人ID;default:(-)" json:"technicianManUID"`
-	// PurchaseManUID       string  `gorm:"type:varchar(32);comment:采购负责人ID;default:(-)" json:"purchaseManUID"`
-	// InventoryManUID      string  `gorm:"type:varchar(32);comment:仓库负责人ID;default:(-)" json:"inventoryManUID"`
-	// ShipmentManUID       string  `gorm:"type:varchar(32);comment:物流人员ID;default:(-)" json:"shipmentManUID"`
-
-	// TechnicianRealEndDate XDate   `gorm:"type:date;comment:技术实际提交工作日期;default:(-)" json:"technicianRealEndDate"`
-	// PurchaseRealEndDate  XDate `gorm:"type:date;comment:采购实际提交工作日期;default:(-)" json:"purchaseRealEndDate"`
-	// InventoryRealEndDate XDate `gorm:"type:date;comment:仓库实际提交工作日期;default:(-)" json:"inventoryRealEndDate"`
-	// ShipmentRealEndDate  XDate `gorm:"type:date;comment:物流实际提交工作日期;default:(-)" json:"shipmentRealEndDate"`
-
 	ID                   int     `gorm:"primary_key" json:"id"`
 	IsDelete             bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	ContractID           int     `gorm:"type:int;comment:合同ID" json:"contractID"`
@@ -147,11 +122,6 @@ type Task struct {
 }
 
 type Invoice struct {
-	// UID         string  `gorm:"type:varchar(32);comment:唯一标识;not null;unique" json:"UID"`
-	// ContractUID string  `gorm:"type:varchar(32);comment:合同ID" json:"contractUID"`
-	// EmployeeUID string  `gorm:"type:varchar(32);comment:添加员工UID;default:(-)" json:"employeeUID"`
-	// Code        string  `gorm:"type:varchar(100);comment:发票号" json:"code"`
-
 	ID         int     `gorm:"primary_key" json:"id"`
 	IsDelete   bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	ContractID int     `gorm:"type:int;comment:合同ID" json:"contractID"`
@@ -165,11 +135,6 @@ type Invoice struct {
 }
 
 type Payment struct {
-	// UID         string  `gorm:"type:varchar(32);comment:唯一标识;not null;unique" json:"UID"`
-	// ContractUID          string  `gorm:"type:varchar(32);comment:合同UID;default:(-)" json:"contractUID"`
-	// TaskUID              string  `gorm:"type:varchar(32);comment:任务UID;default:(-)" json:"taskUID"`
-	// EmployeeUID          string  `gorm:"type:varchar(32);comment:录入人员ID;default:(-)" json:"employeeUID"`
-
 	ID                   int     `gorm:"primary_key" json:"id"`
 	IsDelete             bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	ContractID           int     `gorm:"type:int;comment:合同ID;default:(-)" json:"contractID"`
@@ -260,7 +225,7 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 					if tErr := tx.Preload("Tasks").Where("is_delete = ?", false).First(&contract, contractBak.ID).Error; tErr != nil {
 						return tErr
 					}
-					//产品可售库存减少
+					//产品库存减少
 					for i := range contract.Tasks {
 						if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", contract.Tasks[i].Number, contract.Tasks[i].ProductID).Error; tErr != nil {
 							return tErr
@@ -360,7 +325,7 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 			return tErr
 		}
 		//回款记录统计
-		var tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney float64
+		var tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney, ywTargetLoad, zyTargetLoad, qdTargetLoad float64
 		if contract.IsPreDeposit {
 			for k := range payments {
 				if payments[k].TaskID != 0 {
@@ -371,6 +336,13 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 					//产品类型是否计算任务量
 					if !payments[k].Task.Product.Type.IsTaskLoad {
 						tempTargetLoad -= payments[k].Money
+					}
+					if payments[k].Task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_YW {
+						ywTargetLoad += payments[k].Money
+					} else if payments[k].Task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_ZY {
+						zyTargetLoad += payments[k].Money
+					} else if payments[k].Task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_QD {
+						qdTargetLoad += payments[k].Money
 					}
 				} else {
 					//预付款任务量
@@ -421,6 +393,11 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 			return tErr
 		}
 
+		//更新原位、渠道、自研任务量
+		if tErr := tx.Exec("UPDATE office SET yw_target_load = yw_target_load - ?,zy_target_load = zy_target_load - ?, qd_target_load = qd_target_load - ? WHERE id = ?", ywTargetLoad, zyTargetLoad, qdTargetLoad, contract.OfficeID).Error; tErr != nil {
+			return tErr
+		}
+
 		//合同状态变更为驳回
 		if tErr := tx.Model(&Contract{}).Where("id", contract.ID).Update("status", magic.CONTRACT_STATUS_REJECT).Error; tErr != nil {
 			return tErr
@@ -437,6 +414,45 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 			return tErr
 		}
 
+		return nil
+	})
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
+}
+
+func UpdateContractPreDeposit(contract *Contract, employeeID int) (code int) {
+	var contractBak Contract
+	_ = db.Preload("Office").First(&contractBak, contract.ID)
+
+	err = db.Transaction(func(tx *gorm.DB) error {
+		//更新合同金额
+		if tErr := tx.Exec("UPDATE contract SET pre_deposit = pre_deposit + ? WHERE id = ?", contract.PreDeposit, contract.ID).Error; tErr != nil {
+			return tErr
+		}
+		//生成记录
+		historyOffice := HistoryOffice{
+			OfficeID:            contractBak.OfficeID,
+			EmployeeID:          employeeID,
+			OldBusinessMoney:    contractBak.Office.BusinessMoney,
+			OldMoney:            contractBak.Office.Money,
+			OldMoneyCold:        contractBak.Office.MoneyCold,
+			OldTargetLoad:       contractBak.Office.TargetLoad,
+			ChangeBusinessMoney: 0,
+			ChangeMoney:         0,
+			ChangeMoneyCold:     0,
+			ChangeTargetLoad:    contract.PreDeposit,
+			NewBusinessMoney:    contractBak.Office.BusinessMoney,
+			NewMoney:            contractBak.Office.Money,
+			NewMoneyCold:        contractBak.Office.MoneyCold,
+			NewTargetLoad:       contractBak.Office.TargetLoad + contract.PreDeposit,
+			CreateDate:          XDate{Time: time.Now()},
+			Remark:              "预存款合同(" + contractBak.No + ")手动编辑：" + contract.Remark,
+		}
+		if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
+			return tErr
+		}
 		return nil
 	})
 	if err != nil {
@@ -572,7 +588,7 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 		Preload("Office").Preload("Employee").
 		Preload("Customer.CustomerCompany").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
-		Find(&contracts).Error
+		Order("contract.id desc").Find(&contracts).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, msg.ERROR
@@ -679,8 +695,26 @@ func DistributeTask(task *Task, maps map[string]interface{}, employeeID int) (co
 			if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
 				return tErr
 			}
+			//更新原位、渠道、自研任务量
+			if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_YW {
+				if tErr := tx.Exec("UPDATE office SET yw_target_load = yw_target_load + ? WHERE id = ?", payment.Money, taskBak.Contract.OfficeID).Error; tErr != nil {
+					return tErr
+				}
+			} else if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_ZY {
+				if tErr := tx.Exec("UPDATE office SET zy_target_load = zy_target_load + ? WHERE id = ?", payment.Money, taskBak.Contract.OfficeID).Error; tErr != nil {
+					return tErr
+				}
+			} else if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_QD {
+				if tErr := tx.Exec("UPDATE office SET qd_target_load = qd_target_load + ? WHERE id = ?", payment.Money, taskBak.Contract.OfficeID).Error; tErr != nil {
+					return tErr
+				}
+			}
 			//跟新task记录
 			if tErr := tx.Model(&Task{}).Where("id = ?", taskBak.ID).Updates(maps).Error; tErr != nil {
+				return tErr
+			}
+			//减少库存
+			if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", task.Number, task.ProductID).Error; tErr != nil {
 				return tErr
 			}
 			return nil
@@ -736,6 +770,7 @@ func NextTask(task *Task, maps map[string]interface{}, employeeID int) (code int
 			return tErr
 		}
 
+		//确认采购
 		if (task.Type == magic.TASK_TYPE_3 && task.Status == magic.TASK_STATUS_NOT_DESIGN) ||
 			(task.Type == magic.TASK_TYPE_2 && task.Status == magic.TASK_STATUS_NOT_PURCHASE) {
 			var pMaps = make(map[string]interface{})
@@ -770,6 +805,7 @@ func ResetTask(task *Task, maps map[string]interface{}) (code int) {
 }
 
 // 预存款合同驳回请求
+// TODO
 func RejectTask(id int) (code int) {
 	err = db.Transaction(func(tx *gorm.DB) error {
 
@@ -860,7 +896,7 @@ func SelectMyTasks(taskQuery *Task, employeeID int, xForms *XForms) (tasks []Tas
 	}
 
 	if taskQuery.Status == 0 {
-		tx = tx.Where("task.status > 0")
+		tx = tx.Where("task.status > 0 AND task.status < 6")
 	}
 
 	if taskQuery.ProductName != "" {
@@ -1018,6 +1054,20 @@ func InsertPayment(payment *Payment) (code int) {
 				if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
 					return tErr
 				}
+				//更新原位、渠道、自研任务量
+				if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_YW {
+					if tErr := tx.Exec("UPDATE office SET yw_target_load = yw_target_load + ? WHERE id = ?", payment.Money, contract.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				} else if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_ZY {
+					if tErr := tx.Exec("UPDATE office SET zy_target_load = zy_target_load + ? WHERE id = ?", payment.Money, contract.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				} else if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_QD {
+					if tErr := tx.Exec("UPDATE office SET qd_target_load = qd_target_load + ? WHERE id = ?", payment.Money, contract.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				}
 				return nil
 			})
 		}
@@ -1158,15 +1208,28 @@ func UpdatePayment(payment *Payment) (code int) {
 				if tErr := InsertHistoryOffice(&historyOffice, tx); tErr != nil {
 					return tErr
 				}
+				//更新原位、渠道、自研任务量
+				if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_YW {
+					if tErr := tx.Exec("UPDATE office SET yw_target_load = yw_target_load + ? WHERE id = ?", payment.Money-paymentBak.Money, contractBak.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				} else if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_ZY {
+					if tErr := tx.Exec("UPDATE office SET zy_target_load = zy_target_load + ? WHERE id = ?", payment.Money-paymentBak.Money, contractBak.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				} else if task.Product.Type.Type == magic.PRODUCT_TYPE_TYPE_QD {
+					if tErr := tx.Exec("UPDATE office SET qd_target_load = qd_target_load + ? WHERE id = ?", payment.Money-paymentBak.Money, contractBak.OfficeID).Error; tErr != nil {
+						return tErr
+					}
+				}
 				return nil
 			})
 		}
 	} else {
-		code = msg.FAIL
+		return msg.FAIL
 	}
 	if err != nil {
-		code = msg.ERROR
+		return msg.ERROR
 	}
-	code = msg.SUCCESS
-	return
+	return msg.SUCCESS
 }

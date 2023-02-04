@@ -66,6 +66,8 @@ func initDB() {
 
 		&System{},
 		&OfficeBak{},
+
+		&ProductTrial{},
 	)
 
 	sqlDB, _ := db.DB()

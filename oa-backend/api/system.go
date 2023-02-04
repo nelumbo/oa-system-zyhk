@@ -41,7 +41,6 @@ func TopList(c *gin.Context) {
 	offices1, offices2, productTypes = models.SelectNotPaymentForTopList()
 
 	for i := range offices {
-
 		for j := range offices1 {
 			if offices[i].ID == offices1[j].ID {
 				offices[i].NotPayment += offices1[j].Money

@@ -169,7 +169,7 @@
                     </el-row>
                 </el-form-item>
                 <el-form-item label="库存数量">
-                    <el-input v-model.trim="addDLC.product.numberCount" disabled />
+                    <el-input v-model.trim="addDLC.product.number" disabled />
                 </el-form-item>
             </el-form>
             <el-divider content-position="left" style="margin-top: 30px;">
@@ -252,7 +252,7 @@ const base = reactive({
                 width: "5%",
             },
             {
-                prop: "product.numberCount",
+                prop: "product.number",
                 label: "库存",
                 width: "5%",
             },
@@ -685,13 +685,8 @@ const add = reactive({
                 width: "10%",
             },
             {
-                prop: "numberCount",
-                label: "库存数量",
-                width: "10%",
-            },
-            {
                 prop: "number",
-                label: "可售数量",
+                label: "库存数量",
                 width: "10%",
             },
             {
@@ -870,7 +865,6 @@ const addDLC = reactive({
         version: "",
         specification: "",
         suppliers: [],
-        numberCount: 0,
         number: 0,
     },
     model: {
@@ -896,7 +890,6 @@ const addDLC = reactive({
                         version: "",
                         specification: "",
                         suppliers: [],
-                        numberCount: 0,
                         number: 0,
                     }
                     addDLC.model = {

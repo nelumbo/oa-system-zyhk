@@ -49,6 +49,11 @@ const router = createRouter({
           meta: { login_require: true, title: "中研环科-管理系统-产品管理" },
         },
         {
+          path: 'product_trial',
+          component: () => import('@/views/productTrial/index.vue'),
+          meta: { login_require: true, title: "中研环科-管理系统-试用管理" },
+        },
+        {
           path: 'purchasing',
           component: () => import('@/views/purchasing/index.vue'),
           meta: { login_require: true, title: "中研环科-管理系统-采购管理" },

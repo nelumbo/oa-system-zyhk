@@ -90,6 +90,10 @@ func SettlementEnd() (code int) {
 			if tErr := tx.Model(&Employee{}).Where("1 = 1").Update("contract_count", 0).Error; tErr != nil {
 				return tErr
 			}
+			//重置员工预设记录数
+			if tErr := tx.Model(&Employee{}).Where("1 = 1").Update("pre_count", 0).Error; tErr != nil {
+				return tErr
+			}
 			//系统Ice解除
 			if tErr := tx.Model(&System{}).Where("text = ?", "ice").Update("value", 2).Error; tErr != nil {
 				return tErr

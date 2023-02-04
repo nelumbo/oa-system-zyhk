@@ -43,9 +43,9 @@ func SelectBidbonds(bidbondQuery *Bidbond, xForms *XForms) (bidbonds []Bidbond, 
 	if bidbondQuery.Status != 0 {
 		maps["bidbond.status"] = bidbondQuery.Status
 	}
-	if bidbondQuery.EmployeeID != 0 {
-		maps["bidbond.employee_id"] = bidbondQuery.EmployeeID
-	}
+	// if bidbondQuery.EmployeeID != 0 {
+	// 	maps["bidbond.employee_id"] = bidbondQuery.EmployeeID
+	// }
 	if bidbondQuery.Employee.OfficeID != 0 {
 		maps["Employee.office_id"] = bidbondQuery.Employee.OfficeID
 	}

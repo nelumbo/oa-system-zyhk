@@ -456,8 +456,28 @@
             </template>
         </el-dialog>
 
-        <el-dialog v-model="final.dialogVisible" title="预存款合同完成" width="50%" :show-close="false">
-            <h1>是否确定该预存款合同已完成？</h1>
+        <el-dialog v-model="editPD.dialogVisible" title="预存款修改" width="50%" :show-close="false">
+            <el-form :model="editPD.model" label-width="100px" :rules="rules" ref="editPDForm">
+                <el-form-item label="预存款金额" prop="preDeposit">
+                    <el-input-number v-model="editPD.model.preDeposit" :controls="false" :min="-9999999" />
+                </el-form-item>
+                <el-form-item label="备注" prop="remark">
+                    <el-input v-model="editPD.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                        maxlength="100" />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <div style="text-align: center;">
+                        <el-button type="primary" @click="editPD.submit"
+                            :disabled="editPD.submitDisabled">提交</el-button>
+                    </div>
+                </span>
+            </template>
+        </el-dialog>
+
+        <el-dialog v-model="final.dialogVisible" title="合同完成" width="50%" :show-close="false">
+            <h1>是否确定该合同已完成？</h1>
             <template #footer>
                 <span class="dialog-footer">
                     <div style="text-align: center;">
@@ -769,7 +789,7 @@ import {
     boolItems, HavingInvoiceItems
 } from '@/utils/magic'
 import { queryAllRegion } from "@/api/region"
-import { editContractEDD, approveContract, finalContract, resetContract, rejectContract, queryContract, queryContracts } from "@/api/contract"
+import { editContractEDD, approveContract, finalContract, resetContract, rejectContract, editContractPreDeposit, queryContract, queryContracts } from "@/api/contract"
 import { queryAllOffice } from "@/api/office"
 import { queryAllEmployee } from "@/api/employee"
 import { distributeTask, resetTask, rejectTask } from "@/api/contract_task"
@@ -778,6 +798,7 @@ import { reg_number, reg_money } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
 
+const editPDForm = ref(null)
 const distributeForm = ref(null)
 const editEDDForm = ref(null)
 const resetContractTaskForm = ref(null)
@@ -809,6 +830,12 @@ const rules = reactive({
     pushMoneyPercentages: [
         { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
     ],
+    preDeposit: [
+        { required: true, pattern: reg_money, message: '请输入最多三位小数的有效数字', trigger: 'blur' }
+    ],
+    remark: [
+        { required: true, message: '请填写', trigger: 'blur' },
+    ],
 })
 
 const base = reactive({
@@ -831,8 +858,8 @@ const base = reactive({
         productionStatus: null,
         collectionStatus: null,
         payType: null,
-        startDate: new Date().getFullYear() + "-01-01",
-        endDate: new Date().getFullYear() + "-12-31",
+        startDate: "",
+        endDate: "",
         isSpecialNum: null,
         isPreDepositNum: null,
         havingInvoiceNum: null,
@@ -880,13 +907,13 @@ const base = reactive({
             {
                 prop: "totalAmount",
                 label: "总金额",
-                width: "8%",
+                width: "6%",
             },
             {
                 type: "contractNotPayment",
                 prop: "notPaymentTotalAmount",
                 label: "未回款",
-                width: "8%",
+                width: "6%",
             },
             {
                 type: "contractType",
@@ -897,7 +924,7 @@ const base = reactive({
             {
                 type: "operation",
                 label: "操作",
-                width: "15%",
+                width: "19%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -908,6 +935,19 @@ const base = reactive({
                         align: "center",
                         sortable: false,
                         onClick: (index, row) => base.openViewDialog(index, row)
+                    },
+                    {
+                        isShow: (index, row) => {
+                            if (user().my.pids.includes('19') && row.isPreDeposit && row.status == 2) {
+                                return true
+                            }
+                            return false
+                        },
+                        label: "添加预存款",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openEditPDDialog(index, row)
                     },
                     {
                         isShow: (index, row) => {
@@ -1017,6 +1057,10 @@ const base = reactive({
             }
         })
         approve.dialogVisible = true
+    },
+    openEditPDDialog: (index, row) => {
+        editPD.model.id = row.id
+        editPD.dialogVisible = true
     }
 })
 
@@ -1503,7 +1547,7 @@ const approve = reactive({
                 width: "5%",
             },
             {
-                prop: "product.numberCount",
+                prop: "product.number",
                 label: "库存数量",
                 width: "5%",
             },
@@ -2047,6 +2091,40 @@ const units = reactive({
 
         return [arr1, arr2]
     },
+})
+
+const editPD = reactive({
+    dialogVisible: false,
+    submitDisabled: false,
+    model: {
+        id: null,
+        preDeposit: 0,
+        remark: "",
+    },
+    submit: () => {
+        editPDForm.value.validate((valid) => {
+            if (valid) {
+                editPD.submitDisabled = true
+                editContractPreDeposit(editPD.model).then((res) => {
+                    if (res.status == 1) {
+                        message("编辑成功", "success")
+                        base.query()
+                    } else {
+                        message("编辑失败", "error")
+                    }
+                    editPD.dialogVisible = false
+                    editPD.model = {
+                        id: null,
+                        preDeposit: 0,
+                        remark: "",
+                    }
+                    editPD.submitDisabled = false
+                })
+            } else {
+                return false;
+            }
+        })
+    }
 })
 
 onBeforeMount(() => {

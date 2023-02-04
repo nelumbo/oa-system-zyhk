@@ -23,9 +23,12 @@ type Employee struct {
 	OfficeID      int     `gorm:"type:int;comment:办事处ID;default:(-)" json:"officeID"`
 	Number        string  `gorm:"type:varchar(50);comment:编号" json:"number"`
 	ContractCount int     `gorm:"type:int;comment:被审批合同总数" json:"contractCount"`
+	PreCount      int     `gorm:"type:int;comment:被审批预设计总数" json:"preCount"`
 	Money         float64 `gorm:"type:decimal(20,6);comment:补助额度(元)" json:"money"`
 	Credit        float64 `gorm:"type:decimal(20,6);comment:每月总部补助额度(元)" json:"credit"`
 	OfficeCredit  float64 `gorm:"type:decimal(20,6);comment:每月办事处补助额度(元)" json:"officeCredit"`
+	RoleCredit    float64 `gorm:"type:decimal(20,6);comment:每月职位补助额度(元)" json:"roleCredit"`
+	RoleCreditDel float64 `gorm:"type:decimal(20,6);comment:每月职位补助额度扣除(元)" json:"roleCreditDel"`
 
 	YearMoney float64 `gorm:"type:decimal(20,6);comment:补助额度(元)" json:"yearMoney"`
 
@@ -65,6 +68,7 @@ func UpdateEmployeeMoney(employee *Employee, employeeID int) (code int) {
 	maps["money"] = employee.Money
 	maps["credit"] = employee.Credit
 	maps["office_credit"] = employee.OfficeCredit
+	maps["role_credit"] = employee.RoleCredit
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var employeeBak Employee
 		if tErr := tx.First(&employeeBak, employee.ID).Error; tErr != nil {

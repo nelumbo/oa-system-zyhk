@@ -21,7 +21,7 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="approve.dialogVisible" title="审核" width="50%" :show-close="false">
+        <el-dialog v-model="approve.dialogVisible" title="付款确认" width="50%" :show-close="false">
             <el-form :model="approve.model" label-width="100px">
                 <el-form-item label="办事处">
                     <el-input v-model.trim="approve.model.employee.office.name" readonly />
@@ -40,9 +40,9 @@
                 <span class="dialog-footer">
                     <div style="text-align: center;">
                         <el-button type="primary" @click="approve.pass" :disabled="approve.submitDisabled"
-                            style="margin-right: 250px;">通过</el-button>
+                            style="margin-right: 250px;">付款</el-button>
                         <el-button type="danger" @click="approve.reject"
-                            :disabled="approve.submitDisabled">拒绝</el-button>
+                            :disabled="approve.submitDisabled">驳回</el-button>
                     </div>
                 </span>
             </template>
@@ -125,15 +125,15 @@ const base = reactive({
             },
             {
                 prop: "auditor.name",
-                label: "审核",
+                label: "付款财务",
             },
             {
                 prop: "auditDate",
-                label: "审核日期",
+                label: "付款日期",
             },
             {
                 prop: "finalce.name",
-                label: "财务",
+                label: "回款财务",
             },
             {
                 prop: "finalDate",
@@ -161,7 +161,7 @@ const base = reactive({
                             }
                             return false
                         },
-                        label: "审核",
+                        label: "付款",
                         type: "primary",
                         align: "center",
                         sortable: false,
