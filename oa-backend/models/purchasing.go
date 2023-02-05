@@ -12,6 +12,8 @@ import (
 type Purchasing struct {
 	ID             int     `gorm:"primary_key" json:"id"`
 	IsDelete       bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
+	IsSecond       bool    `gorm:"type:boolean;comment:合同第二次提交" json:"isSecond"`
+	IsSecondFinal  bool    `gorm:"type:boolean;comment:合同第二次提交扣除补贴" json:"isSecondFinal"`
 	ContractID     int     `gorm:"type:int;comment:合同ID;default:(-)" json:"contractID"`
 	TaskID         int     `gorm:"type:int;comment:任务ID;default:(-)" json:"taskID"`
 	EmployeeID     int     `gorm:"type:int;comment:创建人ID;default:(-)" json:"employeeID"`
@@ -43,6 +45,7 @@ type Purchasing struct {
 	PayCreateDate XDate `gorm:"type:date;comment:财务提交日期;default:(-)" json:"payCreateDate"`
 	InvoiceDate   XDate `gorm:"type:date;comment:发票到达日期;default:(-)" json:"invoiceDate"`
 
+	Contract Contract `gorm:"foreignKey:ContractID" json:"contract"`
 	Employee Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
 	Product  Product  `gorm:"foreignKey:ProductID" json:"product"`
 
@@ -50,11 +53,41 @@ type Purchasing struct {
 	Remark string `gorm:"-" json:"remark"`
 }
 
-func SubmitPurchasing(purchasing *Purchasing, maps map[string]interface{}) (code int) {
+func InsertPurchasing(purchasing *Purchasing) (code int) {
+	err = db.Transaction(func(tx *gorm.DB) error {
 
-	err = db.Model(&Purchasing{}).
-		Where("contract_id = ? AND task_id = ? AND employee_id = ? AND status = ?", purchasing.ContractID, purchasing.TaskID, purchasing.EmployeeID, magic.PURCHASING_STATUS_SAVE).
-		Updates(maps).Error
+		if tErr := tx.Create(&purchasing).Error; tErr != nil {
+			return tErr
+		}
+		if tErr := tx.Model(&ProductCall{}).Where("product_id", purchasing.ProductID).Update("is_delete", true).Error; tErr != nil {
+			return tErr
+		}
+		return nil
+	})
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
+}
+
+func SubmitPurchasing(purchasing *Purchasing) (code int) {
+	var maps = make(map[string]interface{})
+	maps["status"] = magic.PURCHASING_STATUS_NO_CHECK
+	maps["create_date"] = time.Now()
+	maps["is_second_final"] = true
+
+	err = db.Transaction(func(tx *gorm.DB) error {
+		//扣除一百补贴
+		if tErr := tx.Model(&Employee{}).Where("id = ?", purchasing.EmployeeID).Update("role_credit_del", gorm.Expr("role_credit_del + ?", 100)).Error; tErr != nil {
+			return tErr
+		}
+		if tErr := tx.Model(&Purchasing{}).
+			Where("contract_id = ? AND task_id = ? AND employee_id = ? AND status = ?", purchasing.ContractID, purchasing.TaskID, purchasing.EmployeeID, magic.PURCHASING_STATUS_SAVE).
+			Updates(maps).Error; tErr != nil {
+			return tErr
+		}
+		return nil
+	})
 
 	if err != nil {
 		return msg.ERROR
@@ -77,8 +110,15 @@ func ApprovePurchasing(purchasing *Purchasing, maps map[string]interface{}) (cod
 			if tErr := tx.Model(&Purchasing{}).Where("id", purchasing.ID).Updates(maps).Error; tErr != nil {
 				return tErr
 			}
-			if tErr := tx.Model(&Product{}).Where("id", purchasing.ProductID).Update("purchase_price", purchasing.Price).Error; tErr != nil {
+
+			var product Product
+			if tErr := tx.First(&product, purchasing.ProductID).Error; tErr != nil {
 				return tErr
+			}
+			if product.PurchasePrice < purchasing.Price {
+				if tErr := tx.Model(&Product{}).Where("id", purchasing.ProductID).Update("purchase_price", purchasing.Price).Error; tErr != nil {
+					return tErr
+				}
 			}
 			return nil
 		})
@@ -143,7 +183,7 @@ func SelectPurchasings(purchasingQuery *Purchasing, xForms *XForms) (purchasings
 	}
 
 	err = tx.Find(&purchasings).Count(&xForms.Total).
-		Preload("Product").Preload("Employee").
+		Preload("Product").Preload("Employee").Preload("Contract").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
 		Find(&purchasings).Error
 

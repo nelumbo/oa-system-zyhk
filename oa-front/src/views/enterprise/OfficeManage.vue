@@ -294,11 +294,6 @@ const base = reactive({
     },
     openEditMoneyDialog: (index, row) => {
         editMoney.model.id = row.id
-        editMoney.model.businessMoney = row.businessMoney
-        editMoney.model.money = row.money
-        editMoney.model.moneyCold = row.moneyCold
-        editMoney.model.targetLoad = row.targetLoad
-
         editMoney.dialogVisible = true
     },
     openDelDialog: (index, row) => {

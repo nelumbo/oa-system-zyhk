@@ -38,16 +38,18 @@ type Office struct {
 }
 
 func UpdateOfficeMoney(office *Office, employeeID int) (code int) {
-	var maps = make(map[string]interface{})
-	maps["business_money"] = office.BusinessMoney
-	maps["money"] = office.Money
-	maps["money_cold"] = office.MoneyCold
-	maps["target_load"] = office.TargetLoad
+
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var officeBak Office
 		if tErr := tx.First(&officeBak, office.ID).Error; tErr != nil {
 			return tErr
 		}
+
+		var maps = make(map[string]interface{})
+		maps["business_money"] = officeBak.BusinessMoney + office.BusinessMoney
+		maps["money"] = officeBak.Money + office.Money
+		maps["money_cold"] = officeBak.MoneyCold + office.MoneyCold
+		maps["target_load"] = officeBak.TargetLoad + office.TargetLoad
 
 		historyOffice := HistoryOffice{
 			OfficeID:            officeBak.ID,
@@ -56,14 +58,14 @@ func UpdateOfficeMoney(office *Office, employeeID int) (code int) {
 			OldMoney:            officeBak.Money,
 			OldMoneyCold:        officeBak.MoneyCold,
 			OldTargetLoad:       officeBak.TargetLoad,
-			ChangeBusinessMoney: office.BusinessMoney - officeBak.BusinessMoney,
-			ChangeMoney:         office.Money - officeBak.Money,
-			ChangeMoneyCold:     office.MoneyCold - officeBak.MoneyCold,
-			ChangeTargetLoad:    office.TargetLoad - officeBak.TargetLoad,
-			NewBusinessMoney:    office.BusinessMoney,
-			NewMoney:            office.Money,
-			NewMoneyCold:        office.MoneyCold,
-			NewTargetLoad:       office.TargetLoad,
+			ChangeBusinessMoney: office.BusinessMoney,
+			ChangeMoney:         office.Money,
+			ChangeMoneyCold:     office.MoneyCold,
+			ChangeTargetLoad:    office.TargetLoad,
+			NewBusinessMoney:    officeBak.BusinessMoney + office.BusinessMoney,
+			NewMoney:            officeBak.Money + office.Money,
+			NewMoneyCold:        officeBak.MoneyCold + office.MoneyCold,
+			NewTargetLoad:       officeBak.TargetLoad + office.TargetLoad,
 			CreateDate:          XDate{Time: time.Now()},
 			Remark:              "[直接修改] : " + office.Remark,
 		}

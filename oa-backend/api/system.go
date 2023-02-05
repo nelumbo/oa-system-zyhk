@@ -93,6 +93,7 @@ func IceSubmit(c *gin.Context) {
 	msg.Message(c, code, nil)
 }
 
+// 年度提交
 func SettSubmit(c *gin.Context) {
 	var employee models.Employee
 	var employees []models.Employee
@@ -103,6 +104,7 @@ func SettSubmit(c *gin.Context) {
 	msg.Message(c, code, nil)
 }
 
+// 年度结算
 func SettApprove(c *gin.Context) {
 	var office models.Office
 	var employees []models.Employee

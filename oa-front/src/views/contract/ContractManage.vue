@@ -25,9 +25,10 @@
                 </el-select>
             </el-col>
             <el-col :span="5">
-                <el-select v-model="base.model.employeeID" placeholder="业务员" clearable style="width: 100%;">
+                <!-- <el-select v-model="base.model.employeeID" placeholder="业务员" clearable style="width: 100%;">
                     <el-option v-for="item in base.employees" :key="item.id" :label="item.name" :value="item.id" />
-                </el-select>
+                </el-select> -->
+                <el-input v-model="base.model.employee.name" placeholder="业务员" clearable maxlength="25" />
             </el-col>
             <el-col :span="5">
                 <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
@@ -89,10 +90,10 @@
             </el-col>
         </el-row>
         <el-row :gutter="20">
-            <el-col :span="5" :offset="1">
+            <!-- <el-col :span="5" :offset="1">
                 <el-input v-model="base.model.employee.name" placeholder="业务员" clearable maxlength="25" />
-            </el-col>
-            <el-col :span="5">
+            </el-col> -->
+            <el-col :span="5" :offset="1">
                 <el-input v-model="base.model.productName" placeholder="产品" clearable maxlength="25" />
             </el-col>
         </el-row>
@@ -951,12 +952,25 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (user().my.pids.includes('19') && row.status > 0) {
+                            if (user().my.pids.includes('19') && row.status > 0 && row.status == 1) {
                                 return true
                             }
                             return false
                         },
                         label: "审批",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openApproveDialog(index, row)
+                    },
+                    {
+                        isShow: (index, row) => {
+                            if (user().my.pids.includes('19') && row.status > 0 && row.status > 1) {
+                                return true
+                            }
+                            return false
+                        },
+                        label: "管理",
                         type: "primary",
                         align: "center",
                         sortable: false,

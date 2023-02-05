@@ -21,20 +21,19 @@ func SavePurchasing(c *gin.Context) {
 	purchasingNew.Type = magic.PURCHASING_TYPE_CONTRACT
 	purchasingNew.ProductID = purchasing.ProductID
 	purchasingNew.Number = purchasing.Number
+	purchasingNew.IsSecond = purchasing.IsSecond
 	code = models.GeneralInsert(&purchasingNew)
 	msg.Message(c, code, nil)
 }
 
+// 二次提交
 func SubmitPurchasing(c *gin.Context) {
 	var purchasing models.Purchasing
 	_ = c.ShouldBindJSON(&purchasing)
 
 	purchasing.EmployeeID = c.MustGet("employeeID").(int)
-	var maps = make(map[string]interface{})
-	maps["status"] = magic.PURCHASING_STATUS_NO_CHECK
-	maps["create_date"] = time.Now()
 
-	code = models.SubmitPurchasing(&purchasing, maps)
+	code = models.SubmitPurchasing(&purchasing)
 	msg.Message(c, code, nil)
 }
 
@@ -62,9 +61,9 @@ func AddPurchasing(c *gin.Context) {
 	purchasingBak.PurchaseManID = c.MustGet("employeeID").(int)
 
 	purchasingBak.CreateDate.Time = time.Now()
-	purchasingBak.EndDate.Time = purchasingBak.CreateDate.Time
+	// purchasingBak.EndDate.Time = purchasingBak.CreateDate.Time
 
-	code = models.GeneralInsert(&purchasingBak)
+	code = models.InsertPurchasing(&purchasingBak)
 	msg.Message(c, code, nil)
 }
 
@@ -108,6 +107,9 @@ func ApprovePurchasing(c *gin.Context) {
 		maps["invoice_status"] = magic.PURCHASING_INVOICE_STATUS_NO_FINAL
 		maps["auditor_id"] = c.MustGet("employeeID").(int)
 		maps["audit_date"] = time.Now()
+		if purchasing.IsPass == true {
+			maps["end_date"] = purchasing.EndDate
+		}
 		code = models.ApprovePurchasing(&purchasingBak, maps)
 	} else {
 		code = msg.FAIL

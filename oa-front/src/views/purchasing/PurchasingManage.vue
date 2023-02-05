@@ -88,22 +88,29 @@
     <el-dialog v-model="approve.dialogVisible" title="审核" width="50%" :show-close="false">
         <el-form :model="approve.model" label-width="100px">
             <el-form-item label="产品名称">
-                <el-input v-model.trim="approve.model.product.name" readonly />
+                <el-input v-model.trim="approve.model.product.name" disabled />
             </el-form-item>
             <el-form-item label="型号">
-                <el-input v-model.trim="approve.model.product.verison" readonly />
+                <el-input v-model.trim="approve.model.product.verison" disabled />
             </el-form-item>
             <el-form-item label="品牌">
-                <el-input v-model.trim="approve.model.product.brand" readonly />
+                <el-input v-model.trim="approve.model.product.brand" disabled />
             </el-form-item>
             <el-form-item label="实际采购数量">
-                <el-input v-model.trim="approve.model.realNumber" readonly />
+                <el-input v-model.trim="approve.model.realNumber" disabled />
+            </el-form-item>
+            <el-form-item label="参考价格">
+                <el-input v-model.trim="approve.model.product.purchasePrice" disabled />
             </el-form-item>
             <el-form-item label="采购价格">
-                <el-input v-model.trim="approve.model.price" readonly />
+                <el-input v-model.trim="approve.model.price" disabled />
             </el-form-item>
             <el-form-item label="采购总价">
-                <el-input v-model.trim="approve.model.totalPrice" readonly />
+                <el-input v-model.trim="approve.model.totalPrice" disabled />
+            </el-form-item>
+            <el-divider />
+            <el-form-item label="预期到货日期">
+                <el-date-picker v-model="approve.model.endDate" type="date" placeholder="结束时间" />
             </el-form-item>
         </el-form>
         <template #footer>
@@ -181,6 +188,7 @@ const base = reactive({
     column: {
         headers: [
             {
+                type: "purchasingNo",
                 prop: "no",
                 label: "编号",
                 width: "10%"
@@ -188,7 +196,12 @@ const base = reactive({
             {
                 prop: "createDate",
                 label: "发起时间",
-                width: "10%"
+                width: "5%"
+            },
+            {
+                prop: "endDate",
+                label: "预期时间",
+                width: "5%"
             },
             {
                 prop: "employee.name",
@@ -533,7 +546,9 @@ const approve = reactive({
         realNumber: 0,
         price: 0,
         totalPrice: 0,
+        endDate: "",
         product: {
+            purchasePrice: 0,
             name: "",
             verison: "",
             brand: "",
@@ -544,7 +559,8 @@ const approve = reactive({
         approvePurchasing(
             {
                 "id": approve.model.id,
-                "isPass": approve.model.isPass
+                "isPass": approve.model.isPass,
+                "endDate": approve.model.endDate
             }
         ).then((res) => {
             if (res.status == 1) {

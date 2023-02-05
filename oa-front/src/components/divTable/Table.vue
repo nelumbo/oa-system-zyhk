@@ -151,6 +151,15 @@
                         完成量:{{ scope.row.newTargetLoad }}
                     </div>
                 </span>
+
+                <span v-if="header.type === 'purchasingNo'">
+                    <div v-if="scope.row.contractID > 0">
+                        {{ scope.row.contract.no }}
+                    </div>
+                    <div v-else>
+                        {{ scope.row.no }}
+                    </div>
+                </span>
             </template>
         </el-table-column>
     </el-table>

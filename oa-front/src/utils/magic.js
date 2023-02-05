@@ -297,6 +297,10 @@ export const PurchasingStatusItems = [
         label: '驳回',
     },
     {
+        value: 0,
+        label: '待提交',
+    },
+    {
         value: 1,
         label: '待采购确认',
     },

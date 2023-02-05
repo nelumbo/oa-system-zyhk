@@ -31,6 +31,7 @@ type Product struct {
 	Brand         string  `gorm:"type:varchar(50);comment:品牌" json:"brand"`
 	Specification string  `gorm:"type:varchar(100);comment:规格" json:"specification"`
 	Number        int     `gorm:"type:int;comment:库存数量" json:"number"`
+	NumberCount   int     `gorm:"type:int;comment:库存数量" json:"numberCount"`
 	CallNumber    int     `gorm:"type:int;comment:报警数量" json:"callNumber"`
 	Unit          string  `gorm:"type:varchar(50);comment:单位" json:"unit"`
 	DeliveryCycle string  `gorm:"type:varchar(50);comment:供货周期" json:"deliveryCycle"`
@@ -427,7 +428,10 @@ func SelectProductTrials(productTrialQuery *ProductTrial, xForms *XForms) (produ
 }
 
 func SelectProductCalls(productCallQuery *ProductCall, xForms *XForms) (productCalls []ProductCall, code int) {
-	err = db.Find(&productCalls).Count(&xForms.Total).
+	var maps = make(map[string]interface{})
+	maps["product_call.is_delete"] = false
+	tx := db.Where(maps)
+	err = tx.Find(&productCalls).Count(&xForms.Total).
 		Preload("Product").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
 		Order("id desc").Find(&productCalls).Error

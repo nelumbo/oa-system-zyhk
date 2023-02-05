@@ -334,7 +334,7 @@ const base = reactive({
                             }
                             return false
                         },
-                        label: "提交|",
+                        label: "提交",
                         type: "primary",
                         align: "center",
                         sortable: false,
@@ -355,11 +355,26 @@ const base = reactive({
                             }
                             return false
                         },
-                        label: "提交||",
+                        label: "提交",
                         type: "primary",
                         align: "center",
                         sortable: false,
                         onClick: (index, row) => base.openAddDialog(index, row)
+                    },
+                    {
+                        isShow: (index, row) => {
+                            if (row.contract.status == 2 && row.type == 3) {
+                                if (row.technicianManID == user().my.id && row.status > 1 && row.status < 6) {
+                                    return true
+                                }
+                            }
+                            return false
+                        },
+                        label: "二次采购",
+                        type: "primary",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openAdd2Dialog(index, row)
                     }
                 ]
             },
@@ -419,8 +434,16 @@ const base = reactive({
         add.task = row
         add.query()
         add.queryPurchasings()
+        add.isSecond = false
         add.dialogVisible = true
-    }
+    },
+    openAdd2Dialog: (index, row) => {
+        add.task = row
+        add.query()
+        add.queryPurchasings()
+        add.isSecond = true
+        add.dialogVisible = true
+    },
 })
 
 const view = reactive({
@@ -624,7 +647,6 @@ const next = reactive({
         id: 0,
         remark: "",
     },
-
     submit: () => {
         next.submitDisabled = true
         nextTask(next.model).then((res) => {
@@ -647,6 +669,7 @@ const next = reactive({
 const add = reactive({
     submitDisabled: false,
     dialogVisible: false,
+    isSecond: false,
     task: {
         id: null,
         contractID: null,
@@ -790,43 +813,51 @@ const add = reactive({
     },
     submit: () => {
         add.submitDisabled = true
-        nextTask({ "id": add.task.id, "remark": add.task.remark }).then((res) => {
-            if (res.status == 1) {
-                message("提交成功", "success")
-                base.query()
-            } else {
-                message("提交失败", "error")
-            }
-            add.dialogVisible = false
-            add.task = {
-                "id": null,
-                "contractID": null,
-            }
-            add.model = {
-                name: "",
-                version: "",
-                specification: "",
-            }
-            add.submitDisabled = false
-        })
-        // submitPurchasing({ "contractID": add.task.contractID, "taskID": add.task.id }).then((res) => {
-        //     if (res.status == 1) {
-        //         message("提交成功", "success")
-        //     } else {
-        //         message("提交失败", "error")
-        //     }
-        //     add.dialogVisible = false
-        //     add.task = {
-        //         "id": null,
-        //         "contractID": null,
-        //     }
-        //     add.model = {
-        //         name: "",
-        //         version: "",
-        //         specification: "",
-        //     }
-        //     add.submitDisabled = false
-        // })
+
+        if (add.isSecond) {
+            submitPurchasing({
+                "contractID": add.task.contractID,
+                "taskID": add.task.id
+            }).then((res) => {
+                if (res.status == 1) {
+                    message("提交成功", "success")
+                    base.query()
+                } else {
+                    message("提交失败", "error")
+                }
+                add.dialogVisible = false
+                add.task = {
+                    "id": null,
+                    "contractID": null,
+                }
+                add.model = {
+                    name: "",
+                    version: "",
+                    specification: "",
+                }
+                add.submitDisabled = false
+            })
+        } else {
+            nextTask({ "id": add.task.id, "remark": add.task.remark }).then((res) => {
+                if (res.status == 1) {
+                    message("提交成功", "success")
+                    base.query()
+                } else {
+                    message("提交失败", "error")
+                }
+                add.dialogVisible = false
+                add.task = {
+                    "id": null,
+                    "contractID": null,
+                }
+                add.model = {
+                    name: "",
+                    version: "",
+                    specification: "",
+                }
+                add.submitDisabled = false
+            })
+        }
     },
     queryPurchasings: () => {
         queryMySavePurchasings({ "contractID": add.task.contractID, "taskID": add.task.id }).then((res) => {

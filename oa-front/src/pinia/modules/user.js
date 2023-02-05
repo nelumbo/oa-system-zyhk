@@ -7,7 +7,8 @@ export const user = defineStore('user', () => {
         name: "空白",
         officeID: null,
         roles: [],
-        pids: []
+        pids: [],
+        urls: [],
     })
 
     function setMy(obj) {
@@ -16,6 +17,7 @@ export const user = defineStore('user', () => {
         my.officeID = obj.officeID
         my.roles = obj.roles
         my.pids = obj.pids
+        my.urls = obj.urls
     }
     return { my, setMy }
 })

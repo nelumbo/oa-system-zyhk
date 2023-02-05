@@ -34,67 +34,67 @@
       </el-icon>
       <span>首页</span>
     </el-menu-item>
-    <el-menu-item index="/expense">
+    <el-menu-item index="/expense" v-if="user().my.urls.includes('1')">
       <el-icon>
         <Money />
       </el-icon>
       <span>我的报销</span>
     </el-menu-item>
-    <el-menu-item index="/contract">
+    <el-menu-item index="/contract" v-if="user().my.urls.includes('2')">
       <el-icon>
         <Files />
       </el-icon>
       <span>合同管理</span>
     </el-menu-item>
-    <el-menu-item index="/predesign">
+    <el-menu-item index="/predesign" v-if="user().my.urls.includes('3')">
       <el-icon>
         <List />
       </el-icon>
       <span>预设计管理</span>
     </el-menu-item>
-    <el-menu-item index="/customer">
+    <el-menu-item index="/customer" v-if="user().my.urls.includes('4')">
       <el-icon>
         <User />
       </el-icon>
       <span>客户管理</span>
     </el-menu-item>
-    <el-menu-item index="/product">
+    <el-menu-item index="/product" v-if="user().my.urls.includes('5')">
       <el-icon>
         <Box />
       </el-icon>
       <span>产品管理</span>
     </el-menu-item>
-    <el-menu-item index="/product_trial">
+    <el-menu-item index="/product_trial" v-if="user().my.urls.includes('11')">
       <el-icon>
         <Box />
       </el-icon>
       <span>试用管理</span>
     </el-menu-item>
-    <el-menu-item index="/purchasing">
+    <el-menu-item index="/purchasing" v-if="user().my.urls.includes('6')">
       <el-icon>
         <ShoppingTrolley />
       </el-icon>
       <span>采购管理</span>
     </el-menu-item>
-    <el-menu-item index="/finance">
+    <el-menu-item index="/finance" v-if="user().my.urls.includes('7')">
       <el-icon>
         <Ticket />
       </el-icon>
       <span>财务管理</span>
     </el-menu-item>
-    <el-menu-item index="/enterprise">
+    <el-menu-item index="/enterprise" v-if="user().my.urls.includes('8')">
       <el-icon>
         <Avatar />
       </el-icon>
       <span>企业管理</span>
     </el-menu-item>
-    <el-menu-item index="/log">
+    <el-menu-item index="/log" v-if="user().my.urls.includes('9')">
       <el-icon>
         <Checked />
       </el-icon>
       <span>日志系统</span>
     </el-menu-item>
-    <el-menu-item index="/end">
+    <el-menu-item index="/end" v-if="user().my.urls.includes('10')">
       <el-icon>
         <Checked />
       </el-icon>

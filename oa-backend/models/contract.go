@@ -523,6 +523,9 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 	if contractQuery.EmployeeID != 0 {
 		maps["contract.employee_id"] = contractQuery.EmployeeID
 	}
+	if contractQuery.OfficeID != 0 {
+		maps["contract.office_id"] = contractQuery.OfficeID
+	}
 	if contractQuery.RegionID != 0 {
 		maps["contract.region_id"] = contractQuery.RegionID
 	}
@@ -813,9 +816,11 @@ func NextTask(task *Task, maps map[string]interface{}, employeeID int) (code int
 			var pMaps = make(map[string]interface{})
 			pMaps["status"] = magic.PURCHASING_STATUS_NO_CHECK
 			pMaps["create_date"] = time.Now()
-			err = db.Model(&Purchasing{}).
+			if tErr := tx.Model(&Purchasing{}).
 				Where("contract_id = ? AND task_id = ? AND employee_id = ? AND status = ?", task.ContractID, task.ID, employeeID, magic.PURCHASING_STATUS_SAVE).
-				Updates(pMaps).Error
+				Updates(pMaps).Error; tErr != nil {
+				return tErr
+			}
 		}
 		return nil
 	})

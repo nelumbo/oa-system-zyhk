@@ -121,7 +121,7 @@ func SelectHistoryEmployees(historyEmployee *HistoryEmployee, xForms *XForms) (h
 	err = tx.Find(&historyEmployees).Count(&xForms.Total).
 		Preload("User.Office").Preload("Employee").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
-		Order("history_employee.create_date desc").
+		Order("history_employee.id desc").
 		Find(&historyEmployees).Error
 	if err != nil {
 		return historyEmployees, msg.ERROR
@@ -155,7 +155,7 @@ func SelectHistoryOffices(historyOffice *HistoryOffice, xForms *XForms) (history
 		Order("id desc").
 		Preload("Office").Preload("Employee").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
-		Order("history_office.create_date desc").
+		Order("history_office.id desc").
 		Find(&historyOffices).Error
 	if err != nil {
 		return historyOffices, msg.ERROR
@@ -172,7 +172,7 @@ func SelectHistoryProducts(historyProduct *HistoryProduct, xForms *XForms) (hist
 	err = tx.Find(&historyProducts).Count(&xForms.Total).
 		Preload("Employee").Preload("Product").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
-		Order("history_product.create_date desc").
+		Order("history_product.id desc").
 		Find(&historyProducts).Error
 	if err != nil {
 		return historyProducts, msg.ERROR

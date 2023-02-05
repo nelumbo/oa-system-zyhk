@@ -100,7 +100,7 @@
                 <el-form-item label="邮箱">
                     <el-input v-model="view.model.email" disabled />
                 </el-form-item>
-                <el-form-item label="初始补助额度">
+                <el-form-item label="补助额度">
                     <el-input v-model.trim="view.model.money" disabled />
                 </el-form-item>
                 <el-form-item label="每月总部补助额度">
@@ -442,6 +442,7 @@ const base = reactive({
             if (res.status == 1) {
                 edit.model = res.data
             }
+            edit.model.money = 0
         })
         edit.expenseDialogVisivle = true
     },

@@ -184,9 +184,12 @@ func ApprovePredesignTask(predesignTaskBak *PredesignTask, maps map[string]inter
 				return tErr
 			}
 			//扣除本月100职位补贴
-			if tErr := tx.Exec("UPDATE employee SET role_credit_del = role_credit_del + 100 WHERE id = ?", predesignTaskBak.EmployeeID).Error; tErr != nil {
+			if tErr := tx.Model(&Employee{}).Where("id = ?", predesignTaskBak.EmployeeID).Update("role_credit_del", gorm.Expr("role_credit_del + ?", 100)).Error; tErr != nil {
 				return tErr
 			}
+			// if tErr := tx.Exec("UPDATE employee SET role_credit_del = role_credit_del + 100 WHERE id = ?", predesignTaskBak.EmployeeID).Error; tErr != nil {
+			// 	return tErr
+			// }
 			return nil
 		})
 	}

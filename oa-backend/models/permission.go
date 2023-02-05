@@ -21,5 +21,6 @@ type Url struct {
 
 func SelectAllPermission(employee *Employee) (code int) {
 	db.Raw("SELECT distinct permission_id FROM role_permission WHERE role_id IN (SELECT role_id AS id FROM employee_role WHERE employee_id = ? UNION SELECT role_id AS id FROM office WHERE id = ?)", employee.ID, employee.OfficeID).Scan(&employee.Pids)
+	db.Raw("SELECT distinct permission.url_id FROM (SELECT distinct permission_id FROM role_permission WHERE role_id IN (SELECT role_id AS id FROM employee_role WHERE employee_id = ? UNION SELECT role_id AS id FROM office WHERE id = ?)) temp LEFT JOIN permission ON temp.permission_id = permission.id WHERE permission.url_id IS NOT NULL ", employee.ID, employee.OfficeID).Scan(&employee.Urls)
 	return
 }

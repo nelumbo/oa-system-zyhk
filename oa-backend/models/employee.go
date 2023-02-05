@@ -37,6 +37,7 @@ type Employee struct {
 
 	Remark string   `gorm:"-" json:"remark"`
 	Pids   []string `gorm:"-" json:"pids"`
+	Urls   []string `gorm:"-" json:"urls"`
 }
 
 func UpdateEmployeeOffice(employee *Employee) (code int) {
@@ -64,23 +65,24 @@ func UpdateEmployeeOffice(employee *Employee) (code int) {
 }
 
 func UpdateEmployeeMoney(employee *Employee, employeeID int) (code int) {
-	var maps = make(map[string]interface{})
-	maps["money"] = employee.Money
-	maps["credit"] = employee.Credit
-	maps["office_credit"] = employee.OfficeCredit
-	maps["role_credit"] = employee.RoleCredit
+
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var employeeBak Employee
 		if tErr := tx.First(&employeeBak, employee.ID).Error; tErr != nil {
 			return tErr
 		}
+		var maps = make(map[string]interface{})
+		maps["money"] = employeeBak.Money + employee.Money
+		maps["credit"] = employee.Credit
+		maps["office_credit"] = employee.OfficeCredit
+		maps["role_credit"] = employee.RoleCredit
 
 		historyEmployee := HistoryEmployee{
 			UserID:      employee.ID,
 			EmployeeID:  employeeID,
 			OldMoney:    employeeBak.Money,
-			ChangeMoney: employee.Money - employeeBak.Money,
-			NewMoney:    employee.Money,
+			ChangeMoney: employee.Money,
+			NewMoney:    employeeBak.Money + employee.Money,
 			CreateDate:  XDate{Time: time.Now()},
 			Remark:      "[直接修改] : " + employee.Remark,
 		}
