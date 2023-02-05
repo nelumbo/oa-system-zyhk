@@ -27,3 +27,13 @@ func QueryHistoryOffices(c *gin.Context) {
 	xForms.Data, code = models.SelectHistoryOffices(&historyOffice, &xForms)
 	msg.Message(c, code, xForms)
 }
+
+func QueryHistoryProducts(c *gin.Context) {
+	var historyProduct models.HistoryProduct
+	_ = c.ShouldBindJSON(&historyProduct)
+
+	xForms := ginUtil.GinArrayPreprocessing(c)
+
+	xForms.Data, code = models.SelectHistoryProducts(&historyProduct, &xForms)
+	msg.Message(c, code, xForms)
+}

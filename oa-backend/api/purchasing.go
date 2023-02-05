@@ -128,7 +128,7 @@ func FinalPurchasingProductStatus(c *gin.Context) {
 		maps["real_end_date"] = time.Now()
 		maps["product_status"] = magic.PURCHASING_PRODUCT_STATUS_FINAL
 		maps["product_remark"] = purchasing.ProductRemark
-		code = models.GeneralUpdate(&models.Purchasing{}, purchasingBak.ID, maps)
+		code = models.UpdatePurchasingProductStatus(&purchasingBak, maps, c.MustGet("employeeID").(int))
 	} else {
 		code = msg.FAIL
 	}
@@ -186,7 +186,9 @@ func FinalPurchasing(c *gin.Context) {
 		purchasingBak.ProductStatus == magic.PURCHASING_PRODUCT_STATUS_FINAL &&
 		purchasingBak.PayStatus == magic.PURCHASING_PAY_STATUS_FINAL &&
 		purchasingBak.InvoiceStatus == magic.PURCHASING_INVOICE_STATUS_FINAL {
-		code = models.FinalPurchasing(&purchasingBak)
+		var maps = make(map[string]interface{})
+		maps["status"] = magic.PURCHASING_STATUS_FINAL
+		code = models.GeneralUpdate(&models.Purchasing{}, purchasingBak.ID, maps)
 	} else {
 		code = msg.FAIL
 	}

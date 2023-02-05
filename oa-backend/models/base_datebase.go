@@ -63,11 +63,13 @@ func initDB() {
 
 		&HistoryEmployee{},
 		&HistoryOffice{},
+		&HistoryProduct{},
 
 		&System{},
 		&OfficeBak{},
 
 		&ProductTrial{},
+		&ProductCall{},
 	)
 
 	sqlDB, _ := db.DB()

@@ -62,7 +62,7 @@ func EditProductNumber(c *gin.Context) {
 	var product models.Product
 	_ = c.ShouldBindJSON(&product)
 
-	code = models.UpdateProductNumber(&product)
+	code = models.UpdateProductNumber(&product, c.MustGet("employeeID").(int))
 	msg.Message(c, code, nil)
 }
 

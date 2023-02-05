@@ -220,21 +220,41 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 
 			err = db.Transaction(func(tx *gorm.DB) error {
 
-				if contractBak.IsPreDeposit {
+				if !contractBak.IsPreDeposit {
 					var contract Contract
 					if tErr := tx.Preload("Tasks").Where("is_delete = ?", false).First(&contract, contractBak.ID).Error; tErr != nil {
 						return tErr
 					}
 					//产品库存减少
 					for i := range contract.Tasks {
-						if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", contract.Tasks[i].Number, contract.Tasks[i].ProductID).Error; tErr != nil {
+
+						// if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", contract.Tasks[i].Number, contract.Tasks[i].ProductID).Error; tErr != nil {
+						// 	return tErr
+						// }
+						if tErr := tx.Model(&Product{}).Where("id = ?", contract.Tasks[i].ProductID).Update("number", gorm.Expr("number - ?", contract.Tasks[i].Number)).Error; tErr != nil {
+							return tErr
+						}
+						historyProduct := HistoryProduct{
+							CreateDate: XDate{Time: time.Now()},
+							EmployeeID: maps["auditor_id"].(int),
+							ProductID:  contract.Tasks[i].ProductID,
+							Number:     0 - contract.Tasks[i].Number,
+							Remark:     "合同(" + no + ")审批通过",
+						}
+						if tErr := InsertHistoryProduct(&historyProduct, tx); tErr != nil {
+							return tErr
+						}
+						if tErr := InsertProductCall(contract.Tasks[i].ProductID, contract.Tasks[i].Number, tx); tErr != nil {
 							return tErr
 						}
 					}
 				}
 
 				//业务员累计合同数目+1
-				if tErr := tx.Exec("UPDATE employee SET contract_count = contract_count + 1 WHERE id = ?", contractBak.EmployeeID).Error; tErr != nil {
+				// if tErr := tx.Exec("UPDATE employee SET contract_count = contract_count + 1 WHERE id = ?", contractBak.EmployeeID).Error; tErr != nil {
+				// 	return tErr
+				// }
+				if tErr := tx.Model(&Employee{}).Where("id = ?", contractBak.EmployeeID).Update("contract_count", gorm.Expr("contract_count + ?", 1)).Error; tErr != nil {
 					return tErr
 				}
 				//更新合同信息
@@ -714,7 +734,24 @@ func DistributeTask(task *Task, maps map[string]interface{}, employeeID int) (co
 				return tErr
 			}
 			//减少库存
-			if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", task.Number, task.ProductID).Error; tErr != nil {
+			// if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", task.Number, task.ProductID).Error; tErr != nil {
+			// 	return tErr
+			// }
+			if tErr := tx.Model(&Product{}).Where("id = ?", task.ProductID).Update("number", gorm.Expr("number - ?", task.Number)).Error; tErr != nil {
+				return tErr
+			}
+
+			historyProduct := HistoryProduct{
+				CreateDate: XDate{Time: time.Now()},
+				EmployeeID: employeeID,
+				ProductID:  task.ProductID,
+				Number:     0 - task.Number,
+				Remark:     "预存款合同(" + taskBak.Contract.No + ")任务审批通过",
+			}
+			if tErr := InsertHistoryProduct(&historyProduct, tx); tErr != nil {
+				return tErr
+			}
+			if tErr := InsertProductCall(task.ProductID, task.Number, tx); tErr != nil {
 				return tErr
 			}
 			return nil

@@ -161,6 +161,7 @@ func Init() {
 
 		tRouter.POST("historyOffices", api.QueryHistoryOffices)
 		tRouter.POST("historyEmployees", api.QueryHistoryEmployees)
+		tRouter.POST("historyProducts", api.QueryHistoryProducts)
 
 		tRouter.GET("ice", api.IceGet)
 		tRouter.PUT("ice/start", api.IceStart)
@@ -175,6 +176,8 @@ func Init() {
 		tRouter.PUT("productTrial", api.EditProductTrial)
 		tRouter.PUT("productTrial/next", api.NextProductTrial)
 		tRouter.POST("productTrials", api.QueryProductTrials)
+
+		tRouter.POST("productCalls", api.QueryProductCalls)
 	}
 
 	_ = r.Run(config.SystemConfig.Server.Port)

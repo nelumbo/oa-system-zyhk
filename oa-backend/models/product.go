@@ -96,6 +96,34 @@ type ProductTrial struct {
 	Final     Employee `gorm:"foreignKey:FinalID" json:"final"`
 }
 
+type ProductCall struct {
+	ID         int   `gorm:"primary_key" json:"id"`
+	IsDelete   bool  `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
+	ProductID  int   `gorm:"type:int;comment:产品ID" json:"productID"`
+	CreateDate XDate `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
+
+	Product Product `gorm:"foreignKey:ProductID" json:"product"`
+}
+
+func InsertProductCall(productID int, number int, tx *gorm.DB) (err error) {
+	var productBak Product
+	if tErr := tx.First(&productBak, productID).Error; tErr != nil {
+		return tErr
+	}
+
+	if (productBak.Number - number) <= productBak.CallNumber {
+		productCall := ProductCall{
+			ProductID:  productID,
+			CreateDate: XDate{Time: time.Now()},
+		}
+		if tErr := tx.Create(&productCall).Error; tErr != nil {
+			return tErr
+		}
+	}
+
+	return nil
+}
+
 func SelectSuppliers(supplierQuery *Supplier, xForms *XForms) (suppliers []Supplier, code int) {
 	tx := db.Where("is_delete = ?", false)
 
@@ -201,11 +229,21 @@ func UpdateProductAttribute(product *Product) (code int) {
 	return
 }
 
-func UpdateProductNumber(product *Product) (code int) {
-	//TODO日志
+func UpdateProductNumber(product *Product, employeeID int) (code int) {
 	err = db.Transaction(func(tx *gorm.DB) error {
 
 		if tErr := tx.Model(&Product{}).Where("id", product.ID).Update("number", product.Number).Error; tErr != nil {
+			return tErr
+		}
+
+		historyProduct := HistoryProduct{
+			CreateDate: XDate{Time: time.Now()},
+			EmployeeID: employeeID,
+			ProductID:  product.ID,
+			Number:     product.Number,
+			Remark:     "直接编辑",
+		}
+		if tErr := InsertHistoryProduct(&historyProduct, tx); tErr != nil {
 			return tErr
 		}
 
@@ -273,17 +311,33 @@ func NextProductTrial(productTrial *ProductTrial, productTrialBak *ProductTrial,
 	var maps = make(map[string]interface{})
 
 	if productTrialBak.Status == magic.PRODUCT_TRIAL_STATUS_NO_APPROVE {
+		maps["auditor_id"] = employeeID
+		maps["audit_date"] = XDate{Time: time.Now()}
 		if productTrial.Status == magic.PRODUCT_TRIAL_STATUS_NO_SEND {
+			maps["status"] = magic.PRODUCT_TRIAL_STATUS_NO_SEND
 			err = db.Transaction(func(tx *gorm.DB) error {
 
 				if tErr := tx.Model(&Product{}).Where("id", productTrialBak.ProductID).Update("number", gorm.Expr("number - ?", productTrialBak.Number)).Error; tErr != nil {
 					return tErr
 				}
 
-				if tErr := tx.Model(&ProductTrial{}).Where("id", productTrialBak.ID).Updates(map[string]interface{}{"status": magic.PRODUCT_TRIAL_STATUS_NO_SEND, "auditor_id": employeeID, "audit_date": XDate{Time: time.Now()}}).Error; tErr != nil {
+				if tErr := tx.Model(&ProductTrial{}).Where("id", productTrialBak.ID).Updates(maps).Error; tErr != nil {
 					return tErr
 				}
 
+				historyProduct := HistoryProduct{
+					CreateDate: XDate{Time: time.Now()},
+					EmployeeID: employeeID,
+					ProductID:  productTrialBak.ProductID,
+					Number:     0 - productTrialBak.Number,
+					Remark:     "试用产品审批通过",
+				}
+				if tErr := InsertHistoryProduct(&historyProduct, tx); tErr != nil {
+					return tErr
+				}
+				if tErr := InsertProductCall(productTrialBak.ProductID, productTrialBak.Number, tx); tErr != nil {
+					return tErr
+				}
 				return nil
 			})
 
@@ -294,8 +348,6 @@ func NextProductTrial(productTrial *ProductTrial, productTrialBak *ProductTrial,
 
 		} else if productTrial.Status == magic.PRODUCT_TRIAL_STATUS_REJECT {
 			maps["status"] = magic.PRODUCT_TRIAL_STATUS_REJECT
-			maps["auditor_id"] = employeeID
-			maps["audit_date"] = XDate{Time: time.Now()}
 		}
 	} else if productTrialBak.Status == magic.PRODUCT_TRIAL_STATUS_NO_SEND && productTrial.Status == magic.PRODUCT_TRIAL_STATUS_NO_BACK {
 		maps["status"] = magic.PRODUCT_TRIAL_STATUS_NO_BACK
@@ -307,6 +359,34 @@ func NextProductTrial(productTrial *ProductTrial, productTrialBak *ProductTrial,
 		maps["inventory_id"] = employeeID
 		maps["inventory_date"] = XDate{Time: time.Now()}
 		maps["remark4"] = productTrial.Remark4
+		err = db.Transaction(func(tx *gorm.DB) error {
+
+			if tErr := tx.Model(&Product{}).Where("id", productTrialBak.ProductID).Update("number", gorm.Expr("number + ?", productTrialBak.Number)).Error; tErr != nil {
+				return tErr
+			}
+
+			if tErr := tx.Model(&ProductTrial{}).Where("id", productTrialBak.ID).Updates(maps).Error; tErr != nil {
+				return tErr
+			}
+
+			historyProduct := HistoryProduct{
+				CreateDate: XDate{Time: time.Now()},
+				EmployeeID: employeeID,
+				ProductID:  productTrialBak.ProductID,
+				Number:     productTrialBak.Number,
+				Remark:     "试用产品归还",
+			}
+			if tErr := InsertHistoryProduct(&historyProduct, tx); tErr != nil {
+				return tErr
+			}
+
+			return nil
+		})
+
+		if err != nil {
+			return msg.ERROR
+		}
+		return msg.SUCCESS
 	} else if productTrialBak.Status == magic.PRODUCT_TRIAL_STATUS_NO_FINAL && productTrial.Status == magic.PRODUCT_TRIAL_STATUS_FINAL {
 		maps["status"] = magic.PRODUCT_TRIAL_STATUS_FINAL
 		maps["final_id"] = employeeID
@@ -344,4 +424,16 @@ func SelectProductTrials(productTrialQuery *ProductTrial, xForms *XForms) (produ
 		return nil, msg.ERROR
 	}
 	return productTrials, msg.SUCCESS
+}
+
+func SelectProductCalls(productCallQuery *ProductCall, xForms *XForms) (productCalls []ProductCall, code int) {
+	err = db.Find(&productCalls).Count(&xForms.Total).
+		Preload("Product").
+		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
+		Order("id desc").Find(&productCalls).Error
+
+	if err != nil && err != gorm.ErrRecordNotFound {
+		return nil, msg.ERROR
+	}
+	return productCalls, msg.SUCCESS
 }

@@ -3,6 +3,8 @@ package models
 import (
 	"oa-backend/utils/magic"
 	"oa-backend/utils/msg"
+	"strconv"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -89,13 +91,23 @@ func ApprovePurchasing(purchasing *Purchasing, maps map[string]interface{}) (cod
 	return msg.SUCCESS
 }
 
-func FinalPurchasing(purchasing *Purchasing) (code int) {
+func UpdatePurchasingProductStatus(purchasing *Purchasing, maps map[string]interface{}, employeeID int) (code int) {
 	err = db.Transaction(func(tx *gorm.DB) error {
 
-		if tErr := tx.Model(&Purchasing{}).Where("id", purchasing.ID).Update("status", magic.PURCHASING_STATUS_FINAL).Error; tErr != nil {
+		if tErr := tx.Model(&Purchasing{}).Where("id", purchasing.ID).Updates(maps).Error; tErr != nil {
 			return tErr
 		}
-		if tErr := tx.Exec("UPDATE product SET number = number + ?,number_count = number_count + ? WHERE id = ?", purchasing.RealNumber, purchasing.RealNumber, purchasing.ProductID).Error; tErr != nil {
+		if tErr := tx.Exec("UPDATE product SET number = number + ? WHERE id = ?", purchasing.RealNumber, purchasing.ProductID).Error; tErr != nil {
+			return tErr
+		}
+		historyProduct := HistoryProduct{
+			CreateDate: XDate{Time: time.Now()},
+			EmployeeID: employeeID,
+			ProductID:  purchasing.ProductID,
+			Number:     purchasing.RealNumber,
+			Remark:     "采购(ID:" + strconv.Itoa(purchasing.ID) + ")确认收货",
+		}
+		if tErr := InsertHistoryProduct(&historyProduct, tx); tErr != nil {
 			return tErr
 		}
 		return nil

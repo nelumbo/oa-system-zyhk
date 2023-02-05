@@ -51,14 +51,40 @@ type HistoryOffice struct {
 	EndDate   string `gorm:"-" json:"endDate"`
 }
 
+type HistoryProduct struct {
+	ID         int    `gorm:"primary_key" json:"id"`
+	CreateDate XDate  `gorm:"type:date;comment:创建日期;default:(-)" json:"createDate"`
+	EmployeeID int    `gorm:"type:int;comment:操作人ID;default:(-)" json:"employeeID"`
+	ProductID  int    `gorm:"type:int;comment:产品ID" json:"productID"`
+	Number     int    `gorm:"type:int;comment:数量" json:"number"`
+	Remark     string `gorm:"type:varchar(200);comment:备注" json:"remark"`
+
+	Product  Product  `gorm:"foreignKey:ProductID" json:"product"`
+	Employee Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
+}
+
 func InsertHistoryEmployee(historyEmployee *HistoryEmployee, tx *gorm.DB) (err error) {
-	err = tx.Create(&historyEmployee).Error
-	return err
+	tErr := tx.Create(&historyEmployee).Error
+	if tErr != nil {
+		return tErr
+	}
+	return nil
 }
 
 func InsertHistoryOffice(historyOffice *HistoryOffice, tx *gorm.DB) (err error) {
-	err = tx.Create(&historyOffice).Error
-	return err
+	tErr := tx.Create(&historyOffice).Error
+	if tErr != nil {
+		return tErr
+	}
+	return nil
+}
+
+func InsertHistoryProduct(historyProduct *HistoryProduct, tx *gorm.DB) (err error) {
+	tErr := tx.Create(&historyProduct).Error
+	if tErr != nil {
+		return tErr
+	}
+	return nil
 }
 
 func SelectHistoryEmployees(historyEmployee *HistoryEmployee, xForms *XForms) (historyEmployees []HistoryEmployee, code int) {
@@ -67,7 +93,7 @@ func SelectHistoryEmployees(historyEmployee *HistoryEmployee, xForms *XForms) (h
 		maps["history_employee.user_id"] = historyEmployee.UserID
 	}
 
-	tx := db.Debug().Where(maps).Joins("User")
+	tx := db.Where(maps).Joins("User")
 
 	if historyEmployee.User.OfficeID != 0 {
 		tx = tx.Joins("left join office on User.office_id = office.id").Where("office.id = ?", historyEmployee.User.OfficeID)
@@ -135,4 +161,21 @@ func SelectHistoryOffices(historyOffice *HistoryOffice, xForms *XForms) (history
 		return historyOffices, msg.ERROR
 	}
 	return historyOffices, msg.SUCCESS
+}
+
+func SelectHistoryProducts(historyProduct *HistoryProduct, xForms *XForms) (historyProducts []HistoryProduct, code int) {
+	tx := db.Joins("Product")
+	if historyProduct.Product.Name != "" {
+		tx = tx.Where("Product.name Like ?", "%"+historyProduct.Product.Name+"%")
+	}
+
+	err = tx.Find(&historyProducts).Count(&xForms.Total).
+		Preload("Employee").Preload("Product").
+		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
+		Order("history_product.create_date desc").
+		Find(&historyProducts).Error
+	if err != nil {
+		return historyProducts, msg.ERROR
+	}
+	return historyProducts, msg.SUCCESS
 }
