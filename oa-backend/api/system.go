@@ -21,7 +21,7 @@ func Login(c *gin.Context) {
 	employee, code = models.SelectEmployeeByPhoneAndPwd(employee.Phone, employee.Password)
 
 	if code == msg.SUCCESS {
-		token, _ = middleware.GenerateToken(employee.ID)
+		token, _ = middleware.GenerateToken(employee)
 	}
 
 	msg.Message(c, code, gin.H{
@@ -33,12 +33,25 @@ func Login(c *gin.Context) {
 func TopList(c *gin.Context) {
 	//office1:普通合同待回款量
 	//office2:预付款合同待回款量
-	var offices, offices1, offices2 []models.Office
+	var employee models.Employee
+	employee.ID = c.MustGet("employeeID").(int)
+	employee.OfficeID = c.MustGet("officeID").(int)
+	_ = models.SelectAllPermission(&employee)
+
+	var offices, offices1, offices2, office_js []models.Office
 	var productTypes []models.ProductType
-	var maps = make(map[string]interface{})
-	maps["is_ranking"] = true
-	code = models.GeneralSelectAll(&offices, maps)
+	code = models.GeneralSelectAll(&offices, map[string]interface{}{"ranking_no": 1})
+	code = models.GeneralSelectAll(&office_js, map[string]interface{}{"ranking_no": 2})
+
 	offices1, offices2, productTypes = models.SelectNotPaymentForTopList()
+
+	seeAll := false
+	for k := range employee.Pids {
+		if employee.Pids[k] == "2" {
+			seeAll = true
+			break
+		}
+	}
 
 	for i := range offices {
 		for j := range offices1 {
@@ -58,12 +71,21 @@ func TopList(c *gin.Context) {
 		} else {
 			offices[i].FinalPercentages = round((offices[i].TargetLoad / offices[i].TaskLoad * 100), 2)
 		}
+
+		if !seeAll && offices[i].ID != employee.OfficeID {
+			offices[i].TargetLoad = 0
+			offices[i].TaskLoad = 0
+			offices[i].NotPayment = 0
+			offices[i].YWTargetLoad = 0
+			offices[i].ZYTargetLoad = 0
+			offices[i].QDTargetLoad = 0
+		}
 	}
 	sort.SliceStable(offices, func(i, j int) bool {
 		return offices[i].FinalPercentages > offices[j].FinalPercentages
 	})
 
-	msg.Message(c, code, map[string]interface{}{"offices": offices, "productTypes": productTypes})
+	msg.Message(c, code, map[string]interface{}{"offices": offices, "productTypes": productTypes, "offices_js": office_js})
 }
 
 func IceGet(c *gin.Context) {

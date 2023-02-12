@@ -408,3 +408,18 @@ export const ProductTrialStatusItems = [
         label: '完成',
     },
 ]
+
+export const OfficeRankingNoItems = [
+    {
+        value: 0,
+        label: '不入榜',
+    },
+    {
+        value: 1,
+        label: '销售榜',
+    },
+    {
+        value: 2,
+        label: '技术榜',
+    },
+]

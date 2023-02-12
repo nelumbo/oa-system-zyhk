@@ -21,6 +21,7 @@ func AddOffice(c *gin.Context) {
 		TaskLoad:      office.TaskLoad,
 		RoleID:        office.RoleID,
 		IsRanking:     office.IsRanking,
+		RankingNo:     office.RankingNo,
 		BusinessMoney: 0,
 		Money:         0,
 		MoneyCold:     0,
@@ -81,6 +82,7 @@ func EditOfficeBase(c *gin.Context) {
 		maps["role_id"] = office.RoleID
 	}
 	maps["is_ranking"] = office.IsRanking
+	maps["ranking_no"] = office.RankingNo
 	code = models.GeneralUpdate(&models.Office{}, office.ID, maps)
 	msg.Message(c, code, nil)
 }

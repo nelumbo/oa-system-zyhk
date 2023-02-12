@@ -227,10 +227,6 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 					}
 					//产品库存减少
 					for i := range contract.Tasks {
-
-						// if tErr := tx.Exec("UPDATE product SET number = number - ? WHERE id = ?", contract.Tasks[i].Number, contract.Tasks[i].ProductID).Error; tErr != nil {
-						// 	return tErr
-						// }
 						if tErr := tx.Model(&Product{}).Where("id = ?", contract.Tasks[i].ProductID).Update("number", gorm.Expr("number - ?", contract.Tasks[i].Number)).Error; tErr != nil {
 							return tErr
 						}
@@ -251,9 +247,6 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 				}
 
 				//业务员累计合同数目+1
-				// if tErr := tx.Exec("UPDATE employee SET contract_count = contract_count + 1 WHERE id = ?", contractBak.EmployeeID).Error; tErr != nil {
-				// 	return tErr
-				// }
 				if tErr := tx.Model(&Employee{}).Where("id = ?", contractBak.EmployeeID).Update("contract_count", gorm.Expr("contract_count + ?", 1)).Error; tErr != nil {
 					return tErr
 				}
@@ -261,11 +254,10 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 				if tErr := tx.Model(&Contract{ID: contractBak.ID}).Updates(maps).Error; tErr != nil {
 					return tErr
 				}
-
 				return nil
 			})
 		} else {
-			return
+			return msg.ERROR
 		}
 	} else {
 		maps["status"] = magic.CONTRACT_STATUS_REJECT
@@ -277,7 +269,10 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 			return nil
 		})
 	}
-	return
+	if err != nil {
+		return msg.FAIL
+	}
+	return msg.SUCCESS
 }
 
 // 合同完成
@@ -575,17 +570,17 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 	}
 
 	if contractQuery.Customer.CustomerCompany.Name != "" && contractQuery.Customer.Name != "" {
-		tx = tx.Joins("customer").
+		tx = tx.Joins("left join customer on contract.customer_id = customer.id").
 			Joins("left join customer_company on customer.customer_company_id = customer_company.id").
 			Where("customer.name LIKE ? AND customer_company.name LIKE ?", "%"+contractQuery.Customer.Name+"%", "%"+contractQuery.Customer.CustomerCompany.Name+"%")
 	} else {
 		if contractQuery.Customer.CustomerCompany.Name != "" {
-			tx = tx.Joins("customer").
-				Joins("left join customer_company on Customer.customer_company_id = customer_company.id").
+			tx = tx.Joins("left join customer on contract.customer_id = customer.id").
+				Joins("left join customer_company on customer.customer_company_id = customer_company.id").
 				Where("customer_company.name LIKE ?", "%"+contractQuery.Customer.CustomerCompany.Name+"%")
 		}
 		if contractQuery.Customer.Name != "" {
-			tx = tx.Joins("customer").
+			tx = tx.Joins("left join customer on contract.customer_id = customer.id").
 				Where("customer.name LIKE ?", "%"+contractQuery.Customer.Name+"%")
 		}
 	}

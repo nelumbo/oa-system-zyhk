@@ -1,7 +1,7 @@
 <template>
     <div v-if="user().my.pids.includes('1') || user().my.pids.includes('2')">
         <el-divider content-position="left">
-            <h2>排行榜</h2>
+            <h2>销售排行榜</h2>
         </el-divider>
         <ranking />
     </div>

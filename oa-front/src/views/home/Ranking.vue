@@ -12,6 +12,12 @@
     </el-row> -->
     <el-row style="margin-top: 15px;"></el-row>
     <divTable :columnObj="base.column" :tableData="base.tableData" :allShow="true" />
+    <div style="margin-top: 30px;">
+        <el-divider content-position="left">
+            <h2>技术排行榜</h2>
+        </el-divider>
+        <divTable :columnObj="base.column2" :tableData="base.tableData2" :allShow="true" />
+    </div>
 </template>
 
 <script setup>
@@ -80,12 +86,52 @@ const base = reactive({
             // #FF8C00
         },
     },
+    column2: {
+        headers: [
+            {
+                prop: "name",
+                label: "名称",
+            },
+            {
+                prop: "finalPercentages",
+                label: "完成百分比",
+            },
+            {
+                prop: "targetLoad",
+                label: "完成量",
+            },
+            {
+                prop: "taskLoad",
+                label: "目标量",
+            }
+        ],
+        showIndex: true,
+        rowStyle: ({ row }) => {
+            if (row.finalPercentages >= 100) {
+                return {
+                    //绿色
+                    backgroundColor: '#32CD32',
+                    color: '#000',
+                }
+            } else {
+                return {
+                    //红色
+                    backgroundColor: '#FF4500',
+                    color: '#000'
+                }
+            }
+            //橙色
+            // #FF8C00
+        },
+    },
     tableData: [],
+    tableData2: [],
     query: () => {
         queryTopList().then((res) => {
             if (res.status == 1) {
                 base.model = res.data.office
                 base.tableData = res.data.offices
+                base.tableData2 = res.data.offices_js
             }
         })
     },

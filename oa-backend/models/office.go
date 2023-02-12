@@ -24,6 +24,7 @@ type Office struct {
 	QDTargetLoad  float64 `gorm:"type:decimal(20,6);comment:渠道目标量(元)" json:"qdTargetLoad"`
 	RoleID        int     `gorm:"type:int;comment:角色ID;default:(-)" json:"roleID"`
 	IsRanking     bool    `gorm:"type:boolean;comment:是否进入排行榜" json:"isRanking"`
+	RankingNo     int     `gorm:"type:int;comment:进入排行榜(0:不入 1：A榜 2：B榜)" json:"rankingNo"`
 	IsSubmit      bool    `gorm:"type:boolean;comment:今年结算是否提交" json:"isSubmit"`
 	LastYearMoney float64 `gorm:"type:decimal(20,6);comment:上年结算提成(元)" json:"lastYearMoney"`
 	NextTaskLoad  float64 `gorm:"type:decimal(20,6);comment:今年目标量(元)" json:"nextTaskLoad"`

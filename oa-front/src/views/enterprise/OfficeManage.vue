@@ -29,11 +29,11 @@
                     <el-option v-for="role in add.roles" :key="role.id" :label="role.name" :value="role.id" />
                 </el-select>
             </el-form-item>
-            <el-form-item label="列入排行榜">
-                <el-radio-group v-model="add.model.isRanking">
-                    <el-radio :label="true">是</el-radio>
-                    <el-radio :label="false">否</el-radio>
-                </el-radio-group>
+            <el-form-item label="排行榜" prop="officeID">
+                <el-select v-model="add.model.rankingNo" clearable>
+                    <el-option v-for="officeRankingNo in OfficeRankingNoItems" :key="officeRankingNo.value"
+                        :label="officeRankingNo.label" :value="officeRankingNo.value" />
+                </el-select>
             </el-form-item>
         </el-form>
         <template #footer>
@@ -61,11 +61,11 @@
                     <el-option v-for="role in editBase.roles" :key="role.id" :label="role.name" :value="role.id" />
                 </el-select>
             </el-form-item>
-            <el-form-item label="列入排行榜">
-                <el-radio-group v-model="editBase.model.isRanking">
-                    <el-radio :label="true">是</el-radio>
-                    <el-radio :label="false">否</el-radio>
-                </el-radio-group>
+            <el-form-item label="排行榜" prop="officeID">
+                <el-select v-model="editBase.model.rankingNo" clearable>
+                    <el-option v-for="officeRankingNo in OfficeRankingNoItems" :key="officeRankingNo.value"
+                        :label="officeRankingNo.label" :value="officeRankingNo.value" />
+                </el-select>
             </el-form-item>
         </el-form>
         <template #footer>
@@ -111,6 +111,7 @@
 <script setup>
 import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
+import { OfficeRankingNoItems } from '@/utils/magic'
 import { addOffice, editOfficeBase, editOfficeMoney, queryOffices } from "@/api/office"
 import { queryAllRole } from '@/api/role'
 import { message } from '@/components/divMessage/index'
@@ -197,15 +198,9 @@ const base = reactive({
                 width: "8%"
             },
             {
-                type: "boolean",
-                prop: "isRanking",
-                label: "入榜",
-                width: "5%"
-            },
-            {
                 type: "operation",
                 label: "操作",
-                width: "20%",
+                width: "25%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -288,7 +283,7 @@ const base = reactive({
         } else {
             editBase.model.roleID = row.roleID
         }
-        editBase.model.isRanking = row.isRanking
+        editBase.model.rankingNo = row.rankingNo
 
         editBase.dialogVisible = true
     },
@@ -316,7 +311,7 @@ const add = reactive({
         taskLoad: 0,
         targetLoad: 0,
         roleID: null,
-        isRanking: true,
+        rankingNo: 0,
     },
     submit: () => {
         addForm.value.validate((valid) => {
@@ -339,7 +334,7 @@ const add = reactive({
                         taskLoad: 0,
                         targetLoad: 0,
                         roleID: null,
-                        isRanking: true,
+                        rankingNo: 0,
                     }
                     add.submitDisabled = false
                 })
@@ -360,7 +355,7 @@ const editBase = reactive({
         name: "",
         taskLoad: 0,
         roleID: null,
-        isRanking: true,
+        rankingNo: 0,
     },
     submit: () => {
         editBaseForm.value.validate((valid) => {
@@ -373,7 +368,7 @@ const editBase = reactive({
                         "number": editBase.model.number,
                         "taskLoad": editBase.model.taskLoad,
                         "roleID": editBase.model.roleID,
-                        "isRanking": editBase.model.isRanking,
+                        "rankingNo": editBase.model.rankingNo,
                     }
                 ).then((res) => {
                     if (res.status == 1) {
@@ -389,7 +384,7 @@ const editBase = reactive({
                         name: "",
                         taskLoad: 0,
                         roleID: null,
-                        isRanking: true,
+                        rankingNo: 0,
                     }
                     editBase.submitDisabled = false
                 })

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"oa-backend/models"
 	"oa-backend/utils/msg"
 	"time"
 
@@ -14,12 +15,14 @@ const TokenExpireDuration = time.Hour * 12
 
 type MyClaims struct {
 	EmployeeID int
+	OfficeID   int
 	jwt.StandardClaims
 }
 
-func GenerateToken(employeeID int) (string, int) {
+func GenerateToken(employee models.Employee) (string, int) {
 	claims := MyClaims{
-		employeeID,
+		employee.ID,
+		employee.OfficeID,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(TokenExpireDuration).Unix(),
 			Issuer:    "admin",
@@ -65,6 +68,7 @@ func CheckToken() gin.HandlerFunc {
 			return
 		}
 		c.Set("employeeID", mc.EmployeeID)
+		c.Set("officeID", mc.OfficeID)
 		c.Next()
 	}
 }
