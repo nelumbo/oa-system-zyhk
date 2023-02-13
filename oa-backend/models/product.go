@@ -58,7 +58,7 @@ type ProductType struct {
 	IsDelete                   bool    `gorm:"type:boolean;comment:是否删除" json:"isDelete"`
 	Name                       string  `gorm:"type:varchar(20);comment:名称;not null" json:"name"`
 	PushMoneyPercentages       float64 `gorm:"type:decimal(20,6);comment:标准提成百分比" json:"pushMoneyPercentages"`
-	MinPushMoneyPercentages    float64 `gorm:"type:decimal(20,6);comment:标准提成百分比" json:"minPushMoneyPercentages"`
+	MinPushMoneyPercentages    float64 `gorm:"type:decimal(20,6);comment:最小标准提成百分比" json:"minPushMoneyPercentages"`
 	PushMoneyPercentagesUp     float64 `gorm:"type:decimal(20,6);comment:提成上涨百分比" json:"pushMoneyPercentagesUp"`
 	PushMoneyPercentagesDown   float64 `gorm:"type:decimal(20,6);comment:提成下降百分比" json:"pushMoneyPercentagesDown"`
 	BusinessMoneyPercentages   float64 `gorm:"type:decimal(20,6);comment:标准业务费用百分比" json:"businessMoneyPercentages"`

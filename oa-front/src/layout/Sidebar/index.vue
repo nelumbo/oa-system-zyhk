@@ -76,6 +76,12 @@
       </el-icon>
       <span>采购管理</span>
     </el-menu-item>
+    <el-menu-item index="/inventory" v-if="user().my.urls.includes('12')">
+      <el-icon>
+        <ShoppingTrolley />
+      </el-icon>
+      <span>库存管理</span>
+    </el-menu-item>
     <el-menu-item index="/finance" v-if="user().my.urls.includes('7')">
       <el-icon>
         <Ticket />

@@ -5,8 +5,8 @@ import axios from "axios"
 
 const service = axios.create({
     //公共路由
-    baseURL: 'http://127.0.0.1:8088/api',
-    // baseURL: 'http://101.201.51.200:8080/api',
+    // baseURL: 'http://127.0.0.1:8088/api',
+    baseURL: 'http://101.201.51.200:8080/api',
     // 请求最大响应时间
     // timeout: 10000
     timeout: 1000000

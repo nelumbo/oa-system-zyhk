@@ -28,6 +28,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { message } from '@/components/divMessage/index'
 import { PurchasingTypeSelectItems } from '@/utils/magic'
@@ -76,7 +77,10 @@ const base = reactive({
                 operations: [
                     {
                         isShow: (index, row) => {
-                            return true
+                            if (user().my.pids.includes('90')) {
+                                return true
+                            }
+                            return false
                         },
                         label: "采购",
                         type: "primary",

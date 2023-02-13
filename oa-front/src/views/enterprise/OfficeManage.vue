@@ -14,7 +14,7 @@
         :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
     <el-dialog v-model="add.dialogVisible" title="添加" width="50%" :show-close="false">
-        <el-form :model="add.model" label-width="120px" :rules="rules" ref="addForm">
+        <el-form :model="add.model" label-width="140px" :rules="rules" ref="addForm">
             <el-form-item label="编号">
                 <el-input v-model.trim="add.model.number" maxlength="50" />
             </el-form-item>
@@ -35,6 +35,9 @@
                         :label="officeRankingNo.label" :value="officeRankingNo.value" />
                 </el-select>
             </el-form-item>
+            <el-form-item label="业务提成百分比" prop="pushMoneyPercentages">
+                <el-input-number v-model="add.model.pushMoneyPercentages" :controls="false" :min="-100" :max="100" />
+            </el-form-item>
         </el-form>
         <template #footer>
             <span class="dialog-footer">
@@ -46,7 +49,7 @@
     </el-dialog>
 
     <el-dialog v-model="editBase.dialogVisible" title="基础编辑" width="50%" :show-close="false">
-        <el-form :model="editBase.model" label-width="120px" :rules="rules" ref="editBaseForm">
+        <el-form :model="editBase.model" label-width="140px" :rules="rules" ref="editBaseForm">
             <el-form-item label="编号">
                 <el-input v-model.trim="editBase.model.number" maxlength="50" />
             </el-form-item>
@@ -66,6 +69,10 @@
                     <el-option v-for="officeRankingNo in OfficeRankingNoItems" :key="officeRankingNo.value"
                         :label="officeRankingNo.label" :value="officeRankingNo.value" />
                 </el-select>
+            </el-form-item>
+            <el-form-item label="业务提成百分比" prop="pushMoneyPercentages">
+                <el-input-number v-model="editBase.model.pushMoneyPercentages" :controls="false" :min="-100"
+                    :max="100" />
             </el-form-item>
         </el-form>
         <template #footer>
@@ -115,7 +122,7 @@ import { OfficeRankingNoItems } from '@/utils/magic'
 import { addOffice, editOfficeBase, editOfficeMoney, queryOffices } from "@/api/office"
 import { queryAllRole } from '@/api/role'
 import { message } from '@/components/divMessage/index'
-import { reg_money } from '@/utils/regex'
+import { reg_money, reg_number_2d } from '@/utils/regex'
 
 import divTable from '@/components/divTable/index.vue'
 
@@ -143,6 +150,9 @@ const rules = reactive({
     ],
     remark: [
         { required: true, message: '请填写', trigger: 'blur' },
+    ],
+    pushMoneyPercentages: [
+        { required: true, pattern: reg_number_2d, message: '请输入最多两位小数的有效数字', trigger: 'blur' }
     ],
 })
 
@@ -284,6 +294,7 @@ const base = reactive({
             editBase.model.roleID = row.roleID
         }
         editBase.model.rankingNo = row.rankingNo
+        editBase.model.pushMoneyPercentages = row.pushMoneyPercentages
 
         editBase.dialogVisible = true
     },
@@ -312,6 +323,7 @@ const add = reactive({
         targetLoad: 0,
         roleID: null,
         rankingNo: 0,
+        pushMoneyPercentages: 0,
     },
     submit: () => {
         addForm.value.validate((valid) => {
@@ -335,6 +347,7 @@ const add = reactive({
                         targetLoad: 0,
                         roleID: null,
                         rankingNo: 0,
+                        pushMoneyPercentages: 0,
                     }
                     add.submitDisabled = false
                 })
@@ -356,6 +369,7 @@ const editBase = reactive({
         taskLoad: 0,
         roleID: null,
         rankingNo: 0,
+        pushMoneyPercentages: 0,
     },
     submit: () => {
         editBaseForm.value.validate((valid) => {
@@ -369,6 +383,7 @@ const editBase = reactive({
                         "taskLoad": editBase.model.taskLoad,
                         "roleID": editBase.model.roleID,
                         "rankingNo": editBase.model.rankingNo,
+                        "pushMoneyPercentages": editBase.model.pushMoneyPercentages,
                     }
                 ).then((res) => {
                     if (res.status == 1) {
@@ -385,6 +400,7 @@ const editBase = reactive({
                         taskLoad: 0,
                         roleID: null,
                         rankingNo: 0,
+                        pushMoneyPercentages: 0,
                     }
                     editBase.submitDisabled = false
                 })

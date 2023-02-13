@@ -103,6 +103,7 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { reactive, onBeforeMount, computed } from 'vue'
 import { ProductTrialStatusItems } from '@/utils/magic'
 import { nextProductTrial, queryProductTrials } from "@/api/product_trial"
@@ -180,7 +181,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status == 1) {
+                            if (row.status == 1 && user().my.pids.includes('95')) {
                                 return true
                             }
                             return false
@@ -193,12 +194,14 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status > 1 && row.status < 5) {
+                            if ((row.status = 2 && user().my.pids.includes('96')) ||
+                                (row.status = 3 && user().my.pids.includes('97')) ||
+                                (row.status = 4 && user().my.pids.includes('98'))) {
                                 return true
                             }
                             return false
                         },
-                        label: "下一步",
+                        label: "提交",
                         type: "primary",
                         align: "center",
                         sortable: false,

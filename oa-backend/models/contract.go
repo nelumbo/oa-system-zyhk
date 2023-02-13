@@ -278,7 +278,7 @@ func ApproveContract(contractBak *Contract, maps map[string]interface{}) (code i
 // 合同完成
 func FinalContract(contract *Contract) (code int) {
 	var contractBak Contract
-	_ = db.Preload("Tasks").First(&contractBak, contract.ID).Error
+	_ = db.Preload("Tasks.TechnicianMan").First(&contractBak, contract.ID).Error
 
 	if contractBak.ID != 0 && contractBak.CollectionStatus == magic.CONTRATCT_COLLECTION_STATUS_FINISH {
 		isFinish := true
@@ -297,7 +297,26 @@ func FinalContract(contract *Contract) (code int) {
 		}
 
 		if isFinish {
-			err = db.Model(&Contract{}).Where("id = ?", contract.ID).Update("status", magic.CONTRACT_STATUS_FINISH).Error
+			err = db.Transaction(func(tx *gorm.DB) error {
+				//技术提成
+				for i := range contractBak.Tasks {
+					if contractBak.Tasks[i].Type == magic.TASK_TYPE_3 && contractBak.Tasks[i].Status != magic.TASK_STATUS_SHIPMENT {
+						var officeBak Office
+						if tErr := tx.First(&officeBak, contractBak.Tasks[i].TechnicianMan.OfficeID).Error; tErr != nil {
+							return tErr
+						}
+						tempPushMoney := round(contractBak.Tasks[i].PaymentTotalPrice*officeBak.PushMoneyPercentages, 3)
+						if tErr := tx.Model(&Office{}).Where("id = ?", contractBak.Tasks[i].TechnicianMan.OfficeID).Update("target_load", gorm.Expr("target_load + ?", tempPushMoney)).Error; tErr != nil {
+							return tErr
+						}
+					}
+				}
+				//完成合同
+				if tErr := tx.Model(&Contract{}).Where("id = ?", contract.ID).Update("status", magic.CONTRACT_STATUS_FINISH).Error; tErr != nil {
+					return tErr
+				}
+				return nil
+			})
 			if err != nil {
 				return msg.FAIL
 			}

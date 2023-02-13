@@ -124,24 +124,6 @@
         </template>
     </el-dialog>
 
-    <el-dialog v-model="finalProduct.dialogVisible" title="确认" width="50%" :show-close="false">
-        <h1>是否确定该条采购记录已经收货？</h1>
-        <el-form :model="finalProduct.model" label-width="60px">
-            <el-form-item label="备注">
-                <el-input v-model="finalProduct.model.productRemark" type="textarea"
-                    :autosize="{ minRows: 3, maxRows: 6 }" maxlength="300" />
-            </el-form-item>
-        </el-form>
-        <template #footer>
-            <span class="dialog-footer">
-                <div style="text-align: center;">
-                    <el-button type="primary" @click="finalProduct.submit"
-                        :disabled="finalProduct.submitDisabled">提交</el-button>
-                </div>
-            </span>
-        </template>
-    </el-dialog>
-
     <el-dialog v-model="final.dialogVisible" title="完成确认" width="50%" :show-close="false">
         <h1>是否确定该条采购记录已经记录？</h1>
         <template #footer>
@@ -155,10 +137,11 @@
 </template>
 
 <script setup>
+import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
 import { message } from '@/components/divMessage/index'
 import { PurchasingTypeSelectItems } from '@/utils/magic'
-import { addPurchasing, approvePurchasing, finalPurchasingProduct, finalPurchasing, queryPurchasings } from "@/api/purchasing"
+import { addPurchasing, approvePurchasing, finalPurchasing, queryPurchasings } from "@/api/purchasing"
 import { queryProducts } from "@/api/product"
 import { reg_number, reg_money } from '@/utils/regex'
 
@@ -261,7 +244,7 @@ const base = reactive({
                 operations: [
                     {
                         isShow: (index, row) => {
-                            if (row.status == 1) {
+                            if (row.status == 1 && user().my.pids.includes('91')) {
                                 return true
                             }
                             return false
@@ -274,7 +257,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status == 2) {
+                            if (row.status == 2 && user().my.pids.includes('92')) {
                                 return true
                             }
                             return false
@@ -287,20 +270,7 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-                            if (row.status == 3 && row.productStatus == 1) {
-                                return true
-                            }
-                            return false
-                        },
-                        label: "确认收货",
-                        type: "primary",
-                        align: "center",
-                        sortable: false,
-                        onClick: (index, row) => base.openFinalProductDialog(index, row)
-                    },
-                    {
-                        isShow: (index, row) => {
-                            if (row.status == 3 && row.productStatus == 2 && row.payStatus == 2 && row.invoiceStatus == 2) {
+                            if (row.status == 3 && row.productStatus == 2 && row.payStatus == 2 && row.invoiceStatus == 2 && user().my.pids.includes('93')) {
                                 return true
                             }
                             return false
@@ -353,10 +323,6 @@ const base = reactive({
     openApproveDialog: (index, row) => {
         approve.model = row
         approve.dialogVisible = true
-    },
-    openFinalProductDialog: (index, row) => {
-        finalProduct.model.id = row.id
-        finalProduct.dialogVisible = true
     },
     openFinalDialog: (index, row) => {
         final.model.id = row.id
@@ -588,32 +554,6 @@ const approve = reactive({
         approve.model.isPass = false
         approve.submit()
     },
-})
-
-const finalProduct = reactive({
-    dialogVisible: false,
-    submitDisabled: false,
-    model: {
-        id: null,
-        productRemark: "",
-    },
-    submit: () => {
-        finalProduct.submitDisabled = true
-        finalPurchasingProduct(finalProduct.model).then((res) => {
-            if (res.status == 1) {
-                message("操作成功", "success")
-                base.query()
-            } else {
-                message("操作失败", "error")
-            }
-            finalProduct.dialogVisible = false
-            finalProduct.model = {
-                id: null,
-                productRemark: "",
-            }
-            finalProduct.submitDisabled = false
-        })
-    }
 })
 
 const final = reactive({
