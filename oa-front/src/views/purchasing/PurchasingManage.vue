@@ -512,7 +512,7 @@ const approve = reactive({
         realNumber: 0,
         price: 0,
         totalPrice: 0,
-        endDate: "",
+        endDate: null,
         product: {
             purchasePrice: 0,
             name: "",
@@ -539,8 +539,15 @@ const approve = reactive({
             approve.model = {
                 id: null,
                 isPass: null,
+                realNumber: 0,
+                price: 0,
+                totalPrice: 0,
+                endDate: null,
                 product: {
+                    purchasePrice: 0,
                     name: "",
+                    verison: "",
+                    brand: "",
                 }
             }
             approve.submitDisabled = false

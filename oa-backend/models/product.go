@@ -112,7 +112,7 @@ func InsertProductCall(productID int, number int, tx *gorm.DB) (err error) {
 		return tErr
 	}
 
-	if (productBak.Number - number) <= productBak.CallNumber {
+	if productBak.CallNumber > 0 && (productBak.Number-number) <= productBak.CallNumber {
 		productCall := ProductCall{
 			ProductID:  productID,
 			CreateDate: XDate{Time: time.Now()},

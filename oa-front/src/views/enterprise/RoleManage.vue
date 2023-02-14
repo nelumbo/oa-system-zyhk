@@ -14,7 +14,7 @@
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
-        <el-dialog v-model="add.dialogVisible" title="添加" width="50%" :show-close="false">
+        <el-dialog v-model="add.dialogVisible" title="添加" width="80%" :show-close="false">
             <el-form :model="add.model" label-width="60px" :rules="rules" ref="addForm">
                 <el-form-item label="名称" prop="name">
                     <el-input v-model.trim="add.model.name" maxlength="50" />

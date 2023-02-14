@@ -101,14 +101,16 @@ func ApprovePurchasing(c *gin.Context) {
 	} else if purchasingBak.Status == magic.PURCHASING_STATUS_NO_APPROVE {
 		purchasingBak.IsPass = purchasing.IsPass
 		var maps = make(map[string]interface{})
-		maps["status"] = magic.PURCHASING_STATUS_NO_FINAL
-		maps["product_status"] = magic.PURCHASING_PRODUCT_STATUS_NO_FINAL
-		maps["pay_status"] = magic.PURCHASING_PAY_STATUS_NO_FINAL
-		maps["invoice_status"] = magic.PURCHASING_INVOICE_STATUS_NO_FINAL
 		maps["auditor_id"] = c.MustGet("employeeID").(int)
 		maps["audit_date"] = time.Now()
-		if purchasing.IsPass == true {
+		if purchasing.IsPass {
 			maps["end_date"] = purchasing.EndDate
+			maps["status"] = magic.PURCHASING_STATUS_NO_FINAL
+			maps["product_status"] = magic.PURCHASING_PRODUCT_STATUS_NO_FINAL
+			maps["pay_status"] = magic.PURCHASING_PAY_STATUS_NO_FINAL
+			maps["invoice_status"] = magic.PURCHASING_INVOICE_STATUS_NO_FINAL
+		} else {
+			maps["status"] = magic.PURCHASING_STATUS_REJECT
 		}
 		code = models.ApprovePurchasing(&purchasingBak, maps)
 	} else {

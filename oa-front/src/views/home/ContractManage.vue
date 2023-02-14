@@ -250,13 +250,30 @@
             <el-row>
                 <el-col :span="12">
                     <el-form-item label="合同编号">
-                        <el-input v-model="add.contract.no" readonly />
+                        <el-input v-model="add.contract.no" disabled />
                     </el-form-item>
                 </el-col>
                 <el-col :span="12">
                     <el-form-item label="可用预存款">
-                        <el-input v-model="add.contract.preDeposit" readonly />
+                        <el-input v-model="add.contract.preDeposit" disabled />
                     </el-form-item>
+                </el-col>
+            </el-row>
+        </el-form>
+        <el-divider />
+        <el-form :model="add.model" label-width="100px">
+            <el-row :gutter="20">
+                <el-col :span="7" :offset="1">
+                    <el-input v-model="add.model.name" placeholder="名称" clearable maxlength="25" />
+                </el-col>
+                <el-col :span="7">
+                    <el-input v-model="add.model.version" placeholder="型号" clearable maxlength="25" />
+                </el-col>
+                <el-col :span="7">
+                    <el-input v-model="add.model.specification" placeholder="规格" clearable maxlength="25" />
+                </el-col>
+                <el-col :span="1">
+                    <el-button type="primary" @click="add.query">查询</el-button>
                 </el-col>
             </el-row>
         </el-form>
@@ -397,8 +414,8 @@ const base = reactive({
         productionStatus: null,
         collectionStatus: null,
         payType: null,
-        startDate: new Date().getFullYear() + "-01-01",
-        endDate: new Date().getFullYear() + "-12-31",
+        startDate: "",
+        endDate: "",
         isSpecialNum: null,
         isPreDepositNum: null,
     },
@@ -1081,8 +1098,8 @@ const add = reactive({
         preDeposit: 0,
     },
     model: {
-        typeID: null,
         name: "",
+        version: "",
         specification: "",
     },
     column: {
@@ -1090,12 +1107,17 @@ const add = reactive({
             {
                 prop: "type.name",
                 label: "类型",
-                width: "10%",
+                width: "5%",
             },
             {
                 prop: "name",
                 label: "名称",
-                width: "20%",
+                width: "15%",
+            },
+            {
+                prop: "version",
+                label: "型号",
+                width: "10%",
             },
             {
                 prop: "brand",

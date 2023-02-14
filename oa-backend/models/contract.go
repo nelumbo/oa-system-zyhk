@@ -689,7 +689,7 @@ func DistributeTask(task *Task, maps map[string]interface{}, employeeID int) (co
 				return tErr
 			}
 			//更新合同数据
-			if tErr := tx.Exec("UPDATE contract SET payment_total_amount = payment_total_amount + ? WHERE id = ?", payment.Money, payment.ContractID).Error; tErr != nil {
+			if tErr := tx.Exec("UPDATE contract SET total_amount = total_amount + ? WHERE id = ?", payment.Money, payment.ContractID).Error; tErr != nil {
 				return tErr
 			}
 			//更新办事处数据&生成历史记录
@@ -876,7 +876,7 @@ func RejectTask(id int) (code int) {
 			return tErr
 		}
 		//退回该任务的预存款金额
-		if tErr := tx.Exec("UPDATE contract SET pre_deposit = pre_deposit + ? WHERE id = ?", task.TotalPrice, task.ContractID).Error; tErr != nil {
+		if tErr := tx.Exec("UPDATE contract SET pre_deposit = pre_deposit + ?,total_amount = total_amount - ? WHERE id = ?", task.TotalPrice, task.TotalPrice, task.ContractID).Error; tErr != nil {
 			return tErr
 		}
 		//任务若已经分配了退报销
