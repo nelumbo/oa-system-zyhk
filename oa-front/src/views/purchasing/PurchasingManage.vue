@@ -1,13 +1,31 @@
 <template>
     <el-row :gutter="20">
-        <el-col :span="6" :offset="2">
+        <el-col :span="5" :offset="1">
+            <el-input v-model="base.model.contract.no" placeholder="合同号" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="5">
+            <el-input v-model="base.model.product.name" placeholder="产品" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="5">
+            <el-input v-model="base.model.product.version" placeholder="型号" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="5">
+            <el-input v-model="base.model.product.specification" placeholder="规格" clearable maxlength="25" />
+        </el-col>
+
+    </el-row>
+    <el-row :gutter="20">
+        <el-col :span="5" :offset="1">
             <el-input v-model="base.model.supplierName" placeholder="供应商名称" clearable maxlength="25" />
         </el-col>
-        <el-col :span="6">
-            <el-date-picker v-model="base.model.startDate" type="date" placeholder="开始时间" style="width: 100%;" />
+        <el-col :span="5">
+            <el-input v-model="base.model.status" placeholder="状态" clearable maxlength="25" />
         </el-col>
-        <el-col :span="6">
-            <el-date-picker v-model="base.model.endDate" type="date" placeholder="结束时间" style="width: 100%;" />
+        <el-col :span="5">
+            <el-date-picker v-model="base.model.queryStartDate" type="date" placeholder="开始时间" style="width: 100%;" />
+        </el-col>
+        <el-col :span="5">
+            <el-date-picker v-model="base.model.queryEndDate" type="date" placeholder="结束时间" style="width: 100%;" />
         </el-col>
         <el-col :span="1">
             <el-button type="primary" @click="base.query">查询</el-button>
@@ -65,6 +83,71 @@
                 </div>
             </span>
         </template>
+    </el-dialog>
+
+    <el-dialog v-model="view.dialogVisible" title="查看" width="50%" :show-close="false">
+        <el-form :model="view.model" label-width="150px">
+            <el-form-item label="创建人">
+                <el-input v-model.trim="view.model.employee.name" disabled />
+            </el-form-item>
+            <el-form-item label="合同编号">
+                <el-input v-model.trim="view.model.contract.no" disabled />
+            </el-form-item>
+            <el-form-item label="类型">
+                <el-input v-model.trim="view.typeString" disabled />
+            </el-form-item>
+            <el-form-item label="产品名">
+                <el-input v-model.trim="view.model.product.name" disabled />
+            </el-form-item>
+            <el-form-item label="采购价格">
+                <el-input v-model.trim="view.model.price" disabled />
+            </el-form-item>
+            <el-form-item label="申请数量">
+                <el-input v-model.trim="view.model.number" disabled />
+            </el-form-item>
+            <el-form-item label="实际数量">
+                <el-input v-model.trim="view.model.realNumber" disabled />
+            </el-form-item>
+            <el-form-item label="总价">
+                <el-input v-model.trim="view.model.totalPrice" disabled />
+            </el-form-item>
+            <el-form-item label="产品状态">
+                <el-input v-model.trim="view.productStatusString" disabled />
+            </el-form-item>
+            <el-form-item label="付款状态">
+                <el-input v-model.trim="view.payStatusString" disabled />
+            </el-form-item>
+            <el-form-item label="发票状态">
+                <el-input v-model.trim="view.invoiceStatusString" disabled />
+            </el-form-item>
+            <el-form-item label="状态">
+                <el-input v-model.trim="view.statusString" disabled />
+            </el-form-item>
+            <el-form-item label="审核员">
+                <el-input v-model.trim="view.model.auditor.name" disabled />
+            </el-form-item>
+            <el-form-item label="采购负责人">
+                <el-input v-model.trim="view.model.purchaseMan.name" disabled />
+            </el-form-item>
+            <el-form-item label="仓库负责人">
+                <el-input v-model.trim="view.model.inventoryMan.name" disabled />
+            </el-form-item>
+            <el-form-item label="财务负责人">
+                <el-input v-model.trim="view.model.payMan.name" disabled />
+            </el-form-item>
+            <el-form-item label="发票负责人">
+                <el-input v-model.trim="view.model.invoiceMan.name" disabled />
+            </el-form-item>
+            <el-form-item label="仓库备注">
+                <el-input v-model="view.model.productRemark" type="textarea" :autosize=true disabled />
+            </el-form-item>
+            <el-form-item label="财务备注">
+                <el-input v-model="view.model.payRemark" type="textarea" :autosize=true disabled />
+            </el-form-item>
+            <el-form-item label="发票备注">
+                <el-input v-model="view.model.invoiceRemark" type="textarea" :autosize=true disabled />
+            </el-form-item>
+        </el-form>
     </el-dialog>
 
     <el-dialog v-model="check.dialogVisible" title="确认" width="50%" :show-close="false">
@@ -138,10 +221,10 @@
 
 <script setup>
 import { user } from '@/pinia/modules/user'
-import { ref, reactive, onBeforeMount } from 'vue'
+import { ref, reactive, onBeforeMount, computed } from 'vue'
 import { message } from '@/components/divMessage/index'
-import { PurchasingTypeSelectItems } from '@/utils/magic'
-import { addPurchasing, approvePurchasing, finalPurchasing, queryPurchasings } from "@/api/purchasing"
+import { PurchasingTypeSelectItems, PurchasingTypeItems, PurchasingStatusItems, PurchasingProductStatusItems, PurchasingPayStatusItems, PurchasingInvoiceStatusItems } from '@/utils/magic'
+import { addPurchasing, approvePurchasing, finalPurchasing, queryPurchasing, queryPurchasings } from "@/api/purchasing"
 import { queryProducts } from "@/api/product"
 import { reg_number, reg_money } from '@/utils/regex'
 
@@ -164,9 +247,19 @@ const rules = reactive({
 
 const base = reactive({
     model: {
+        contractID: "",
         supplierName: "",
-        startDate: "",
-        endDate: "",
+        queryStartDate: "",
+        queryEndDate: "",
+        status: null,
+        product: {
+            name: "",
+            version: "",
+            specification: "",
+        },
+        contract: {
+            no: "",
+        }
     },
     column: {
         headers: [
@@ -194,17 +287,17 @@ const base = reactive({
             {
                 prop: "product.name",
                 label: "名称",
-                width: "8%"
+                width: "15%"
             },
             {
                 prop: "product.version",
                 label: "型号",
-                width: "7%"
+                width: "5%"
             },
             {
                 prop: "product.specification",
                 label: "规格",
-                width: "10%"
+                width: "5%"
             },
             {
                 prop: "number",
@@ -242,6 +335,16 @@ const base = reactive({
                 label: "操作",
                 width: "10%",
                 operations: [
+                    {
+                        isShow: (index, row) => {
+                            return true
+                        },
+                        label: "查看",
+                        type: "success",
+                        align: "center",
+                        sortable: false,
+                        onClick: (index, row) => base.openViewDialog(index, row)
+                    },
                     {
                         isShow: (index, row) => {
                             if (row.status == 1 && user().my.pids.includes('91')) {
@@ -304,7 +407,7 @@ const base = reactive({
         })
     },
     handleSizeChange: (e) => {
-        base.pageData.pageSize = ae
+        base.pageData.pageSize = e
         base.pageData.pageNo = 1
         base.query()
     },
@@ -327,6 +430,14 @@ const base = reactive({
     openFinalDialog: (index, row) => {
         final.model.id = row.id
         final.dialogVisible = true
+    },
+    openViewDialog: (index, row) => {
+        queryPurchasing(row.id).then((res) => {
+            if (res.status == 1) {
+                view.model = res.data
+            }
+        })
+        view.dialogVisible = true
     },
 })
 
@@ -584,6 +695,107 @@ const final = reactive({
             }
             final.submitDisabled = false
         })
+    }
+})
+
+
+const view = reactive({
+    dialogVisible: false,
+    typeString: computed(() => {
+        var temp = "";
+        PurchasingTypeItems.some((item) => {
+            if (item.value == view.model.type) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    statusString: computed(() => {
+        var temp = "";
+        PurchasingTypeItems.some((item) => {
+            if (item.value == view.model.status) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    productStatusString: computed(() => {
+        var temp = "";
+        PurchasingProductStatusItems.some((item) => {
+            if (item.value == view.model.productStatus) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    payStatusString: computed(() => {
+        var temp = "";
+        PurchasingPayStatusItems.some((item) => {
+            if (item.value == view.model.payStatus) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    invoiceStatusString: computed(() => {
+        var temp = "";
+        PurchasingInvoiceStatusItems.some((item) => {
+            if (item.value == view.model.invoiceStatus) {
+                temp = item.label;
+                return;
+            }
+        });
+        return temp;
+    }),
+    model: {
+        contract: {
+            no: "",
+        },
+        employee: {
+            name: "",
+        },
+        no: "",
+        type: 0,
+        product: {
+            name: "",
+        },
+        price: 0,
+        number: 0,
+        realNumber: 0,
+        totalPrice: 0,
+        status: 0,
+        productStatus: 0,
+        payStatus: 0,
+        invoiceStatus: 0,
+        auditor: {
+            name: "",
+        },
+        purchaseMan: {
+            name: "",
+        },
+        inventoryMan: {
+            name: "",
+        },
+        payMan: {
+            name: "",
+        },
+        invoiceMan: {
+            name: "",
+        },
+        createDate: "",
+        endDate: "",
+        realEndDate: "",
+        auditDate: "",
+        payDate: "",
+        payCreateDate: "",
+        invoiceDate: "",
+        productRemark: "",
+        payRemark: "",
+        invoiceRemark: "",
     }
 })
 

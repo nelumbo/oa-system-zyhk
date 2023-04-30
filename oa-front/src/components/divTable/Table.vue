@@ -4,7 +4,7 @@
 
         <el-table-column type="index" width="50" v-if="columnObj.showIndex" />
         <el-table-column v-for="(header, hi) in columnObj.headers" :key="hi" :prop="header.prop" :label="header.label"
-            :min-width="header.width" :align="header.align || 'center'" :index="hi" show-overflow-tooltip>
+            :min-width="header.width" :align="header.align || 'center'" :index="hi"  show-overflow-tooltip>
 
             <template #default="scope">
 
@@ -47,7 +47,7 @@
                 <!-- 特殊 -->
                 <!-- 合同未回款额计算 -->
                 <span v-if="header.type === 'contractNotPayment'">
-                    {{ scope.row.isPreDeposit ? "-" : scope.row.totalAmount - scope.row.paymentTotalAmount }}
+                    {{ scope.row.isPreDeposit || scope.row.payType == 2 ? "-" : scope.row.totalAmount - scope.row.paymentTotalAmount }}
                 </span>
 
                 <!-- 合同预存款展示 -->

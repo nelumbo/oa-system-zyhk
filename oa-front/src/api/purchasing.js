@@ -71,6 +71,13 @@ export const finalPurchasing = (purchasing) => {
     })
 }
 
+export const queryPurchasing = (id) => {
+    return request({
+        url: '/purchasing/' + id,
+        method: 'GET',
+    })
+}
+
 export const queryPurchasings = (model, pageData) => {
     return request({
         url: '/purchasings',

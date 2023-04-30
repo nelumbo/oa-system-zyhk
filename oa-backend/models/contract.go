@@ -569,7 +569,7 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 	tx := db.Where(maps)
 
 	if contractQuery.Status == 0 {
-		tx = tx.Where("contract.status <> ?", contractQuery.Status)
+		tx = tx.Where("contract.status > ?", magic.CONTRACT_STATUS_SAVE)
 	}
 
 	if contractQuery.No != "" {
@@ -622,7 +622,7 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 	}
 
 	err = tx.Find(&contracts).Count(&xForms.Total).
-		Preload("Office").Preload("Employee").
+		Preload("Region").Preload("Office").Preload("Employee").
 		Preload("Customer.CustomerCompany").
 		Limit(xForms.PageSize).Offset((xForms.PageNo - 1) * xForms.PageSize).
 		Order("contract.id desc").Find(&contracts).Error

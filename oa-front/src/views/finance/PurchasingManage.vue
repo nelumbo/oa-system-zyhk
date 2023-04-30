@@ -69,6 +69,7 @@ const base = reactive({
     column: {
         headers: [
             {
+                type: "purchasingNo",
                 prop: "no",
                 label: "编号",
                 width: "15%"

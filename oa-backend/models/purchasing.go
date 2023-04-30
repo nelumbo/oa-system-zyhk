@@ -45,12 +45,19 @@ type Purchasing struct {
 	PayCreateDate XDate `gorm:"type:date;comment:财务提交日期;default:(-)" json:"payCreateDate"`
 	InvoiceDate   XDate `gorm:"type:date;comment:发票到达日期;default:(-)" json:"invoiceDate"`
 
-	Contract Contract `gorm:"foreignKey:ContractID" json:"contract"`
-	Employee Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
-	Product  Product  `gorm:"foreignKey:ProductID" json:"product"`
+	Contract     Contract `gorm:"foreignKey:ContractID" json:"contract"`
+	Employee     Employee `gorm:"foreignKey:EmployeeID" json:"employee"`
+	Product      Product  `gorm:"foreignKey:ProductID" json:"product"`
+	Auditor      Employee `gorm:"foreignKey:AuditorID" json:"auditor"`
+	PurchaseMan  Employee `gorm:"foreignKey:PurchaseManID" json:"purchaseMan"`
+	InventoryMan Employee `gorm:"foreignKey:InventoryManID" json:"inventoryMan"`
+	PayMan       Employee `gorm:"foreignKey:PayManID" json:"payMan"`
+	InvoiceMan   Employee `gorm:"foreignKey:InvoiceManID" json:"invoiceMan"`
 
-	IsPass bool   `gorm:"-" json:"isPass"`
-	Remark string `gorm:"-" json:"remark"`
+	IsPass         bool   `gorm:"-" json:"isPass"`
+	Remark         string `gorm:"-" json:"remark"`
+	QueryStartDate string `gorm:"-" json:"queryStartDate"`
+	QueryEndDate   string `gorm:"-" json:"queryEndDate"`
 }
 
 func InsertPurchasing(purchasing *Purchasing) (code int) {
@@ -159,27 +166,53 @@ func UpdatePurchasingProductStatus(purchasing *Purchasing, maps map[string]inter
 	return msg.SUCCESS
 }
 
+func SelectPurchasing(id int) (purchasing Purchasing, code int) {
+	db.Preload("Contract").Preload("Employee").Preload("Product").
+		Preload("Auditor").Preload("PurchaseMan").Preload("InventoryMan").
+		Preload("PayMan").Preload("InvoiceMan").
+		Where("purchasing.is_delete = ?", false).
+		First(&purchasing, id)
+	if purchasing.ID == 0 {
+		return Purchasing{}, msg.FAIL
+	}
+	return purchasing, msg.SUCCESS
+}
+
 func SelectPurchasings(purchasingQuery *Purchasing, xForms *XForms) (purchasings []Purchasing, code int) {
 
 	var maps = make(map[string]interface{})
 	maps["purchasing.is_delete"] = false
-	if purchasingQuery.ContractID != 0 {
-		maps["purchasing.contract_id"] = purchasingQuery.ContractID
-	}
-	if purchasingQuery.EmployeeID != 0 {
-		maps["purchasing.employee_id"] = purchasingQuery.EmployeeID
-	}
+
 	if purchasingQuery.Status != 0 {
 		maps["purchasing.status"] = purchasingQuery.Status
 	}
-	if purchasingQuery.Type != 0 {
-		maps["purchasing.type"] = purchasingQuery.Type
-	}
-
-	tx := db.Where(maps)
-
+	tx := db.Where(maps).Joins("Contract").Joins("Product")
 	if purchasingQuery.Status == 0 {
 		tx = tx.Where("purchasing.status <> ?", purchasingQuery.Status)
+	}
+
+	if purchasingQuery.Contract.No != "" {
+		tx = tx.Where("Contract.No LIKE ?", "%"+purchasingQuery.Contract.No+"%")
+	}
+	if purchasingQuery.Product.Name != "" {
+		tx = tx.Where("Product.Name LIKE ?", "%"+purchasingQuery.Product.Name+"%")
+	}
+	if purchasingQuery.Product.Version != "" {
+		tx = tx.Where("Product.Version LIKE ?", "%"+purchasingQuery.Product.Version+"%")
+	}
+	if purchasingQuery.Product.Specification != "" {
+		tx = tx.Where("Product.Specification LIKE ?", "%"+purchasingQuery.Product.Specification+"%")
+	}
+
+	if purchasingQuery.QueryStartDate != "" && purchasingQuery.QueryEndDate != "" {
+		tx = tx.Where("purchasing.create_date BETWEEN ? AND ?", purchasingQuery.QueryStartDate, purchasingQuery.QueryEndDate)
+	} else {
+		if purchasingQuery.QueryStartDate != "" {
+			tx = tx.Where("purchasing.create_date >= ?", purchasingQuery.QueryStartDate)
+		}
+		if purchasingQuery.QueryEndDate != "" {
+			tx = tx.Where("purchasing.create_date <= ?", purchasingQuery.QueryEndDate)
+		}
 	}
 
 	err = tx.Find(&purchasings).Count(&xForms.Total).

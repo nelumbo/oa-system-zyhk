@@ -5,8 +5,16 @@ server:
 
 db:
   type : 'mysql'
-  username : 'zyhk'
-  password : 'zyhk'
-  host : '192.168.203.201'
+  username : 'zyhkDev'
+  password : 'zyhkDev'
+  host : '192.168.217.201'
   port : '3306'
   name : 'zyhk'
+
+# db:
+#   type : 'mysql'
+#   username : 'zyhk'
+#   password : 'zyhk'
+#   host : '192.168.203.201'
+#   port : '3306'
+#   name : 'zyhk'

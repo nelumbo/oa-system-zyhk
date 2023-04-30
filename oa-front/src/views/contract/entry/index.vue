@@ -92,8 +92,7 @@
         <el-dialog v-model="dlc.dialogVisible" title="客户选择" width="50%" :show-close="false">
             <el-row :gutter="20">
                 <el-col :span="5" :offset="1">
-                    <el-select v-model="dlc.model.customerCompany.regionID" placeholder="省份" clearable
-                        style="width: 100%;">
+                    <el-select v-model="dlc.model.customerCompany.regionID" placeholder="省份" clearable style="width: 100%;">
                         <el-option v-for="item in dlc.regions" :key="item.id" :label="item.name" :value="item.id" />
                     </el-select>
                 </el-col>
@@ -670,14 +669,19 @@ const bank = reactive({
                 width: "10%",
             },
             {
+                prop: "Version",
+                label: "型号",
+                width: "10%",
+            },
+            {
                 prop: "number",
                 label: "库存数量",
-                width: "10%",
+                width: "5%",
             },
             {
                 prop: "unit",
                 label: "单位",
-                width: "10%",
+                width: "5%",
             },
             {
                 prop: "attribute.standardPrice",
@@ -690,9 +694,10 @@ const bank = reactive({
                 width: "10%",
             },
             {
+                fixed: "right",
                 type: "operation",
                 label: "操作",
-                width: "30%",
+                width: "300px",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -737,13 +742,13 @@ const bank = reactive({
         })
     },
     handleSizeChange: (e) => {
-        base.pageData.pageSize = e
-        base.pageData.pageNo = 1
-        base.query()
+        bank.pageData.pageSize = e
+        bank.pageData.pageNo = 1
+        bank.query()
     },
     handleCurrentChange: (e) => {
-        base.pageData.pageNo = e
-        base.query()
+        bank.pageData.pageNo = e
+        bank.query()
     },
     openBankViewDialog: (index, row) => {
         queryProduct(row.id).then((res) => {

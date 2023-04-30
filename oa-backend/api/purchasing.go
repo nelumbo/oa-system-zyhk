@@ -199,6 +199,18 @@ func FinalPurchasing(c *gin.Context) {
 	msg.Message(c, code, nil)
 }
 
+func QueryPurchasing(c *gin.Context) {
+	var purchasing models.Purchasing
+	id, err := strconv.Atoi(c.Param("id"))
+
+	if err == nil {
+		purchasing, code = models.SelectPurchasing(id)
+	} else {
+		code = msg.ERROR
+	}
+	msg.Message(c, code, purchasing)
+}
+
 func QueryPurchasings(c *gin.Context) {
 	var purchasingQuery models.Purchasing
 	_ = c.ShouldBindJSON(&purchasingQuery)

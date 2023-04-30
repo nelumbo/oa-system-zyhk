@@ -499,6 +499,26 @@ const view = reactive({
                 width: "5%",
             },
             {
+                prop: "technicianMan.name",
+                label: "技术负责人",
+                width: "5%",
+            },
+            {
+                prop: "purchaseMan.name",
+                label: "采购负责人",
+                width: "5%",
+            },
+            {
+                prop: "inventoryMan.name",
+                label: "仓库负责人",
+                width: "5%",
+            },
+            {
+                prop: "shipmentMan.name",
+                label: "物流人员",
+                width: "5%",
+            },
+            {
                 type: "transform",
                 prop: "status",
                 label: "状态",

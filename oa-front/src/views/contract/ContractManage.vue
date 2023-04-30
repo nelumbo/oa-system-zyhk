@@ -10,8 +10,7 @@
                 </el-select>
             </el-col>
             <el-col :span="5">
-                <el-input v-model="base.model.customer.customerCompany.name" placeholder="客户单位" clearable
-                    maxlength="25" />
+                <el-input v-model="base.model.customer.customerCompany.name" placeholder="客户单位" clearable maxlength="25" />
             </el-col>
             <el-col :span="5">
                 <el-input v-model="base.model.customer.name" placeholder="客户名称" clearable maxlength="25" />
@@ -58,8 +57,7 @@
             </el-col>
             <el-col :span="5">
                 <el-select v-model="base.model.invoiceType" placeholder="发票类型" clearable style="width: 100%;">
-                    <el-option v-for="item in invoiceTypeItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
+                    <el-option v-for="item in invoiceTypeItems" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
             </el-col>
         </el-row>
@@ -385,8 +383,8 @@
                     </el-col>
                     <el-col :span="24">
                         <el-form-item label="备注">
-                            <el-input v-model="approve.model.remark" type="textarea"
-                                :autosize="{ minRows: 1, maxRows: 9 }" readonly />
+                            <el-input v-model="approve.model.remark" type="textarea" :autosize="{ minRows: 1, maxRows: 9 }"
+                                readonly />
                         </el-form-item>
                     </el-col>
                     <el-col :span="6">
@@ -434,8 +432,7 @@
                 </el-col>
                 <el-col :span="2" :offset="4">
                     <el-button type="danger" @click="approve.openRejectDialog"
-                        :disabled="approve.model.status !== 2 && approve.model.status !== 3"
-                        size="large">合同作废</el-button>
+                        :disabled="approve.model.status !== 2 && approve.model.status !== 3" size="large">合同作废</el-button>
                 </el-col>
             </el-row>
 
@@ -450,8 +447,7 @@
             <template #footer>
                 <span class="dialog-footer">
                     <div style="text-align: center;">
-                        <el-button type="primary" @click="editEDD.submit"
-                            :disabled="editEDD.submitDisabled">提交</el-button>
+                        <el-button type="primary" @click="editEDD.submit" :disabled="editEDD.submitDisabled">提交</el-button>
                     </div>
                 </span>
             </template>
@@ -470,8 +466,7 @@
             <template #footer>
                 <span class="dialog-footer">
                     <div style="text-align: center;">
-                        <el-button type="primary" @click="editPD.submit"
-                            :disabled="editPD.submitDisabled">提交</el-button>
+                        <el-button type="primary" @click="editPD.submit" :disabled="editPD.submitDisabled">提交</el-button>
                     </div>
                 </span>
             </template>
@@ -520,8 +515,7 @@
                 <el-row>
                     <el-col :span="24">
                         <el-form-item label="类型" prop="type">
-                            <el-select v-model="distribute.model.type" @change="distribute.changeType"
-                                style="width: 100%;">
+                            <el-select v-model="distribute.model.type" @change="distribute.changeType" style="width: 100%;">
                                 <el-option v-for="item in taskTypeItems" :key="item.value" :label="item.label"
                                     :value="item.value" />
                             </el-select>
@@ -534,8 +528,7 @@
                     </el-col>
                     <el-col :span="6">
                         <el-form-item label="办事处">
-                            <el-select v-model="distribute.office1" @change="distribute.changeOffice1"
-                                style="width: 100%;">
+                            <el-select v-model="distribute.office1" @change="distribute.changeOffice1" style="width: 100%;">
                                 <el-option v-for="item in distribute.offices" :key="item.id" :label="item.name"
                                     :value="item.id" />
                             </el-select>
@@ -561,8 +554,7 @@
                     </el-col>
                     <el-col :span="6">
                         <el-form-item label="办事处">
-                            <el-select v-model="distribute.office2" @change="distribute.changeOffice2"
-                                style="width: 100%;">
+                            <el-select v-model="distribute.office2" @change="distribute.changeOffice2" style="width: 100%;">
                                 <el-option v-for="item in distribute.offices" :key="item.id" :label="item.name"
                                     :value="item.id" />
                             </el-select>
@@ -588,8 +580,7 @@
                     </el-col>
                     <el-col :span="6">
                         <el-form-item label="办事处">
-                            <el-select v-model="distribute.office3" @change="distribute.changeOffice3"
-                                style="width: 100%;">
+                            <el-select v-model="distribute.office3" @change="distribute.changeOffice3" style="width: 100%;">
                                 <el-option v-for="item in distribute.offices" :key="item.id" :label="item.name"
                                     :value="item.id" />
                             </el-select>
@@ -610,8 +601,7 @@
                     </el-col>
                     <el-col :span="6">
                         <el-form-item label="办事处">
-                            <el-select v-model="distribute.office4" @change="distribute.changeOffice4"
-                                style="width: 100%;">
+                            <el-select v-model="distribute.office4" @change="distribute.changeOffice4" style="width: 100%;">
                                 <el-option v-for="item in distribute.offices" :key="item.id" :label="item.name"
                                     :value="item.id" />
                             </el-select>
@@ -672,15 +662,14 @@
                     <el-col :span="6">
                         <el-form-item label="员工" prop="technicianManID">
                             <el-select v-model="resetContractTask.model.technicianManID" style="width: 100%;">
-                                <el-option v-for="item in resetContractTask.employees1" :key="item.id"
-                                    :label="item.name" :value="item.id" />
+                                <el-option v-for="item in resetContractTask.employees1" :key="item.id" :label="item.name"
+                                    :value="item.id" />
                             </el-select>
                         </el-form-item>
                     </el-col>
                     <el-col :span="6">
                         <el-form-item label="天数" prop="technicianDays">
-                            <el-input-number v-model="resetContractTask.model.technicianDays" :controls="false"
-                                :min="0" />
+                            <el-input-number v-model="resetContractTask.model.technicianDays" :controls="false" :min="0" />
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -700,15 +689,14 @@
                     <el-col :span="6">
                         <el-form-item label="员工" prop="purchaseManID">
                             <el-select v-model="resetContractTask.model.purchaseManID" style="width: 100%;">
-                                <el-option v-for="item in resetContractTask.employees2" :key="item.id"
-                                    :label="item.name" :value="item.id" />
+                                <el-option v-for="item in resetContractTask.employees2" :key="item.id" :label="item.name"
+                                    :value="item.id" />
                             </el-select>
                         </el-form-item>
                     </el-col>
                     <el-col :span="6">
                         <el-form-item label="天数" prop="purchaseDays">
-                            <el-input-number v-model="resetContractTask.model.purchaseDays" :controls="false"
-                                :min="0" />
+                            <el-input-number v-model="resetContractTask.model.purchaseDays" :controls="false" :min="0" />
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -728,8 +716,8 @@
                     <el-col :span="6">
                         <el-form-item label="员工" prop="inventoryManID">
                             <el-select v-model="resetContractTask.model.inventoryManID" style="width: 100%;">
-                                <el-option v-for="item in resetContractTask.employees3" :key="item.id"
-                                    :label="item.name" :value="item.id" />
+                                <el-option v-for="item in resetContractTask.employees3" :key="item.id" :label="item.name"
+                                    :value="item.id" />
                             </el-select>
                         </el-form-item>
                     </el-col>
@@ -750,8 +738,8 @@
                     <el-col :span="6">
                         <el-form-item label="员工" prop="shipmentManID">
                             <el-select v-model="resetContractTask.model.shipmentManID" style="width: 100%;">
-                                <el-option v-for="item in resetContractTask.employees4" :key="item.id"
-                                    :label="item.name" :value="item.id" />
+                                <el-option v-for="item in resetContractTask.employees4" :key="item.id" :label="item.name"
+                                    :value="item.id" />
                             </el-select>
                         </el-form-item>
                     </el-col>
@@ -874,6 +862,16 @@ const base = reactive({
                 width: "13%",
             },
             {
+                prop: "region.name",
+                label: "区域",
+                width: "4%",
+            },
+            {
+                prop: "employee.name",
+                label: "业务员",
+                width: "4%",
+            },
+            {
                 prop: "customer.customerCompany.name",
                 label: "客户单位",
                 width: "8%",
@@ -897,13 +895,13 @@ const base = reactive({
                 type: "boolean",
                 prop: "isPreDeposit",
                 label: "预存款合同",
-                width: "8%",
+                width: "6%",
             },
             {
                 type: "contractPreDeposit",
                 prop: "preDeposit",
                 label: "剩余预存款",
-                width: "8%",
+                width: "6%",
             },
             {
                 prop: "totalAmount",
@@ -925,7 +923,7 @@ const base = reactive({
             {
                 type: "operation",
                 label: "操作",
-                width: "19%",
+                width: "15%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -1001,7 +999,7 @@ const base = reactive({
                         }
                     }
                 }
-            } else if (columnIndex == 3) {
+            } else if (columnIndex == 5) {
                 var old_date = new Date(row.estimatedDeliveryDate)
                 if (row.endDeliveryDate != "") {
                     var new_date = new Date(row.endDeliveryDate)
@@ -1201,11 +1199,16 @@ const view = reactive({
             {
                 prop: "product.name",
                 label: "产品名称",
-                width: "6%",
+                width: "8%",
             },
             {
                 prop: "product.specification",
                 label: "规格",
+                width: "5%",
+            },
+            {
+                prop: "product.version",
+                label: "型号",
                 width: "5%",
             },
             {
@@ -1216,51 +1219,51 @@ const view = reactive({
             {
                 prop: "product.unit",
                 label: "单位",
-                width: "5%",
+                width: "4%",
             },
             {
                 prop: "productAttribute.standardPrice",
                 label: "标价(人民币)",
-                width: "8%",
+                width: "7%",
             },
             {
                 prop: "productAttribute.standardPriceUSD",
                 label: "标价(美元)",
-                width: "8%",
+                width: "7%",
             },
             {
                 prop: "price",
                 label: "售卖单价",
-                width: "6%",
+                width: "5%",
             },
             {
                 prop: "totalPrice",
                 label: "售卖总价",
-                width: "6%",
+                width: "5%",
             },
             {
                 type: "employees",
                 prop: "employees",
                 label: "负责人",
-                width: "9%",
+                width: "8%",
             },
             {
                 type: "taskStartDate",
                 prop: "taskStartDate",
                 label: "开始时间",
-                width: "9%",
+                width: "8%",
             },
             {
                 type: "taskDays",
                 prop: "taskDays",
                 label: "限时天数",
-                width: "6%",
+                width: "5%",
             },
             {
                 type: "taskFinalDate",
                 prop: "taskFinalDate",
                 label: "提交时间",
-                width: "9%",
+                width: "8%",
             },
             {
                 type: "transform",
@@ -1270,9 +1273,14 @@ const view = reactive({
                 width: "5%",
             },
             {
+                prop: "remark",
+                label: "业务员备注",
+                width: "8%",
+            },
+            {
                 type: "operation",
                 label: "操作",
-                width: "9%",
+                width: "6%",
                 operations: [
                     {
                         isShow: (index, row) => {
@@ -1281,7 +1289,7 @@ const view = reactive({
                             }
                             return false
                         },
-                        label: "查看快递单号",
+                        label: "快递单号",
                         type: "success",
                         align: "center",
                         sortable: false,
@@ -1553,7 +1561,17 @@ const approve = reactive({
             {
                 prop: "product.name",
                 label: "产品名称",
-                width: "10%",
+                width: "8%",
+            },
+            {
+                prop: "product.specification",
+                label: "规格",
+                width: "5%",
+            },
+            {
+                prop: "product.version",
+                label: "型号",
+                width: "5%",
             },
             {
                 prop: "number",
@@ -1583,17 +1601,17 @@ const approve = reactive({
             {
                 prop: "price",
                 label: "售卖单价",
-                width: "8%",
+                width: "6%",
             },
             {
                 prop: "totalPrice",
                 label: "售卖总价",
-                width: "8%",
+                width: "6%",
             },
             {
                 prop: "remark",
                 label: "业务员备注",
-                width: "8%",
+                width: "6%",
             },
             {
                 prop: "employees",
@@ -1605,7 +1623,7 @@ const approve = reactive({
                 prop: "status",
                 label: "状态",
                 items: taskStatusItems,
-                width: "10%",
+                width: "8%",
             },
             {
                 type: "operation",
@@ -1909,7 +1927,7 @@ const distribute = reactive({
     changeOffice1: () => {
         distribute.employees1 = []
         distribute.model.technicianManID = null
-        queryAllEmployee({ "office_id": distribute.office1 }).then((res) => {
+        queryAllEmployee({ "officeID": distribute.office1 }).then((res) => {
             if (res.status == 1) {
                 distribute.employees1 = res.data
             }
@@ -1918,7 +1936,7 @@ const distribute = reactive({
     changeOffice2: () => {
         distribute.employees2 = []
         distribute.model.purchaseManID = null
-        queryAllEmployee({ "office_id": distribute.office2 }).then((res) => {
+        queryAllEmployee({ "officeID": distribute.office2 }).then((res) => {
             if (res.status == 1) {
                 distribute.employees2 = res.data
             }
@@ -1927,7 +1945,7 @@ const distribute = reactive({
     changeOffice3: () => {
         distribute.employees3 = []
         distribute.model.inventoryManID = null
-        queryAllEmployee({ "office_id": distribute.office3 }).then((res) => {
+        queryAllEmployee({ "officeID": distribute.office3 }).then((res) => {
             if (res.status == 1) {
                 distribute.employees3 = res.data
             }
@@ -1936,7 +1954,7 @@ const distribute = reactive({
     changeOffice4: () => {
         distribute.employees4 = []
         distribute.model.shipmentManID = null
-        queryAllEmployee({ "office_id": distribute.office4 }).then((res) => {
+        queryAllEmployee({ "officeID": distribute.office4 }).then((res) => {
             if (res.status == 1) {
                 distribute.employees4 = res.data
             }
@@ -2018,7 +2036,7 @@ const resetContractTask = reactive({
     changeOffice1: () => {
         resetContractTask.employees1 = []
         resetContractTask.model.technicianManID = null
-        queryAllEmployee({ "office_id": resetContractTask.office1 }).then((res) => {
+        queryAllEmployee({ "officeID": resetContractTask.office1 }).then((res) => {
             if (res.status == 1) {
                 resetContractTask.employees1 = res.data
             }
@@ -2027,7 +2045,7 @@ const resetContractTask = reactive({
     changeOffice2: () => {
         resetContractTask.employees2 = []
         resetContractTask.model.purchaseManID = null
-        queryAllEmployee({ "office_id": resetContractTask.office2 }).then((res) => {
+        queryAllEmployee({ "officeID": resetContractTask.office2 }).then((res) => {
             if (res.status == 1) {
                 resetContractTask.employees2 = res.data
             }
@@ -2036,7 +2054,7 @@ const resetContractTask = reactive({
     changeOffice3: () => {
         resetContractTask.employees3 = []
         resetContractTask.model.inventoryManID = null
-        queryAllEmployee({ "office_id": resetContractTask.office3 }).then((res) => {
+        queryAllEmployee({ "officeID": resetContractTask.office3 }).then((res) => {
             if (res.status == 1) {
                 resetContractTask.employees3 = res.data
             }
@@ -2045,7 +2063,7 @@ const resetContractTask = reactive({
     changeOffice4: () => {
         resetContractTask.employees4 = []
         resetContractTask.model.shipmentManID = null
-        queryAllEmployee({ "office_id": resetContractTask.office4 }).then((res) => {
+        queryAllEmployee({ "officeID": resetContractTask.office4 }).then((res) => {
             if (res.status == 1) {
                 resetContractTask.employees4 = res.data
             }

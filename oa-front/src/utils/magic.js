@@ -318,6 +318,39 @@ export const PurchasingStatusItems = [
     },
 ]
 
+export const PurchasingProductStatusItems = [
+    {
+        value: 1,
+        label: '待收货',
+    },
+    {
+        value: 2,
+        label: '已收货',
+    },
+]
+
+export const PurchasingPayStatusItems = [
+    {
+        value: 1,
+        label: '待付款',
+    },
+    {
+        value: 2,
+        label: '已付款',
+    },
+]
+
+export const PurchasingInvoiceStatusItems = [
+    {
+        value: 1,
+        label: '发票未收到',
+    },
+    {
+        value: 2,
+        label: '发票已收到',
+    },
+]
+
 export const PurchasingTypeItems = [
     {
         value: 1,
