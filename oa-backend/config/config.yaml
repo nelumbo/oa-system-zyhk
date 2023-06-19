@@ -3,18 +3,18 @@ server:
   mode : 'debug'
   port : ':8088'
 
-db:
-  type : 'mysql'
-  username : 'zyhkDev'
-  password : 'zyhkDev'
-  host : '192.168.217.201'
-  port : '3306'
-  name : 'zyhk'
-
 # db:
 #   type : 'mysql'
-#   username : 'zyhk'
-#   password : 'zyhk'
-#   host : '192.168.203.201'
+#   username : 'zyhk_dev'
+#   password : 'zyhk_dev'
+#   host : '192.168.133.200'
 #   port : '3306'
-#   name : 'zyhk'
+#   name : 'zyhk_dev'
+
+db:
+  type : 'mysql'
+  username : 'zyhk'
+  password : 'zyhk'
+  host : '192.168.203.201'
+  port : '3306'
+  name : 'zyhk'

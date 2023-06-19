@@ -291,6 +291,17 @@ export const HavingInvoiceItems = [
     },
 ]
 
+export const HavingUndistributedTaskItems = [
+    {
+        value: 1,
+        label: '是',
+    },
+    {
+        value: 2,
+        label: '否',
+    },
+]
+
 export const PurchasingStatusItems = [
     {
         value: -1,

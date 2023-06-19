@@ -54,13 +54,14 @@ type Contract struct {
 	Vendor   Vendor   `gorm:"foreignKey:VendorID" json:"vendor"`
 	Auditor  Employee `gorm:"foreignKey:AuditorID" json:"auditor"`
 
-	IsPass           bool   `gorm:"-" json:"isPass"`
-	StartDate        string `gorm:"-" json:"startDate"`
-	EndDate          string `gorm:"-" json:"endDate"`
-	IsSpecialNum     int    `gorm:"-" json:"isSpecialNum"`
-	IsPreDepositNum  int    `gorm:"-" json:"isPreDepositNum"`
-	HavingInvoiceNum int    `gorm:"-" json:"havingInvoiceNum"`
-	ProductName      string `gorm:"-" json:"productName"`
+	IsPass                  bool   `gorm:"-" json:"isPass"`
+	StartDate               string `gorm:"-" json:"startDate"`
+	EndDate                 string `gorm:"-" json:"endDate"`
+	IsSpecialNum            int    `gorm:"-" json:"isSpecialNum"`
+	IsPreDepositNum         int    `gorm:"-" json:"isPreDepositNum"`
+	HavingInvoiceNum        int    `gorm:"-" json:"havingInvoiceNum"`
+	ProductName             string `gorm:"-" json:"productName"`
+	HavingUndistributedTask int    `gorm:"-" json:"havingUndistributedTask"`
 }
 
 type Task struct {
@@ -619,6 +620,12 @@ func SelectContracts(contractQuery *Contract, xForms *XForms) (contracts []Contr
 		tx = tx.Where("contract.id NOT IN (?)", db.Table("invoice").Select("contract_id").Where("contract_id is not null").Group("contract_id"))
 	} else if contractQuery.HavingInvoiceNum == 2 {
 		tx = tx.Where("contract.id IN (?)", db.Table("invoice").Select("contract_id").Where("contract_id is not null").Group("contract_id"))
+	}
+
+	if contractQuery.HavingUndistributedTask == 1 {
+		tx = tx.Where("contract.id IN (?)", db.Table("task").Select("contract_id").Where("`status` = ?", 0).Group("contract_id").Having("count(*) > ?", 0))
+	} else if contractQuery.HavingUndistributedTask == 2 {
+		tx = tx.Where("contract.id NOT IN (?)", db.Table("task").Select("contract_id").Where("`status` = ?", 0).Group("contract_id").Having("count(*) > ?", 0))
 	}
 
 	err = tx.Find(&contracts).Count(&xForms.Total).

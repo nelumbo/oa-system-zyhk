@@ -94,6 +94,13 @@
             <el-col :span="5" :offset="1">
                 <el-input v-model="base.model.productName" placeholder="产品" clearable maxlength="25" />
             </el-col>
+            <el-col :span="5">
+                <el-select v-model="base.model.havingUndistributedTask" placeholder="存在未分发任务" clearable
+                    style="width: 100%;">
+                    <el-option v-for="item in HavingUndistributedTaskItems" :key="item.value" :label="item.label"
+                        :value="item.value" />
+                </el-select>
+            </el-col>
         </el-row>
         <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
             :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
@@ -775,7 +782,7 @@ import { ref, reactive, onBeforeMount, computed } from 'vue'
 import {
     contractStatusItems, productionStatusItems, collectionStatusItems, payTypeItems,
     invoiceTypeItems, taskTypeItems, taskStatusItems,
-    boolItems, HavingInvoiceItems
+    boolItems, HavingInvoiceItems, HavingUndistributedTaskItems
 } from '@/utils/magic'
 import { queryAllRegion } from "@/api/region"
 import { editContractEDD, approveContract, finalContract, resetContract, rejectContract, editContractPreDeposit, queryContract, queryContracts } from "@/api/contract"
@@ -853,6 +860,7 @@ const base = reactive({
         isPreDepositNum: null,
         havingInvoiceNum: null,
         productName: "",
+        havingUndistributedTask: null,
     },
     column: {
         headers: [
