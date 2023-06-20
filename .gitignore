@@ -2,6 +2,7 @@
 /oa-front/.vscode
 /oa-front/node_modules
 /oa-front/dist
+/oa-front/dist.zip
 
 #backend
 /oa-backend/.vscode
