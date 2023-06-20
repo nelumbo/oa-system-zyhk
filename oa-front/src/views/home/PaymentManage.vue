@@ -15,15 +15,13 @@
             </el-col>
             <el-col :span="5">
                 <el-select v-model="base.model.invoiceType" placeholder="发票类型" clearable style="width: 100%;">
-                    <el-option v-for="item in invoiceTypeItems" :key="item.value" :label="item.label"
-                        :value="item.value" />
+                    <el-option v-for="item in invoiceTypeItems" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
             </el-col>
         </el-row>
         <el-row :gutter="20">
             <el-col :span="5" :offset="1">
-                <el-input v-model="base.model.customer.customerCompany.name" placeholder="客户单位" clearable
-                    maxlength="25" />
+                <el-input v-model="base.model.customer.customerCompany.name" placeholder="客户单位" clearable maxlength="25" />
             </el-col>
             <el-col :span="5">
                 <el-input v-model="base.model.customer.name" placeholder="客户名称" clearable maxlength="25" />
@@ -90,8 +88,8 @@
                     <el-input v-model="addI.contract.totalAmount" readonly />
                 </el-form-item>
                 <el-form-item label="发票内容">
-                    <el-input v-model="addI.contract.invoiceContent" type="textarea"
-                        :autosize="{ minRows: 1, maxRows: 9 }" readonly />
+                    <el-input v-model="addI.contract.invoiceContent" type="textarea" :autosize="{ minRows: 1, maxRows: 9 }"
+                        readonly />
                 </el-form-item>
             </el-form>
             <el-divider content-position="left" style="margin-top: 50px;">
@@ -159,8 +157,8 @@
                     <el-input v-model="addP.contract.totalAmount" readonly />
                 </el-form-item>
                 <el-form-item label="发票内容">
-                    <el-input v-model="addP.contract.paymentContent" type="textarea"
-                        :autosize="{ minRows: 1, maxRows: 9 }" readonly />
+                    <el-input v-model="addP.contract.paymentContent" type="textarea" :autosize="{ minRows: 1, maxRows: 9 }"
+                        readonly />
                 </el-form-item>
             </el-form>
             <el-divider content-position="left" style="margin-top: 50px;">
@@ -197,7 +195,8 @@
                                 <el-select v-model="addP.model.taskID" placeholder="请选择" @change="addP.taskChange"
                                     style="width: 100%;">
                                     <el-option v-for="item in addP.contract.tasks" :key="item.id"
-                                        :label="item.product.name + '/任务id:' + item.id" :value="item.id" />
+                                        :label="item.product.name + '  [产品类型:' + item.product.type.name + ']  [任务id:' + item.id + ']'"
+                                        :value="item.id" />
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -217,9 +216,13 @@
                     </el-row>
                     <el-row>
                         <el-col :span="8">
-                            <el-form-item label="金额" prop="money">
+                            <el-form-item label="金额" prop="money" v-if="addP.contract.payType == 1">
                                 <el-input-number v-model="addP.model.money" :controls="false" :min="0"
                                     :max="addP.task.totalPrice - addP.task.paymentTotalPrice" style="width: 100%;" />
+                            </el-form-item>
+                            <el-form-item label="金额" prop="money" v-else>
+                                <el-input-number v-model="addP.model.money" :controls="false" :min="0" :max="9999999999"
+                                    style="width: 100%;" />
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -253,9 +256,13 @@
                 </el-row>
                 <el-row v-else>
                     <el-col :span="8">
-                        <el-form-item label="金额" prop="money">
+                        <el-form-item label="金额" prop="money" v-if="addP.contract.payType == 1">
                             <el-input-number v-model="editP.model.money" :controls="false" :min="0"
                                 :max="editP.task.totalPrice - editP.task.paymentTotalPrice + editP.payment.money"
+                                style="width: 100%;" />
+                        </el-form-item>
+                        <el-form-item label="金额" prop="money" v-else>
+                            <el-input-number v-model="addP.model.money" :controls="false" :min="0" :max="9999999999"
                                 style="width: 100%;" />
                         </el-form-item>
                     </el-col>

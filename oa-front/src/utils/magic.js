@@ -467,3 +467,14 @@ export const OfficeRankingNoItems = [
         label: '技术榜',
     },
 ]
+
+export const ProductIsFreeItems = [
+    {
+        value: 1,
+        label: '是',
+    },
+    {
+        value: 2,
+        label: '否',
+    },
+]

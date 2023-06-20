@@ -183,8 +183,7 @@
             <template #footer>
                 <span class="dialog-footer">
                     <div style="text-align: center;">
-                        <el-button type="primary" @click="addDLC.submit"
-                            :disabled="addDLC.submitDisabled">提交</el-button>
+                        <el-button type="primary" @click="addDLC.submit" :disabled="addDLC.submitDisabled">提交</el-button>
                     </div>
                 </span>
             </template>
@@ -308,26 +307,25 @@ const base = reactive({
                     },
                     {
                         isShow: (index, row) => {
-
                             if (row.contract.status == 2) {
                                 if (row.type == 3) {
-                                    if (row.stauts == 2 && row.purchaseManID == user().my.id) {
+                                    if (row.status == 2 && row.purchaseManID == user().my.id) {
                                         return true
                                     }
-                                    if (row.stauts == 3 && row.inventoryManID == user().my.id) {
+                                    if (row.status == 3 && row.inventoryManID == user().my.id) {
                                         return true
                                     }
-                                    if (row.stauts == 4 && row.technicianManID == user().my.id) {
+                                    if (row.status == 4 && row.technicianManID == user().my.id) {
                                         return true
                                     }
-                                    if (row.stauts == 5 && row.shipmentManID == user().my.id) {
+                                    if (row.status == 5 && row.shipmentManID == user().my.id) {
                                         return true
                                     }
                                 } else if (row.type == 2 || row.type == 1) {
-                                    if (row.stauts == 3 && row.inventoryManID == user().my.id) {
+                                    if (row.status == 3 && row.inventoryManID == user().my.id) {
                                         return true
                                     }
-                                    if (row.stauts == 5 && row.shipmentManID == user().my.id) {
+                                    if (row.status == 5 && row.shipmentManID == user().my.id) {
                                         return true
                                     }
                                 }

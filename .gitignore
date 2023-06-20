@@ -6,7 +6,8 @@
 
 #backend
 /oa-backend/.vscode
-/oa-backend/config/config_bak.yaml
+/oa-backend/config/config.yaml
+/oa-backend/config/config_release.yaml
 /oa-backend/main
 /oa-backend/log
 /oa-backend/__debug_bin.exe

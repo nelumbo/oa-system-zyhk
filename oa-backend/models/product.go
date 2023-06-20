@@ -44,6 +44,9 @@ type Product struct {
 	Type      ProductType      `gorm:"foreignKey:TypeID" json:"type"`
 	Attribute ProductAttribute `gorm:"foreignKey:AttributeID" json:"attribute"`
 	Suppliers []Supplier       `gorm:"many2many:product_supplier;foreignKey:ID;references:ID" json:"suppliers"`
+
+	SupplierName string `gorm:"-" json:"supplierName"`
+	IsFreeNum    int    `gorm:"-" json:"isFreeNum"`
 }
 
 type ProductAttribute struct {
@@ -272,6 +275,11 @@ func SelectProducts(productQuery *Product, xForms *XForms) (products []Product, 
 	if productQuery.TypeID > 0 {
 		maps["product.type_id"] = productQuery.TypeID
 	}
+	if productQuery.IsFreeNum == 1 {
+		maps["product.is_free"] = true
+	} else if productQuery.IsFreeNum == 2 {
+		maps["product.is_free"] = false
+	}
 
 	tx := db.Where(maps)
 
@@ -280,6 +288,12 @@ func SelectProducts(productQuery *Product, xForms *XForms) (products []Product, 
 	}
 	if productQuery.Specification != "" {
 		tx = tx.Where("product.specification LIKE ?", "%"+productQuery.Specification+"%")
+	}
+	if productQuery.Version != "" {
+		tx = tx.Where("product.version LIKE ?", "%"+productQuery.Version+"%")
+	}
+	if productQuery.SupplierName != "" {
+		tx = tx.Where("product.id IN (?)", db.Table("product_supplier").Select("product_id").Joins("left join supplier on product_supplier.supplier_id = supplier.id").Where("supplier.name LIKE ?", "%"+productQuery.SupplierName+"%").Group("product_id"))
 	}
 
 	err = tx.Find(&products).Count(&xForms.Total).

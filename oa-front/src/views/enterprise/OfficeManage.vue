@@ -71,44 +71,87 @@
                 </el-select>
             </el-form-item>
             <el-form-item label="业务提成百分比" prop="pushMoneyPercentages">
-                <el-input-number v-model="editBase.model.pushMoneyPercentages" :controls="false" :min="-100"
-                    :max="100" />
+                <el-input-number v-model="editBase.model.pushMoneyPercentages" :controls="false" :min="-100" :max="100" />
             </el-form-item>
         </el-form>
         <template #footer>
             <span class="dialog-footer">
                 <div style="text-align: center;">
-                    <el-button type="primary" @click="editBase.submit"
-                        :disabled="editBase.submitDisabled">提交</el-button>
+                    <el-button type="primary" @click="editBase.submit" :disabled="editBase.submitDisabled">提交</el-button>
                 </div>
             </span>
         </template>
     </el-dialog>
 
-    <el-dialog v-model="editMoney.dialogVisible" title="费用编辑" width="50%" :show-close="false">
-        <el-form :model="editMoney.model" label-width="120px" :rules="rules" ref="editMoneyForm">
-            <el-form-item label="业务费金额" prop="businessMoney">
-                <el-input-number v-model="editMoney.model.businessMoney" :controls="false" :min="-9999999" />
-            </el-form-item>
-            <el-form-item label="提成金额" prop="money">
-                <el-input-number v-model="editMoney.model.money" :controls="false" :min="-9999999" />
-            </el-form-item>
-            <el-form-item label="年底提成金额" prop="moneyCold">
-                <el-input-number v-model="editMoney.model.moneyCold" :controls="false" :min="-9999999" />
-            </el-form-item>
-            <el-form-item label="今年完成金额" prop="targetLoad">
-                <el-input-number v-model="editMoney.model.targetLoad" :controls="false" :min="-9999999" />
-            </el-form-item>
-            <el-form-item label="备注" prop="remark">
-                <el-input v-model="editMoney.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
-                    maxlength="100" />
-            </el-form-item>
+    <el-dialog v-model="editMoney.dialogVisible" :title="'费用编辑   ' + editMoney.office.name" width="50%" :show-close="false">
+        <el-form :model="editMoney.model" label-width="160px" :rules="rules" ref="editMoneyForm">
+            <el-row :gutter="20">
+                <el-col :span="9" :offset="1">
+                    <el-form-item label="业务费金额" prop="businessMoney">
+                        <el-input v-model="editMoney.office.businessMoney" disabled  />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="9">
+                    <el-form-item label="修改值" prop="businessMoney">
+                        <el-input-number v-model="editMoney.model.businessMoney" :controls="false" :min="-9999999" />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="20">
+                <el-col :span="9" :offset="1">
+                    <el-form-item label="提成金额" prop="businessMoney">
+                        <el-input v-model="editMoney.office.money" disabled  />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="9">
+                    <el-form-item label="修改值" prop="money">
+                        <el-input-number v-model="editMoney.model.money" :controls="false" :min="-9999999" />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="20">
+                <el-col :span="9" :offset="1">
+                    <el-form-item label="年底提成金额" prop="businessMoney">
+                        <el-input v-model="editMoney.office.moneyCold" disabled  />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="9">
+                    <el-form-item label="修改值" prop="moneyCold">
+                        <el-input-number v-model="editMoney.model.moneyCold" :controls="false" :min="-9999999" />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+            <el-row :gutter="20">
+                <el-col :span="9" :offset="1">
+                    <el-form-item label="今年完成金额" prop="businessMoney">
+                        <el-input v-model="editMoney.office.targetLoad" disabled  />
+                    </el-form-item>
+                </el-col>
+                <el-col :span="9">
+                    <el-form-item label="修改值" prop="targetLoad">
+                        <el-input-number v-model="editMoney.model.targetLoad" :controls="false" :min="-9999999" />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+
+            <el-row>
+                <el-col>
+                    <el-form-item label="备注" prop="remark">
+                        <el-input v-model="editMoney.model.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 9 }"
+                            maxlength="100" style="width: 100%;" />
+                    </el-form-item>
+                </el-col>
+            </el-row>
+
+
+
+
+
         </el-form>
         <template #footer>
             <span class="dialog-footer">
                 <div style="text-align: center;">
-                    <el-button type="primary" @click="editMoney.submit"
-                        :disabled="editMoney.submitDisabled">提交</el-button>
+                    <el-button type="primary" @click="editMoney.submit" :disabled="editMoney.submitDisabled">提交</el-button>
                 </div>
             </span>
         </template>
@@ -299,6 +342,7 @@ const base = reactive({
         editBase.dialogVisible = true
     },
     openEditMoneyDialog: (index, row) => {
+        editMoney.office = row
         editMoney.model.id = row.id
         editMoney.dialogVisible = true
     },
@@ -415,6 +459,13 @@ const editMoney = reactive({
     dialogVisible: false,
     submitDisabled: false,
     roles: [],
+    office: {
+        name: "",
+        businessMoney: 0,
+        money: 0,
+        moneyCold: 0,
+        targetLoad: 0,
+    },
     model: {
         id: null,
         businessMoney: 0,
@@ -444,6 +495,13 @@ const editMoney = reactive({
                         message("编辑失败", "error")
                     }
                     editMoney.dialogVisible = false
+                    editMoney.office = {
+                        name: "",
+                        businessMoney: 0,
+                        money: 0,
+                        moneyCold: 0,
+                        targetLoad: 0,
+                    }
                     editMoney.model = {
                         id: null,
                         businessMoney: 0,

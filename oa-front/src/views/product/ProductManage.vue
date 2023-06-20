@@ -18,6 +18,19 @@
             <el-button type="success" @click="base.openAddDialog">添加</el-button>
         </el-col>
     </el-row>
+    <el-row :gutter="20">
+        <el-col :span="6" :offset="2">
+            <el-input v-model="base.model.version" placeholder="型号" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="6">
+            <el-input v-model="base.model.supplierName" placeholder="供货商" clearable maxlength="25" />
+        </el-col>
+        <el-col :span="6">
+            <el-select v-model="base.model.isFreeNum" placeholder="小零配件（是/否）" clearable style="width: 100%;">
+                <el-option v-for="item in ProductIsFreeItems" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+        </el-col>
+    </el-row>
     <divTable :columnObj="base.column" :tableData="base.tableData" :pageData="base.pageData"
         :handleSizeChange="base.handleSizeChange" :handleCurrentChange="base.handleCurrentChange" />
 
@@ -53,8 +66,7 @@
                 <el-input-number v-model="add.model.purchasePrice" :controls="false" :min="0" :max="9999999999" />
             </el-form-item>
             <el-form-item label="标准价格(元)" prop="attribute.standardPrice">
-                <el-input-number v-model="add.model.attribute.standardPrice" :controls="false" :min="0"
-                    :max="9999999999" />
+                <el-input-number v-model="add.model.attribute.standardPrice" :controls="false" :min="0" :max="9999999999" />
             </el-form-item>
             <el-form-item label="标准价格(美元)" prop="attribute.standardPriceUSD">
                 <el-input-number v-model="add.model.attribute.standardPriceUSD" :controls="false" :min="0"
@@ -307,6 +319,7 @@
 <script setup>
 import { user } from '@/pinia/modules/user'
 import { ref, reactive, onBeforeMount } from 'vue'
+import { ProductIsFreeItems } from '@/utils/magic'
 import { addProduct, editProductBase, editProductAttribute, editProductNumber, queryProduct, queryProducts } from "@/api/product"
 import { querySuppliers } from "@/api/supplier"
 import { queryAllProductType } from "@/api/product_type"
@@ -354,6 +367,9 @@ const base = reactive({
         typeID: "",
         name: "",
         specification: "",
+        version: "",
+        supplierName: "",
+        isFreeNum: null,
     },
     column: {
         headers: [
