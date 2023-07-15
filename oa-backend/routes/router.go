@@ -34,6 +34,7 @@ func Init() {
 		tRouter.POST("my/purchasings/save", api.QueryMySavePurchasings)
 		tRouter.POST("my/historys", api.QueryMyHistorys)
 		tRouter.POST("my/productTrials", api.QueryMyProductTrials)
+		tRouter.POST("my/pwd", api.UpdatePwd)
 		tRouter.GET("topList", api.TopList)
 
 		tRouter.POST("employee", api.AddEmployee)

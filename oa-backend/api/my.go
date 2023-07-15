@@ -133,3 +133,18 @@ func QueryMyProductTrials(c *gin.Context) {
 
 	msg.Message(c, code, xForms)
 }
+
+func UpdatePwd(c *gin.Context) {
+	var employee, employeeBak models.Employee
+	_ = c.ShouldBindJSON(&employee)
+	employeeBak, code = models.SelectEmployee(c.MustGet("employeeID").(int))
+
+	if code == msg.SUCCESS {
+		employeeBak, code = models.SelectEmployeeByPhoneAndPwd(employeeBak.Phone, employee.Password)
+		if code == msg.SUCCESS {
+			code = models.UpdatePwd(c.MustGet("employeeID").(int), employee.Pwd)
+		}
+	}
+
+	msg.Message(c, code, nil)
+}

@@ -129,3 +129,11 @@ export const queryMyProductTrials = (model, pageData) => {
         }
     })
 }
+
+export const updatePwd = (model) => {
+    return request({
+        url: '/my/pwd',
+        method: 'POST',
+        data: model,
+    })
+}

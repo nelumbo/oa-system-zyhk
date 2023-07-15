@@ -9,14 +9,14 @@
         <span class="title">{{ user().my.name }}</span>
       </template>
       <el-menu-item-group>
-        <!-- <el-menu-item index="1-1">
+        <el-menu-item index="/my/pwd">
           <template #title>
             <el-icon>
               <Setting />
             </el-icon>
-            <span>设置</span>
+            <span>修改密码</span>
           </template>
-        </el-menu-item> -->
+        </el-menu-item>
         <el-menu-item index="1-2" @click="exit">
           <template #title>
             <el-icon>

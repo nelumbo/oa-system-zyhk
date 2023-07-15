@@ -38,6 +38,7 @@ type Employee struct {
 	Remark string   `gorm:"-" json:"remark"`
 	Pids   []string `gorm:"-" json:"pids"`
 	Urls   []string `gorm:"-" json:"urls"`
+	Pwd    string   `gorm:"-" json:"pwd"`
 }
 
 func UpdateEmployeeOffice(employee *Employee) (code int) {
@@ -158,4 +159,16 @@ func SelectEmployeeByPhoneAndPwd(phone string, password string) (employee Employ
 		return Employee{}, msg.FAIL
 	}
 	return employee, msg.SUCCESS
+}
+
+func UpdatePwd(employeeID int, password string) (code int) {
+	password, err = pwd.Scrypt(password)
+	if err != nil {
+		return msg.ERROR
+	}
+	err = db.Model(&Employee{ID: employeeID}).Update("password", password).Error
+	if err != nil {
+		return msg.ERROR
+	}
+	return msg.SUCCESS
 }

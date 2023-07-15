@@ -83,6 +83,17 @@ const router = createRouter({
           component: () => import('@/views/end/index.vue'),
           meta: { login_require: true, title: "中研环科-结算系统" },
         },
+
+        {
+          path: 'my',
+          children: [
+            {
+              path: 'pwd',
+              component: () => import('@/views/my/ChangePwd.vue'),
+              meta: { login_require: true, title: "中研环科-我的-修改密码" },
+            },
+          ]
+        }
       ]
     },
     {
