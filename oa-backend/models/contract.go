@@ -365,8 +365,8 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 			for k := range payments {
 				if payments[k].TaskID != 0 {
 					//预付款自动生成的分成利润
-					tempMoney += payments[k].PushMoney * 0.5
-					tempMoneyCold += payments[k].PushMoney - payments[k].PushMoney*0.5
+					tempMoney += payments[k].PushMoney * 0.85
+					tempMoneyCold += payments[k].PushMoney - tempMoney
 					tempBusinessMoney += payments[k].BusinessMoney
 					//产品类型是否计算任务量
 					if !payments[k].Task.Product.Type.IsTaskLoad {
@@ -386,8 +386,8 @@ func RejectContract(contract *Contract, employeeID int) (code int) {
 			}
 		} else {
 			for k := range payments {
-				tempMoney += payments[k].PushMoney * 0.5
-				tempMoneyCold += payments[k].PushMoney - payments[k].PushMoney*0.5
+				tempMoney += payments[k].PushMoney * 0.85
+				tempMoneyCold += payments[k].PushMoney - tempMoney
 				tempBusinessMoney += payments[k].BusinessMoney
 				//产品类型是否计算任务量
 				if payments[k].Task.Product.Type.IsTaskLoad {
@@ -700,7 +700,7 @@ func DistributeTask(task *Task, maps map[string]interface{}, employeeID int) (co
 				return tErr
 			}
 			//更新办事处数据&生成历史记录
-			tempPushMoney1 := payment.PushMoney * 0.5
+			tempPushMoney1 := payment.PushMoney * 0.85
 			tempPushMoney2 := payment.PushMoney - tempPushMoney1
 			var officeBak Office
 			if tErr := tx.First(&officeBak, taskBak.Contract.OfficeID).Error; tErr != nil {
@@ -897,8 +897,8 @@ func RejectTask(id int) (code int) {
 			if payment.ID != 0 {
 				var tempTargetLoad, tempMoney, tempMoneyCold, tempBusinessMoney float64
 				tempTargetLoad = payment.Money
-				tempMoney = payment.PushMoney
-				tempMoneyCold = payment.PushMoney - payment.PushMoney*0.5
+				tempMoney = payment.PushMoney * 0.85
+				tempMoneyCold = payment.PushMoney - tempMoney
 				tempBusinessMoney = payment.BusinessMoney
 				if task.Product.Type.IsTaskLoad {
 					if tErr := tx.Exec("UPDATE office SET money = money + ?, money_cold = money_cold + ?, business_money = business_money + ? WHERE id = ?", tempMoneyCold, tempMoneyCold, tempBusinessMoney, task.Contract.OfficeID).Error; tErr != nil {
@@ -1078,7 +1078,7 @@ func InsertPayment(payment *Payment) (code int) {
 					return tErr
 				}
 				//更新办事处数据&生成历史记录
-				tempPushMoney1 := payment.PushMoney * 0.5
+				tempPushMoney1 := payment.PushMoney * 0.85
 				tempPushMoney2 := payment.PushMoney - tempPushMoney1
 				var officeBak Office
 				if tErr := tx.First(&officeBak, task.Contract.OfficeID).Error; tErr != nil {
@@ -1207,10 +1207,10 @@ func UpdatePayment(payment *Payment) (code int) {
 				//重新计算提成
 				payment.TheoreticalPushMoney, payment.Fine, payment.PushMoney, payment.BusinessMoney = calculatePercentage(payment, &task)
 				tempMoney := payment.Money - paymentBak.Money
-				tempOldPushMoney1 := paymentBak.PushMoney * 0.5
+				tempOldPushMoney1 := paymentBak.PushMoney * 0.85
 				tempOldPushMoney2 := paymentBak.PushMoney - tempOldPushMoney1
-				tempPushMoney1 := payment.PushMoney*0.5 - tempOldPushMoney1
-				tempPushMoney2 := payment.PushMoney - payment.PushMoney*0.5 - tempOldPushMoney2
+				tempPushMoney1 := payment.PushMoney*0.85 - tempOldPushMoney1
+				tempPushMoney2 := payment.PushMoney - payment.PushMoney*0.85 - tempOldPushMoney2
 				tempBusinessMoney := payment.BusinessMoney - paymentBak.BusinessMoney
 				////生成历史记录
 				var officeBak Office

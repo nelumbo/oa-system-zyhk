@@ -9,6 +9,24 @@ import (
 
 func InitCronTabs() {
 	monthlyAllowanceToEmployee()
+	annualAudit()
+}
+
+func annualAudit() {
+	cronTask := cron.New(cron.WithSeconds())
+	_, err := cronTask.AddFunc("0 0 0 1 1 ? *", func() {
+
+		err = db.Model(&System{}).Where("text = ?", "ice").Update("value", 0).Error
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			Ice = 0
+		}
+	})
+	if err != nil {
+		fmt.Println(err)
+	}
+	cronTask.Start()
 }
 
 func monthlyAllowanceToEmployee() {

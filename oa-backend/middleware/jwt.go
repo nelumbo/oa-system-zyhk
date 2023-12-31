@@ -72,3 +72,14 @@ func CheckToken() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func CheckPre() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if models.Ice != 2 {
+			msg.Message(c, msg.ERROR, "系统结算中")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}

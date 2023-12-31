@@ -24,7 +24,18 @@ type OfficeBak struct {
 }
 
 func SettlementStart() (code int) {
-	err = db.Model(&System{}).Where("text = ?", "ice").Update("value", 1).Error
+
+	err = db.Transaction(func(tdb *gorm.DB) error {
+
+		if tErr := tdb.Model(&System{}).Where("text = ?", "ice").Update("value", 1).Error; tErr != nil {
+			return tErr
+		}
+		if tErr := tdb.Model(&Office{}).Where("1=1").Update("is_set_submit", 0).Error; tErr != nil {
+			return tErr
+		}
+		return nil
+	})
+
 	if err != nil {
 		return msg.ERROR
 	}

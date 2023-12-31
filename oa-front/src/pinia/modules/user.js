@@ -5,7 +5,7 @@ export const user = defineStore('user', () => {
     const my = reactive({
         id: 0,
         name: "空白",
-        officeID: null,
+        officeID: -1,
         roles: [],
         pids: [],
         urls: [],
